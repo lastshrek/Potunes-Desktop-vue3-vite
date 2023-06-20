@@ -1,3 +1,11 @@
+/*
+ * @Author: lastshrek
+ * @Date: 2023-06-20 22:20:53
+ * @LastEditors: lastshrek
+ * @LastEditTime: 2023-06-20 22:37:08
+ * @Description: 
+ * @FilePath: /potunes-desktop-vue3-vite/electron/main.ts
+ */
 import { app, BrowserWindow } from 'electron'
 import path from 'node:path'
 
@@ -24,6 +32,8 @@ function createWindow() {
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
     },
+    width: 1200,
+    height: 800
   })
 
   // Test active push message to Renderer-process.
