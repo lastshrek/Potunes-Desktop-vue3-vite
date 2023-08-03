@@ -1,5 +1,10 @@
 import { createApp } from 'vue'
+
 import './style.css'
+// tailwind
+import '@/assets/css/main.css'
 import App from './App.vue'
 
-createApp(App).mount('#app').$nextTick(() => postMessage({ payload: 'removeLoading' }, '*'))
+createApp(App)
+	.mount('#app')
+	.$nextTick(() => postMessage({ payload: 'removeLoading' }, '*'))
