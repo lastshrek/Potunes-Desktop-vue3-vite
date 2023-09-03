@@ -14,4 +14,9 @@
 import NavBar from "@/components/navbar/NavBar.vue";
 import BottomPlayer from "./components/player/BottomPlayer.vue";
 </script>
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+//去除右侧滚动条
+::-webkit-scrollbar {
+	display: none;
+}
+</style>

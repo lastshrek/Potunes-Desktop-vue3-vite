@@ -1,6 +1,6 @@
 <template>
   <div
-    class="bg-black shadow-lg text-white fixed bottom-0 left-0 z-50 w-full h-16 flex justify-evenly items-center border-t border-gray-900"
+    class="bg-black shadow-lg text-white fixed bottom-0 left-0 z-50 w-full h-20 flex justify-evenly items-center border-t border-gray-900"
     v-show="isShowMiniPlayer">
     <!-- cover & meta -->
     <div class="flex items-center overflow-hidden w-full h-full justify-start flex-1">
@@ -156,6 +156,7 @@ import { useIsShowMiniPlayerStore } from '../../store/modules/isShowMiniPlayer';
 import { useFullScreenStore } from '../../store/modules/fullScreen';
 import VueSlider from 'vue-slider-component'
 import 'vue-slider-component/theme/default.css'
+import '@/assets/css/slider.css'
 const currentTrack = useCurrentTrackStore();
 const isShowMiniPlayer = useIsShowMiniPlayerStore();
 const volume = JSON.parse(localStorage.getItem("volumeBeforeMuted") || '1');
@@ -197,4 +198,8 @@ onMounted(() => {
 
 </script>
 
-<style scoped></style>
+<style lang="scss" scoped>
+.bar {
+  -webkit-app-region: no-drag;
+}
+</style>
