@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-03 00:14:23
  * @LastEditors  : lastshrek
- * @LastEditTime : 2023-09-05 15:54:31
+ * @LastEditTime : 2023-09-05 22:39:58
  * @FilePath     : /src/views/Playlist.vue
  * @Description  : Playlist
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -15,41 +15,36 @@
 			<div class="rounded-lg shadow-md flex p-4" v-if="!isDailyTracks && playlistType !== 'trends'">
 				<!-- 左侧图片 -->
 				<div class="w-full md:w-1/3">
-					<img v-lazy="playlist.playlist.cover" class="w-full h-auto rounded-lg mr-4 border border-gray-800" />
+					<img v-lazy="playlist.cover" class="w-full h-auto rounded-lg mr-4 border border-gray-800" />
 				</div>
 				<!-- 右侧三段 -->
 				<div class="w-full md:w-2/3 md:flex md:flex-col md:justify-end px-4">
 					<div>
 						<p class="text-lg font-semibold mb-2">
-							{{ playlist.playlist.title }}
+							{{ playlist.title }}
 						</p>
 						<!-- 专辑时展示歌手 -->
 						<div class="text-xs font-semibold mb-2 flex" v-if="playlistType == 'netease-album'">
 							<div
-								v-for="(artist, index) in playlist.playlist.artists"
+								v-for="(artist, index) in playlist.artists"
 								:key="artist.id"
 								@click.stop="handleArtistClick(artist.id)"
 							>
 								<span class="cursor-pointer hover:underline">
 									{{ artist.name }}
 								</span>
-								<span
-									v-if="index < playlist.playlist.artists.length - 1 && playlist.playlist.artists.length > 1"
-									class="mx-1"
-								>
-									/
-								</span>
+								<span v-if="index < playlist.artists.length - 1 && playlist.artists.length > 1" class="mx-1">/</span>
 							</div>
 						</div>
 						<!-- 专辑时改成发行时间 -->
 						<p class="text-gray-400 mb-2">
 							{{ playlistType == 'netease-album' ? '发行时间：' : '最后更新于' }}{{ updateTime }}·
-							{{ playlist.playlist.count || playlist.tracks.length }}首歌
+							{{ playlist.count || playlist.tracks.length }}首歌
 						</p>
 					</div>
 					<!-- 专辑介绍 -->
-					<!-- <p class="text-gray-50 custom-line-clamp" v-html="playlist.playlist.content"></p> -->
-					<p class="mb-4 custom-truncate text-gray-400 max-h-16" v-html="playlist.playlist.content"></p>
+					<!-- <p class="text-gray-50 custom-line-clamp" v-html="playlist.content"></p> -->
+					<p class="mb-4 custom-truncate text-gray-400 max-h-16" v-html="playlist.content"></p>
 					<div v-if="description.length > 80">
 						<button @click="toggleShowMore" class="text-blue-500">查看更多</button>
 					</div>
@@ -72,7 +67,7 @@
 						<p class="text-lg font-semibold mb-2">每日歌曲推荐</p>
 					</div>
 					<!-- 专辑介绍 -->
-					<!-- <p class="text-gray-50 custom-line-clamp" v-html="playlist.playlist.content"></p> -->
+					<!-- <p class="text-gray-50 custom-line-clamp" v-html="playlist.content"></p> -->
 					<p class="mb-4 custom-truncate text-gray-400 max-h-16">根据你的口味生成,每天6:00更新</p>
 				</div>
 			</div>
@@ -95,7 +90,7 @@
 						</p>
 					</div>
 					<!-- 专辑介绍 -->
-					<!-- <p class="text-gray-50 custom-line-clamp" v-html="playlist.playlist.content"></p> -->
+					<!-- <p class="text-gray-50 custom-line-clamp" v-html="playlist.content"></p> -->
 					<p class="mb-4 custom-truncate text-gray-400 max-h-16">
 						{{ playlistType == 'trends' ? '一周歌曲收听排行' : '根据你的口味生成,每天6:00更新' }}
 					</p>
@@ -110,7 +105,7 @@
 					:class="{
 						active: currentTrack.type == 'netease' ? currentTrack.nId == item.nId : currentTrack.id == item.id,
 					}"
-					@click="selectTrack(item.id, index)"
+					@click="selectTrack(index)"
 				>
 					<!-- index -->
 					<div class="mx-4 w-4">
@@ -180,8 +175,8 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { onMounted, reactive, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import {
 	tracks,
 	neteasePlaylist,
@@ -190,61 +185,70 @@ import {
 	weeklyTrends,
 	neteasePlaylistDetail,
 } from '@/api/index'
-import { formatTime, handlePromise } from '@/utils/index'
+import { formatTime, handlePromise, showError, getCurrentDate } from '@/utils/index'
 import { useCurrentTrackStore } from '@/store/modules/currenttrack'
+import { Artist } from '@/interfaces/artist'
 import Loading from 'vue-loading-overlay'
-import { useToast } from 'vue-toast-notification'
-import 'vue-toast-notification/dist/theme-sugar.css'
+import dailyImageSrc from '@/assets/images/daily.jpg'
+import { useFullScreenStore } from '@/store/modules/fullScreen'
 const route = useRoute()
+const router = useRouter()
 const isLoading = ref(true)
 const isDailyTracks = ref(false)
 const isModalOpen = ref(false)
 const playlistType = ref('')
 let playlist = reactive({
-	playlist: {
-		title: '',
-		cover: '',
-		content: '',
-		artists: [],
-		count: 0,
-	},
-	tracks: [],
+	title: '',
+	cover: '',
+	content: '',
+	artists: [] as Artist[],
+	count: 0,
+	updated_at: '',
+	currentIndex: -1,
+	tracks: [] as Track[],
 })
 const description = ref('')
 const updateTime = ref('')
 const currentTrack = useCurrentTrackStore()
-
+const active_el = ref(-1)
+const today = getCurrentDate()
 onMounted(async () => {
-	console.log('456')
-	console.log(route.fullPath, route.params.id)
 	const url = route.fullPath
 	const id = route.params.id as string
 	try {
+		// 站内歌单/专辑
 		if (url.indexOf('netease') === -1 && url.indexOf('trends') === -1) {
 			const [res, err] = await handlePromise(tracks(id))
-			if (err) showError()
-			playlist = res.data
-			description.value = playlist.playlist.content
+			if (err) showError('获取歌单详情失败')
+			// 把res.data.playlist的内容拷贝给playlist
+			Object.assign(playlist, res.data.playlist)
+			playlist.tracks = res.data.tracks
+			description.value = playlist.content
 			return
 		}
+		// 网易歌单
 		if (url.indexOf('netease-playlist') === 1) {
 			// 网易歌单
 			playlistType.value = 'netease-playlist'
 			const [res, err] = await handlePromise(neteasePlaylist(id))
-			if (err) showError()
-			playlist = res.data
-			description.value = playlist.playlist.content
+			if (err) showError('获取歌单详情失败')
+			Object.assign(playlist, res.data.playlist)
+			playlist.tracks = res.data.tracks
+			description.value = playlist.content
 			return
 		}
+		// 网易专辑
 		if (url.indexOf('netease-album') === 1) {
 			// 网易专辑
 			playlistType.value = 'netease-album'
 			const [res, err] = await handlePromise(neteaseAlbum(id))
-			if (err) showError()
-			playlist = res.data
-			description.value = playlist.playlist.content
+			if (err) showError('获取歌单详情失败')
+			Object.assign(playlist, res.data.playlist)
+			playlist.tracks = res.data.tracks
+			description.value = playlist.content
 			return
 		}
+		// 网易日推
 		if (url.indexOf('netease-daily-tracks') === 1) {
 			isDailyTracks.value = true
 			playlistType.value = 'netease-daily-tracks'
@@ -255,35 +259,74 @@ onMounted(async () => {
 					cookie,
 				})
 			)
-			if (err) showError()
-			playlist.tracks = res.data
+			if (err) showError('获取歌单详情失败')
+			Object.assign(playlist, res.data.playlist)
+			playlist.tracks = res.data.tracks
 			return
 		}
+		// 周榜
 		if (url.indexOf('trends') === 1) {
 			playlistType.value = 'trends'
 			const [res, err] = await handlePromise(weeklyTrends())
-			if (err) showError()
-			playlist.tracks = res.data
+			if (err) showError('获取歌单详情失败')
+			Object.assign(playlist, res.data.playlist)
+			playlist.tracks = res.data.tracks
 			return
 		}
-
+		// 网易日推歌单
 		playlistType.value = 'netease-daily'
 		const [res, err] = await handlePromise(neteasePlaylistDetail(id))
-		if (err) showError()
-		playlist = res.data
-	} catch (error) {
+		if (err) showError('获取歌单详情失败')
+		playlist = res.data.playlist
+		playlist.tracks = res.data.tracks
+	} catch (error: any) {
+		showError(error.message)
 	} finally {
 		isLoading.value = false
 	}
 })
-const showError = () => {
-	useToast().open({
-		message: '获取专辑详情失败',
-		type: 'error',
-		duration: 3000,
-		dismissible: true,
-		position: 'top-right',
+watch(
+	() => playlist,
+	newValue => {
+		// 格式化时间
+		console.log(playlist.tracks)
+		getActiveTrack(playlist.tracks)
+		const updateAt = new Date(newValue.updated_at).getTime()
+		const time = new Date(updateAt)
+		updateTime.value = time.getFullYear() + '年' + `${time.getMonth() + 1}` + '月' + time.getDate() + '日'
+	},
+	{ deep: true }
+)
+watch(
+	() => currentTrack,
+	() => {
+		console.log('playlist currentTrackChanged', currentTrack)
+		getActiveTrack(playlist.tracks)
+	},
+	{ deep: true }
+)
+const getActiveTrack = (tracks: Track[]) => {
+	if (tracks.length == 0) return
+	for (let index = 0; index < playlist.tracks.length; index++) {
+		const element = playlist.tracks[index]
+		if (element.id === currentTrack.id) {
+			active_el.value = currentTrack.id
+			console.log('active_el', active_el.value)
+			break
+		}
+	}
+}
+const toggleShowMore = () => {
+	isModalOpen.value = !isModalOpen.value
+}
+const handleArtistClick = (artistId: number) => {
+	router.push({
+		path: `/artist/${artistId}`,
 	})
+}
+const selectTrack = (index: number) => {
+	useFullScreenStore().setIsFullScreen(false)
+	playlist.currentIndex = index
 }
 </script>
 

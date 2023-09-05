@@ -2,13 +2,14 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-02 18:30:22
  * @LastEditors  : lastshrek
- * @LastEditTime : 2023-09-05 16:46:45
+ * @LastEditTime : 2023-09-05 22:18:01
  * @FilePath     : /src/utils/index.ts
  * @Description  : utils
  * Copyright 2023 lastshrek, All Rights Reserved.
  * 2023-09-02 18:30:22
  */
 import { useToast } from 'vue-toast-notification'
+import 'vue-toast-notification/dist/theme-sugar.css'
 
 // 相对优雅的处理promise
 export const handlePromise = <T>(promise: Promise<T>) => {
@@ -26,7 +27,7 @@ export const getCurrentDate = () => {
 	const day = date.getDate()
 	return `${day}`
 }
-
+// 格式化时间
 export const formatTime = (time: number) => {
 	if (!time) return ''
 	const min = Math.floor(time / 1000 / 60)
@@ -34,7 +35,7 @@ export const formatTime = (time: number) => {
 	sec = parseInt(sec) < 10 ? `0${sec}` : sec
 	return `${min}:${sec}`
 }
-
+// 展示错误
 export const showError = (message: string) => {
 	useToast().open({
 		message,

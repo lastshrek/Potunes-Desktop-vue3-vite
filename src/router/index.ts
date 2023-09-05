@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-02 15:51:57
  * @LastEditors  : lastshrek
- * @LastEditTime : 2023-09-05 16:34:03
+ * @LastEditTime : 2023-09-05 21:00:54
  * @FilePath     : /src/router/index.ts
  * @Description  : router
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -30,6 +30,9 @@ const routes: Array<RouteRecordRaw> = [
 		path: '/playlist/:id',
 		name: 'Playlist',
 		component: Playlist,
+		meta: {
+			keepAlive: false,
+		},
 	},
 	{
 		path: '/netease-playlist/:id',

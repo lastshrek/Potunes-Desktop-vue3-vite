@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-01 21:16:34
  * @LastEditors  : lastshrek
- * @LastEditTime : 2023-09-05 16:51:50
+ * @LastEditTime : 2023-09-05 19:51:26
  * @FilePath     : /src/views/Home.vue
  * @Description  : Home
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -12,14 +12,17 @@
 	<div class="md:flex flex-col md:flex-row min-h-screen w-full shadow bg-black pt-14 pb-20">
 		<div class="w-full px-4 pt-2">
 			<!-- Mine -->
-			<!-- <div v-show="isUser">
-        <HeaderTitle title="我的" :showmore="false"></HeaderTitle>
-        <div class="mt-4 md:grid md:grid-cols-5 md:gap-4 flex flex-wrap">
-          <AlbumCard name="我的收藏" :cover_url="heartSrc" max_width="md:max-w-md"
-            @click.native="toPlaylist(0, 'favourites')">
-          </AlbumCard>
-        </div>
-      </div> -->
+			<div v-show="isUser">
+				<HeaderTitle title="我的" :showmore="false"></HeaderTitle>
+				<div class="mt-4 md:grid md:grid-cols-5 md:gap-4 flex flex-wrap">
+					<AlbumCard
+						name="我的收藏"
+						:cover_url="heartSrc"
+						max_width="md:max-w-md"
+						@click.native="toPlaylist(0, 'favourites')"
+					></AlbumCard>
+				</div>
+			</div>
 			<!-- collections -->
 			<HeaderTitle title="月度精选" @click.native="pushToPlaylists('collections')"></HeaderTitle>
 			<div class="mt-4 md:flex">
@@ -118,29 +121,32 @@
 import { ref, onMounted, Ref } from 'vue'
 import { home, neteaseTopAlbum, neteaseRecommendDaily } from '@/api/index'
 import { handlePromise, isUserLogin, getCurrentDate, showError } from '@/utils/index'
-import { useToast } from 'vue-toast-notification'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
+import { Netease_Album } from '@/interfaces/netease_album'
 import Loading from 'vue-loading-overlay'
 import HeaderTitle from '@/components/headertitle/HeaderTitle.vue'
 import AlbumCard from '@/components/albumcard/AlbumCard.vue'
 import 'vue-toast-notification/dist/theme-sugar.css'
 // 本地图片
 import dailySrc from '@/assets/images/daily.png'
-import { Netease_Album } from '@/interfaces/netease_album'
+import heartSrc from '@/assets/images/heart.png'
+// import radioSrc from '@/assets/images/radio.png'
+// eventBus
+import mitt from 'mitt'
 
 // 今天日期
 const today = getCurrentDate()
 // 加载状态
 const isLoading = ref(true)
 // 用户是否登录
-// const isUser = isUserLogin()
 const collections: Ref<Playlist[]> = ref([])
 const finals: Ref<Playlist[]> = ref([])
 const albums: Ref<Playlist[]> = ref([])
 const netease_toplist: Ref<Playlist[]> = ref([])
+const isUser = ref(false)
 // router
 const router = useRouter()
-// const route = useRoute()
+const emitter = mitt()
 // gethome
 const homedata = async () => {
 	try {
@@ -222,17 +228,30 @@ const toPlaylist = (id: number, type: string) => {
 		path: 'netease-daily-tracks/',
 	})
 }
-// to all playlist
+// to all playlist(collection, final, albums)
 const pushToPlaylists = (type: string) => {
 	router.push({
 		path: `playlist-detail/${type}`,
 	})
 }
 onMounted(async () => {
+	await initial()
+	eventBus()
+})
+const initial = async () => {
 	await homedata()
 	await getNeteaseTopAlbums()
 	await getNeteaseDaily()
-})
+	isUser.value = isUserLogin()
+}
+const eventBus = () => {
+	emitter.on('userLogin', async () => {
+		await initial()
+	})
+	emitter.on('userLoout', async () => {
+		isUser.value = false
+	})
+}
 </script>
 
 <style lang="scss" scoped></style>
