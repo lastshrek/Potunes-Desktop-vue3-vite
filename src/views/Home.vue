@@ -2,14 +2,14 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-01 21:16:34
  * @LastEditors  : lastshrek
- * @LastEditTime : 2023-09-04 19:58:42
+ * @LastEditTime : 2023-09-05 13:18:23
  * @FilePath     : /src/views/Home.vue
  * @Description  : Home
  * Copyright 2023 lastshrek, All Rights Reserved.
  * 2023-09-01 21:16:34
 -->
 <template>
-	<div class="md:flex flex-col md:flex-row min-h-screen w-full shadow bg-black pt-14 pb-16">
+	<div class="md:flex flex-col md:flex-row min-h-screen w-full shadow bg-black pt-14 pb-20">
 		<div class="w-full px-4 pt-2">
 			<!-- Mine -->
 			<!-- <div v-show="isUser">
@@ -126,6 +126,7 @@ import AlbumCard from '@/components/albumcard/AlbumCard.vue'
 import 'vue-toast-notification/dist/theme-sugar.css'
 // 本地图片
 import dailySrc from '@/assets/images/daily.png'
+import { Netease_Album } from '@/interfaces/netease_album'
 
 // 今天日期
 const today = getCurrentDate()
@@ -159,7 +160,7 @@ const homedata = async () => {
 		finals.value = result.finals
 		albums.value = result.albums
 		netease_toplist.value = result.netease_toplist
-	} catch (error) {
+	} catch (error: any) {
 		useToast().open({
 			message: error.message,
 			type: 'error',
@@ -187,7 +188,7 @@ const getNeteaseTopAlbums = async () => {
 			return
 		}
 		netease_topalbums.value = res.data
-	} catch (error) {
+	} catch (error: any) {
 		useToast().open({
 			message: error.message,
 			type: 'error',
@@ -220,7 +221,7 @@ const getNeteaseDaily = async () => {
 			return
 		}
 		netease_daily.value = res.data
-	} catch (error) {
+	} catch (error: any) {
 		useToast().open({
 			message: error.message,
 			type: 'error',
