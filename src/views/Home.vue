@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-01 21:16:34
  * @LastEditors  : lastshrek
- * @LastEditTime : 2023-09-05 13:18:23
+ * @LastEditTime : 2023-09-05 16:51:50
  * @FilePath     : /src/views/Home.vue
  * @Description  : Home
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -21,7 +21,7 @@
         </div>
       </div> -->
 			<!-- collections -->
-			<HeaderTitle title="月度精选" @click.native="pushToPlaylistDetail('collections')"></HeaderTitle>
+			<HeaderTitle title="月度精选" @click.native="pushToPlaylists('collections')"></HeaderTitle>
 			<div class="mt-4 md:flex">
 				<AlbumCard
 					v-for="collection in collections"
@@ -29,18 +29,18 @@
 					:name="collection.title"
 					:cover_url="collection.cover"
 					max_width="md:max-w-md"
-					@click.native="toPlaylist(collection.id)"
+					@click.native="toPlaylist(collection.id, '')"
 				></AlbumCard>
 			</div>
 			<!-- finals -->
-			<HeaderTitle title="年终精选" @click.native="pushToPlaylistDetail('finals')"></HeaderTitle>
+			<HeaderTitle title="年终精选" @click.native="pushToPlaylists('finals')"></HeaderTitle>
 			<div class="mt-4 md:grid md:grid-cols-5 md:gap-4 flex flex-wrap">
 				<AlbumCard
 					v-for="final in finals"
 					:key="final.id"
 					:name="final.title"
 					:cover_url="final.cover"
-					@click.native="toPlaylist(final.id)"
+					@click.native="toPlaylist(final.id, '')"
 				></AlbumCard>
 			</div>
 			<!-- netease daily -->
@@ -71,14 +71,14 @@
 				</div>
 			</div>
 			<!-- local albums -->
-			<HeaderTitle title="站内专辑" @click.native="pushToPlaylistDetail('albums')"></HeaderTitle>
+			<HeaderTitle title="站内专辑" @click.native="pushToPlaylists('albums')"></HeaderTitle>
 			<div class="mt-4 md:grid md:grid-cols-5 md:gap-4 flex flex-wrap">
 				<AlbumCard
 					v-for="album in albums"
 					:key="album.id"
 					:name="album.title"
 					:cover_url="album.cover"
-					@click.native="toPlaylist(album.id)"
+					@click.native="toPlaylist(album.id, '')"
 				></AlbumCard>
 			</div>
 			<!-- toplist -->
@@ -92,7 +92,7 @@
 					@click.native="toPlaylist(list.nId, 'netease')"
 				></AlbumCard>
 			</div>
-			<HeaderTitle title="热门新碟" @click.native="pushToPlaylistDetail('albums')"></HeaderTitle>
+			<HeaderTitle title="热门新碟" @click.native="pushToPlaylists('albums')"></HeaderTitle>
 			<div class="mt-4 md:grid md:grid-cols-5 md:gap-4 flex flex-wrap">
 				<AlbumCard
 					v-for="album in netease_topalbums"
@@ -117,7 +117,7 @@
 <script setup lang="ts">
 import { ref, onMounted, Ref } from 'vue'
 import { home, neteaseTopAlbum, neteaseRecommendDaily } from '@/api/index'
-import { handlePromise, isUserLogin, getCurrentDate } from '@/utils/index'
+import { handlePromise, isUserLogin, getCurrentDate, showError } from '@/utils/index'
 import { useToast } from 'vue-toast-notification'
 import { useRouter, useRoute } from 'vue-router'
 import Loading from 'vue-loading-overlay'
@@ -133,41 +133,26 @@ const today = getCurrentDate()
 // 加载状态
 const isLoading = ref(true)
 // 用户是否登录
-const isUser = isUserLogin()
+// const isUser = isUserLogin()
 const collections: Ref<Playlist[]> = ref([])
 const finals: Ref<Playlist[]> = ref([])
 const albums: Ref<Playlist[]> = ref([])
 const netease_toplist: Ref<Playlist[]> = ref([])
 // router
 const router = useRouter()
-const route = useRoute()
+// const route = useRoute()
 // gethome
 const homedata = async () => {
 	try {
 		const [res, err] = await handlePromise(home())
-		if (err) {
-			useToast().open({
-				message: err.message || '获取首页数据失败',
-				type: 'error',
-				duration: 3000,
-				dismissible: true,
-				position: 'top-right',
-			})
-			return
-		}
+		if (err) return showError('获取首页数据失败')
 		const result = res.data
 		collections.value = result.collections
 		finals.value = result.finals
 		albums.value = result.albums
 		netease_toplist.value = result.netease_toplist
 	} catch (error: any) {
-		useToast().open({
-			message: error.message,
-			type: 'error',
-			duration: 3000,
-			dismissible: true,
-			position: 'top-right',
-		})
+		showError(error.message)
 	} finally {
 		isLoading.value = false
 	}
@@ -177,25 +162,10 @@ const netease_topalbums: Ref<Netease_Album[]> = ref([])
 const getNeteaseTopAlbums = async () => {
 	try {
 		const [res, err] = await handlePromise(neteaseTopAlbum())
-		if (err) {
-			useToast().open({
-				message: err.message || '获取网易热门新碟失败',
-				type: 'error',
-				duration: 3000,
-				dismissible: true,
-				position: 'top-right',
-			})
-			return
-		}
+		if (err) return showError('获取网易热门新碟失败')
 		netease_topalbums.value = res.data
 	} catch (error: any) {
-		useToast().open({
-			message: error.message,
-			type: 'error',
-			duration: 3000,
-			dismissible: true,
-			position: 'top-right',
-		})
+		showError(error.message)
 	}
 }
 // get netease user recommand playlist
@@ -210,30 +180,15 @@ const getNeteaseDaily = async () => {
 				cookie,
 			})
 		)
-		if (err) {
-			useToast().open({
-				message: err.message || '获取网易日推失败',
-				type: 'error',
-				duration: 3000,
-				dismissible: true,
-				position: 'top-right',
-			})
-			return
-		}
+		if (err) return showError('获取网易日推失败')
 		netease_daily.value = res.data
 	} catch (error: any) {
-		useToast().open({
-			message: error.message,
-			type: 'error',
-			duration: 3000,
-			dismissible: true,
-			position: 'top-right',
-		})
+		showError(error.message)
 	}
 }
 // toplaylist
 const toPlaylist = (id: number, type: string) => {
-	if (!type) {
+	if (type == '') {
 		router.push({
 			path: `playlist/${id}`,
 		})
@@ -265,6 +220,12 @@ const toPlaylist = (id: number, type: string) => {
 	}
 	router.push({
 		path: 'netease-daily-tracks/',
+	})
+}
+// to all playlist
+const pushToPlaylists = (type: string) => {
+	router.push({
+		path: `playlist-detail/${type}`,
 	})
 }
 onMounted(async () => {

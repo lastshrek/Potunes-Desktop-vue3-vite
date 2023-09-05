@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-03 00:14:23
  * @LastEditors  : lastshrek
- * @LastEditTime : 2023-09-05 13:19:20
+ * @LastEditTime : 2023-09-05 15:54:31
  * @FilePath     : /src/views/Playlist.vue
  * @Description  : Playlist
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -275,15 +275,6 @@ onMounted(async () => {
 	} finally {
 		isLoading.value = false
 	}
-
-	// if (route.params.type == 'netease-daily-tracks') {
-	// 	isDailyTracks.value = true
-	// } else if (route.params.type == 'trends') {
-	// 	playlistType.value = 'trends'
-	// } else {
-	// 	playlistType.value = route.params.type
-	// }
-	// getPlaylist()
 })
 const showError = () => {
 	useToast().open({

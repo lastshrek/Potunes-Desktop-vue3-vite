@@ -172,7 +172,7 @@
 					class="px-2 w-10 h-10 flex justify-center items-center rounded-full hover:bg-albumcardhover"
 				>
 					<svg
-						v-if="this.modeType !== 2"
+						v-if="modeType !== 2"
 						t="1691599262562"
 						class="icon"
 						viewBox="0 0 1024 1024"
@@ -367,6 +367,12 @@ const showNowPlayingList = () => {}
 
 onMounted(() => {
 	console.log('123')
+	const version = navigator.userAgent.toLowerCase()
+	const mac = version.indexOf('mac')
+	const os = version.indexOf('os')
+	if (mac > 0 && os > 0) {
+		isMac.value = true
+	}
 })
 </script>
 

@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-02 15:51:57
  * @LastEditors  : lastshrek
- * @LastEditTime : 2023-09-03 11:03:09
+ * @LastEditTime : 2023-09-05 16:34:03
  * @FilePath     : /src/router/index.ts
  * @Description  : router
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -11,6 +11,12 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 import Home from '@/views/Home.vue'
 import Playlist from '@/views/Playlist.vue'
+import Favourites from '@/views/Favourites.vue'
+import Albums from '@/views/Albums.vue'
+import Trends from '@/views/Trends.vue'
+import Suggestions from '@/views/Suggestion.vue'
+import Artist from '@/views/Artist.vue'
+import Login from '@/views/Login.vue'
 const routes: Array<RouteRecordRaw> = [
 	{
 		path: '/',
@@ -44,6 +50,42 @@ const routes: Array<RouteRecordRaw> = [
 		path: '/netease-album/:id',
 		name: 'netease-album',
 		component: Playlist,
+	},
+	{
+		path: '/favourites',
+		name: 'favourites',
+		component: Favourites,
+		meta: { keepAlive: false },
+	},
+	{
+		path: '/albums/:type',
+		name: 'albums',
+		component: Albums,
+		meta: { keepAlive: true },
+	},
+	{
+		path: '/trends',
+		name: 'trends',
+		component: Trends,
+		meta: { keepAlive: false },
+	},
+	{
+		path: '/feature',
+		name: 'feature',
+		component: Suggestions,
+		meta: { keepAlive: true },
+	},
+	{
+		path: '/artist/:id',
+		name: 'artist',
+		component: Artist,
+		meta: { keepAlive: true },
+	},
+	{
+		path: '/login',
+		name: 'login',
+		component: Login,
+		meta: { keepAlive: true },
 	},
 ]
 
