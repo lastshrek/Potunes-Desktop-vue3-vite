@@ -322,7 +322,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useCurrentTrackStore } from '../../store/modules/currenttrack'
 import { useIsShowMiniPlayerStore } from '../../store/modules/isShowMiniPlayer'
 import { useFullScreenStore } from '../../store/modules/fullScreen'
@@ -336,6 +336,7 @@ const isMac = ref(false)
 const value = ref(0)
 const isPlaying = ref(false)
 const modeType = ref(0)
+const audio = ref(null)
 // 显示歌词界面
 const showLyrics = () => {
 	if (currentTrack.url === '') return
@@ -366,7 +367,6 @@ const timeupdate = () => {}
 const showNowPlayingList = () => {}
 
 onMounted(() => {
-	console.log('123')
 	const version = navigator.userAgent.toLowerCase()
 	const mac = version.indexOf('mac')
 	const os = version.indexOf('os')
@@ -374,6 +374,15 @@ onMounted(() => {
 		isMac.value = true
 	}
 })
+watch(
+	() => currentTrack,
+	(newValue, oldValue) => {
+		console.log('Bottom currentTrackChanged', oldValue.name)
+		const player = audio.value
+		if (volume.value == 0) player!.volume = 0
+	},
+	{ deep: true }
+)
 </script>
 
 <style lang="scss" scoped>

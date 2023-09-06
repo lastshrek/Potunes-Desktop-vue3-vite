@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-03 00:14:23
  * @LastEditors  : lastshrek
- * @LastEditTime : 2023-09-06 13:16:46
+ * @LastEditTime : 2023-09-06 21:07:15
  * @FilePath     : /src/views/Playlist.vue
  * @Description  : Playlist
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -211,9 +211,10 @@ let playlist = reactive({
 })
 const description = ref('')
 const updateTime = ref('')
-const currentTrack = useCurrentTrackStore()
 const active_el = ref(-1)
 const today = getCurrentDate()
+const currentTrack = useCurrentTrackStore()
+const globalQueue = globalQueueStore()
 onMounted(async () => {
 	const url = route.fullPath
 	const id = route.params.id as string
@@ -307,6 +308,13 @@ watch(
 	},
 	{ deep: true }
 )
+watch(
+	() => globalQueue,
+	() => {
+		getActiveTrack(playlist.tracks)
+	},
+	{ deep: true }
+)
 const getActiveTrack = (tracks: Track[]) => {
 	if (tracks.length == 0) return
 	for (let index = 0; index < playlist.tracks.length; index++) {
@@ -329,7 +337,8 @@ const handleArtistClick = (artistId: number) => {
 const selectTrack = (index: number) => {
 	useFullScreenStore().setIsFullScreen(false)
 	playlist.currentIndex = index
-	globalQueueStore().setGlobalQueue(playlist.tracks)
+	currentIndexStore().setCurrentIndex(index)
+	globalQueue.setGlobalQueue(playlist.tracks)
 	currentIndexStore().setCurrentIndex(index)
 	active_el.value = playlist.tracks[index].id
 }
