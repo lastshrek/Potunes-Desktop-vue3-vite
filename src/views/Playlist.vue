@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-03 00:14:23
  * @LastEditors  : lastshrek
- * @LastEditTime : 2023-09-05 22:39:58
+ * @LastEditTime : 2023-09-06 13:13:31
  * @FilePath     : /src/views/Playlist.vue
  * @Description  : Playlist
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -191,6 +191,8 @@ import { Artist } from '@/interfaces/artist'
 import Loading from 'vue-loading-overlay'
 import dailyImageSrc from '@/assets/images/daily.jpg'
 import { useFullScreenStore } from '@/store/modules/fullScreen'
+import { globalQueueStore } from '@/store/modules/globalQueue'
+import { currentIndexStore } from '@/store/modules/currentIndex'
 const route = useRoute()
 const router = useRouter()
 const isLoading = ref(true)
@@ -327,6 +329,9 @@ const handleArtistClick = (artistId: number) => {
 const selectTrack = (index: number) => {
 	useFullScreenStore().setIsFullScreen(false)
 	playlist.currentIndex = index
+	globalQueueStore().setGlobalQueue(playlist.tracks)
+	currentIndexStore().setCurrentIndex(index)
+	console.log(globalQueueStore().queue)
 }
 </script>
 
