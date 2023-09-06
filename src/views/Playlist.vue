@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-03 00:14:23
  * @LastEditors  : lastshrek
- * @LastEditTime : 2023-09-06 13:13:31
+ * @LastEditTime : 2023-09-06 13:16:46
  * @FilePath     : /src/views/Playlist.vue
  * @Description  : Playlist
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -331,7 +331,7 @@ const selectTrack = (index: number) => {
 	playlist.currentIndex = index
 	globalQueueStore().setGlobalQueue(playlist.tracks)
 	currentIndexStore().setCurrentIndex(index)
-	console.log(globalQueueStore().queue)
+	active_el.value = playlist.tracks[index].id
 }
 </script>
 
