@@ -323,9 +323,9 @@
 
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
-import { useCurrentTrackStore } from '../../store/modules/currenttrack'
-import { useIsShowMiniPlayerStore } from '../../store/modules/isShowMiniPlayer'
-import { useFullScreenStore } from '../../store/modules/fullScreen'
+import { useCurrentTrackStore } from '@/store/modules/currenttrack'
+import { useIsShowMiniPlayerStore } from '@/store/modules/isShowMiniPlayer'
+import { useFullScreenStore } from '@/store/modules/fullScreen'
 import VueSlider from 'vue-slider-component'
 import 'vue-slider-component/theme/default.css'
 import '@/assets/css/slider.css'
@@ -377,7 +377,7 @@ onMounted(() => {
 watch(
 	() => currentTrack,
 	(newValue, oldValue) => {
-		console.log('Bottom currentTrackChanged', oldValue.name)
+		console.log('Bottom currentTrackChanged', oldValue, newValue)
 		const player = audio.value
 		if (volume.value == 0) player!.volume = 0
 	},

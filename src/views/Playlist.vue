@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-03 00:14:23
  * @LastEditors  : lastshrek
- * @LastEditTime : 2023-09-06 21:07:15
+ * @LastEditTime : 2023-09-10 22:49:17
  * @FilePath     : /src/views/Playlist.vue
  * @Description  : Playlist
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -188,11 +188,11 @@ import {
 import { formatTime, handlePromise, showError, getCurrentDate } from '@/utils/index'
 import { useCurrentTrackStore } from '@/store/modules/currenttrack'
 import { Artist } from '@/interfaces/artist'
-import Loading from 'vue-loading-overlay'
-import dailyImageSrc from '@/assets/images/daily.jpg'
 import { useFullScreenStore } from '@/store/modules/fullScreen'
 import { globalQueueStore } from '@/store/modules/globalQueue'
-import { currentIndexStore } from '@/store/modules/currentIndex'
+import { useCurrentIndexStore } from '@/store/modules/currentIndex'
+import Loading from 'vue-loading-overlay'
+import dailyImageSrc from '@/assets/images/daily.jpg'
 const route = useRoute()
 const router = useRouter()
 const isLoading = ref(true)
@@ -214,6 +214,7 @@ const updateTime = ref('')
 const active_el = ref(-1)
 const today = getCurrentDate()
 const currentTrack = useCurrentTrackStore()
+const currentIndex = useCurrentIndexStore()
 const globalQueue = globalQueueStore()
 onMounted(async () => {
 	const url = route.fullPath
@@ -292,19 +293,9 @@ watch(
 	() => playlist,
 	newValue => {
 		// 格式化时间
-		console.log(playlist.tracks)
-		getActiveTrack(playlist.tracks)
 		const updateAt = new Date(newValue.updated_at).getTime()
 		const time = new Date(updateAt)
 		updateTime.value = time.getFullYear() + '年' + `${time.getMonth() + 1}` + '月' + time.getDate() + '日'
-	},
-	{ deep: true }
-)
-watch(
-	() => currentTrack,
-	() => {
-		console.log('playlist currentTrackChanged', currentTrack)
-		getActiveTrack(playlist.tracks)
 	},
 	{ deep: true }
 )
@@ -317,8 +308,8 @@ watch(
 )
 const getActiveTrack = (tracks: Track[]) => {
 	if (tracks.length == 0) return
-	for (let index = 0; index < playlist.tracks.length; index++) {
-		const element = playlist.tracks[index]
+	for (let index = 0; index < tracks.length; index++) {
+		const element = tracks[index]
 		if (element.id === currentTrack.id) {
 			active_el.value = currentTrack.id
 			console.log('active_el', active_el.value)
@@ -336,10 +327,9 @@ const handleArtistClick = (artistId: number) => {
 }
 const selectTrack = (index: number) => {
 	useFullScreenStore().setIsFullScreen(false)
+	currentIndex.setCurrentIndex(index)
 	playlist.currentIndex = index
-	currentIndexStore().setCurrentIndex(index)
 	globalQueue.setGlobalQueue(playlist.tracks)
-	currentIndexStore().setCurrentIndex(index)
 	active_el.value = playlist.tracks[index].id
 }
 </script>

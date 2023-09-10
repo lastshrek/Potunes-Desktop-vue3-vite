@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-06 12:56:04
  * @LastEditors  : lastshrek
- * @LastEditTime : 2023-09-06 21:03:00
+ * @LastEditTime : 2023-09-10 22:37:52
  * @FilePath     : /src/store/modules/currentIndex.ts
  * @Description  : currentIndex store module
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -10,19 +10,19 @@
  */
 import { defineStore } from 'pinia'
 
-export const currentIndexStore = defineStore({
+export const useCurrentIndexStore = defineStore({
 	id: 'currentIndex',
 	state: () => ({
-		index: -1,
+		currentIndex: -1,
 	}),
 	getters: {
-		currentIndex(): number {
+		getCurrentIndex(): number {
 			return this.currentIndex
 		},
 	},
 	actions: {
 		setCurrentIndex(index: number) {
-			this.index = index
+			this.currentIndex = index
 		},
 	},
 })

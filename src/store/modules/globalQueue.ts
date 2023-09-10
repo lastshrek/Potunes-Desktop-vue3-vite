@@ -2,14 +2,15 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-06 12:46:29
  * @LastEditors  : lastshrek
- * @LastEditTime : 2023-09-06 13:09:04
+ * @LastEditTime : 2023-09-10 22:40:49
  * @FilePath     : /src/store/modules/globalQueue.ts
  * @Description  : Global Queue
  * Copyright 2023 lastshrek, All Rights Reserved.
  * 2023-09-06 12:46:29
  */
 import { defineStore } from 'pinia'
-
+import { useCurrentTrackStore } from './currenttrack'
+import { useCurrentIndexStore } from './currentIndex'
 export const globalQueueStore = defineStore({
 	id: 'globalQueue',
 	state: () => ({
@@ -23,6 +24,7 @@ export const globalQueueStore = defineStore({
 	actions: {
 		setGlobalQueue(tracks: Track[]) {
 			this.globalQueue = tracks
+			useCurrentTrackStore().setCurrentTrack(tracks[useCurrentIndexStore().currentIndex])
 		},
 	},
 })

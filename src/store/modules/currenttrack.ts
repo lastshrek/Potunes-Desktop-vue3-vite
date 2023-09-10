@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-03 11:43:08
  * @LastEditors  : lastshrek
- * @LastEditTime : 2023-09-06 21:11:00
+ * @LastEditTime : 2023-09-10 22:41:52
  * @FilePath     : /src/store/modules/currenttrack.ts
  * @Description  : currentTrack
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -10,7 +10,7 @@
  */
 import { defineStore } from 'pinia'
 import { globalQueueStore } from './globalQueue'
-import { currentIndexStore } from './currentIndex'
+import { useCurrentIndexStore } from './currentIndex'
 export const useCurrentTrackStore = defineStore({
 	id: 'currenttrack',
 	state: (): Track => ({
@@ -30,35 +30,34 @@ export const useCurrentTrackStore = defineStore({
 		type: 'potunes',
 	}),
 	getters: {
-		getCurrentTrack(): Track {
-			let obj: Track = {
-				id: 0,
-				name: '',
-				artist: '',
-				cover_url: '',
-				url: '',
-				album: '',
-				playlist_id: -1,
-				original_album: '',
-				original_album_id: -1,
-				duration: 0,
-				mv: 0,
-				nId: 0,
-				type: 'potunes',
-				ar: [],
-			}
-			const tracks = globalQueueStore().globalQueue
+		getCurrentTrack(state): Track {
+			// let obj: Track = {
+			// 	id: 0,
+			// 	name: '',
+			// 	artist: '',
+			// 	cover_url: '',
+			// 	url: '',
+			// 	album: '',
+			// 	playlist_id: -1,
+			// 	original_album: '',
+			// 	original_album_id: -1,
+			// 	duration: 0,
+			// 	mv: 0,
+			// 	nId: 0,
+			// 	type: 'potunes',
+			// 	ar: [],
+			// }
+			// const tracks = globalQueueStore().globalQueue
 
-			if (tracks.length != 0) {
-				const index = currentIndexStore().currentIndex
-				obj = tracks[index]
-			}
-			return obj
+			// if (tracks.length != 0) {
+			// 	const index = useCurrentIndexStore().currentIndex
+			// 	obj = tracks[index]
+			// }
+			return state
 		},
 	},
 	actions: {
 		setCurrentTrack(currentTrack: Track) {
-			console.log('setCurrentTrack', currentTrack)
 			this.id = currentTrack.id
 			this.name = currentTrack.name
 			this.artist = currentTrack.artist
