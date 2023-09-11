@@ -110,7 +110,7 @@
 				>
 					<svg
 						t="1691599025349"
-						v-if="!isPlaying"
+						v-if="!isPlaying.isPlaying"
 						class="icon"
 						viewBox="0 0 1024 1024"
 						version="1.1"
@@ -326,6 +326,7 @@ import { onMounted, ref, watch } from 'vue'
 import { useCurrentTrackStore } from '@/store/modules/currenttrack'
 import { useIsShowMiniPlayerStore } from '@/store/modules/isShowMiniPlayer'
 import { useFullScreenStore } from '@/store/modules/fullScreen'
+import { useIsPlayingStore } from '@/store/modules/isPlaying'
 import VueSlider from 'vue-slider-component'
 import 'vue-slider-component/theme/default.css'
 import '@/assets/css/slider.css'
@@ -334,9 +335,9 @@ const isShowMiniPlayer = useIsShowMiniPlayerStore()
 const volume = JSON.parse(localStorage.getItem('volumeBeforeMuted') || '1')
 const isMac = ref(false)
 const value = ref(0)
-const isPlaying = ref(false)
 const modeType = ref(0)
-const audio = ref(null)
+const audio = ref<HTMLAudioElement | null>(null)
+const isPlaying = useIsPlayingStore()
 // 显示歌词界面
 const showLyrics = () => {
 	if (currentTrack.url === '') return
@@ -350,7 +351,10 @@ const repeatMode = () => {}
 // 上一首
 const prev = () => {}
 // 播放/暂停
-const play = () => {}
+const play = () => {
+	if (currentTrack.url === '') return
+	isPlaying.setIsPlaying(!isPlaying.isPlaying)
+}
 // 下一首
 const next = () => {}
 // 随机播放
@@ -373,13 +377,58 @@ onMounted(() => {
 	if (mac > 0 && os > 0) {
 		isMac.value = true
 	}
+	// TODO 通知主进程播放
+	// ipcRenderer.on('play', () => {
+	//     this.setIsPlaying(!this.isPlaying)
+	//   })
+	//   ipcRenderer.on('previous', () => {
+	//     this.prev()
+	//   })
+	//   ipcRenderer.on('next', () => {
+	//     this.next()
+	//   })
 })
 watch(
 	() => currentTrack,
+	newValue => {
+		if (newValue) {
+			const player = audio.value
+			if (volume.value == 0) player!.volume = 0
+			const playPromise = player!.play()
+			if (playPromise !== undefined) {
+				playPromise
+					.then(() => {
+						isPlaying.setIsPlaying(true)
+						player!.play()
+					})
+					.catch(_err => {
+						player!.play()
+						isPlaying.setIsPlaying(true)
+					})
+			}
+			player!.play()
+		}
+	},
+	{ deep: true }
+)
+watch(
+	() => isPlaying,
 	(newValue, oldValue) => {
-		console.log('Bottom currentTrackChanged', oldValue, newValue)
-		const player = audio.value
-		if (volume.value == 0) player!.volume = 0
+		console.log('isPlaying', newValue.isPlaying)
+		if (currentTrack.name === '' && oldValue.isPlaying === false) return
+		if (newValue.isPlaying) {
+			audio.value!.play()
+			if (isMac.value) {
+				// TODO 通知主进程播放
+				// ipcRenderer.send('isPause')
+			}
+		} else {
+			audio.value!.pause()
+			if (isMac.value) {
+				// TODO 通知主进程暂停
+				// ipcRenderer.send('isPlay')
+			}
+		}
 	},
 	{ deep: true }
 )

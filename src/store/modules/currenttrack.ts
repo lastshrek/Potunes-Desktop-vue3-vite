@@ -2,15 +2,13 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-03 11:43:08
  * @LastEditors  : lastshrek
- * @LastEditTime : 2023-09-10 22:41:52
+ * @LastEditTime : 2023-09-11 19:07:32
  * @FilePath     : /src/store/modules/currenttrack.ts
  * @Description  : currentTrack
  * Copyright 2023 lastshrek, All Rights Reserved.
  * 2023-09-03 11:43:08
  */
 import { defineStore } from 'pinia'
-import { globalQueueStore } from './globalQueue'
-import { useCurrentIndexStore } from './currentIndex'
 export const useCurrentTrackStore = defineStore({
 	id: 'currenttrack',
 	state: (): Track => ({
