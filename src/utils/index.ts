@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-02 18:30:22
  * @LastEditors  : lastshrek
- * @LastEditTime : 2023-09-05 22:18:01
+ * @LastEditTime : 2023-09-12 13:04:01
  * @FilePath     : /src/utils/index.ts
  * @Description  : utils
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -44,4 +44,10 @@ export const showError = (message: string) => {
 		dismissible: true,
 		position: 'top-right',
 	})
+}
+// 随机数
+export const getRandomIntInclusive = (min: number, max: number) => {
+	min = Math.ceil(min)
+	max = Math.floor(max)
+	return Math.floor(Math.random() * (max - min + 1)) + min // 含最大值，含最小值
 }

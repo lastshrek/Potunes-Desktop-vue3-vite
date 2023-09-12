@@ -326,7 +326,11 @@ import { onMounted, ref, watch } from 'vue'
 import { useCurrentTrackStore } from '@/store/modules/currenttrack'
 import { useIsShowMiniPlayerStore } from '@/store/modules/isShowMiniPlayer'
 import { useFullScreenStore } from '@/store/modules/fullScreen'
+import { useGlobalQueueStore } from '@/store/modules/globalQueue'
 import { useIsPlayingStore } from '@/store/modules/isPlaying'
+import { PlayMode, usePlayModeStore } from '@/store/modules/playMode'
+import { useCurrentIndexStore } from '@/store/modules/currentIndex'
+import { getRandomIntInclusive } from '@/utils'
 import VueSlider from 'vue-slider-component'
 import 'vue-slider-component/theme/default.css'
 import '@/assets/css/slider.css'
@@ -338,6 +342,9 @@ const value = ref(0)
 const modeType = ref(0)
 const audio = ref<HTMLAudioElement | null>(null)
 const isPlaying = useIsPlayingStore()
+const playMode = usePlayModeStore().playMode
+const currentIndex = useCurrentIndexStore()
+const globalQueue = useGlobalQueueStore()
 // 显示歌词界面
 const showLyrics = () => {
 	if (currentTrack.url === '') return
@@ -369,7 +376,21 @@ const end = () => {}
 const timeupdate = () => {}
 // 显示播放列表
 const showNowPlayingList = () => {}
-
+// 设置下一首播放歌曲的索引
+const setIndex = () => {
+	if (playMode == PlayMode.Sequence) {
+		// 顺序循环
+		currentIndex.setCurrentIndex(currentIndex.currentIndex + 1)
+	} else if (playMode == PlayMode.Shuffle) {
+		// 随机播放
+		const index = getRandomIntInclusive(0, globalQueue.globalQueue.length - 1)
+		currentIndex.setCurrentIndex(index)
+	} else {
+		audio.value!.currentTime = 0
+		audio.value!.play()
+		// 单曲循环
+	}
+}
 onMounted(() => {
 	const version = navigator.userAgent.toLowerCase()
 	const mac = version.indexOf('mac')
