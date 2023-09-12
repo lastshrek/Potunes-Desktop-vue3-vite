@@ -2,14 +2,15 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-06 12:56:04
  * @LastEditors  : lastshrek
- * @LastEditTime : 2023-09-10 22:37:52
+ * @LastEditTime : 2023-09-12 15:09:24
  * @FilePath     : /src/store/modules/currentIndex.ts
  * @Description  : currentIndex store module
  * Copyright 2023 lastshrek, All Rights Reserved.
  * 2023-09-06 12:56:04
  */
 import { defineStore } from 'pinia'
-
+import { useGlobalQueueStore } from './globalQueue'
+import { useCurrentTrackStore } from './currentTrack'
 export const useCurrentIndexStore = defineStore({
 	id: 'currentIndex',
 	state: () => ({
@@ -22,7 +23,15 @@ export const useCurrentIndexStore = defineStore({
 	},
 	actions: {
 		setCurrentIndex(index: number) {
+			if (index < 0) {
+				index = useGlobalQueueStore().globalQueue.length - 1
+			} else if (index > useGlobalQueueStore().globalQueue.length - 1) {
+				index = 0
+			}
 			this.currentIndex = index
+			if (useGlobalQueueStore().globalQueue.length > 0) {
+				useCurrentTrackStore().setCurrentTrack(useGlobalQueueStore().globalQueue[index])
+			}
 		},
 	},
 })

@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-03 00:14:23
  * @LastEditors  : lastshrek
- * @LastEditTime : 2023-09-10 22:49:17
+ * @LastEditTime : 2023-09-12 14:49:59
  * @FilePath     : /src/views/Playlist.vue
  * @Description  : Playlist
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -186,10 +186,10 @@ import {
 	neteasePlaylistDetail,
 } from '@/api/index'
 import { formatTime, handlePromise, showError, getCurrentDate } from '@/utils/index'
-import { useCurrentTrackStore } from '@/store/modules/currenttrack'
+import { useCurrentTrackStore } from '@/store/modules/currentTrack'
 import { Artist } from '@/interfaces/artist'
 import { useFullScreenStore } from '@/store/modules/fullScreen'
-import { globalQueueStore } from '@/store/modules/globalQueue'
+import { useGlobalQueueStore } from '@/store/modules/globalQueue'
 import { useCurrentIndexStore } from '@/store/modules/currentIndex'
 import Loading from 'vue-loading-overlay'
 import dailyImageSrc from '@/assets/images/daily.jpg'
@@ -215,7 +215,7 @@ const active_el = ref(-1)
 const today = getCurrentDate()
 const currentTrack = useCurrentTrackStore()
 const currentIndex = useCurrentIndexStore()
-const globalQueue = globalQueueStore()
+const globalQueue = useGlobalQueueStore()
 onMounted(async () => {
 	const url = route.fullPath
 	const id = route.params.id as string

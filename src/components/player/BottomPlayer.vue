@@ -42,7 +42,7 @@
 				>
 					<svg
 						t="1691598118430"
-						v-if="modeType === 0 || modeType === 2"
+						v-if="playMode.playMode === 0 || playMode.playMode === 2"
 						class="icon"
 						viewBox="0 0 1024 1024"
 						version="1.1"
@@ -172,7 +172,7 @@
 					class="px-2 w-10 h-10 flex justify-center items-center rounded-full hover:bg-albumcardhover"
 				>
 					<svg
-						v-if="modeType !== 2"
+						v-if="playMode.playMode !== 2"
 						t="1691599262562"
 						class="icon"
 						viewBox="0 0 1024 1024"
@@ -323,28 +323,31 @@
 
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
-import { useCurrentTrackStore } from '@/store/modules/currenttrack'
+import { useCurrentTrackStore } from '@/store/modules/currentTrack'
 import { useIsShowMiniPlayerStore } from '@/store/modules/isShowMiniPlayer'
 import { useFullScreenStore } from '@/store/modules/fullScreen'
 import { useGlobalQueueStore } from '@/store/modules/globalQueue'
 import { useIsPlayingStore } from '@/store/modules/isPlaying'
 import { PlayMode, usePlayModeStore } from '@/store/modules/playMode'
 import { useCurrentIndexStore } from '@/store/modules/currentIndex'
+import { useCurrentTimeStore } from '@/store/modules/currentTime'
 import { getRandomIntInclusive } from '@/utils'
+import { useCurrentProgressStore } from '@/store/modules/currentProgress'
 import VueSlider from 'vue-slider-component'
 import 'vue-slider-component/theme/default.css'
 import '@/assets/css/slider.css'
 const currentTrack = useCurrentTrackStore()
 const isShowMiniPlayer = useIsShowMiniPlayerStore()
-const volume = JSON.parse(localStorage.getItem('volumeBeforeMuted') || '1')
+const volume = ref(JSON.parse(localStorage.getItem('volumeBeforeMuted') || '1'))
 const isMac = ref(false)
 const value = ref(0)
-const modeType = ref(0)
 const audio = ref<HTMLAudioElement | null>(null)
 const isPlaying = useIsPlayingStore()
-const playMode = usePlayModeStore().playMode
+const playMode = usePlayModeStore()
 const currentIndex = useCurrentIndexStore()
 const globalQueue = useGlobalQueueStore()
+const currentTime = useCurrentTimeStore()
+const currentProgress = useCurrentProgressStore()
 // 显示歌词界面
 const showLyrics = () => {
 	if (currentTrack.url === '') return
@@ -352,36 +355,79 @@ const showLyrics = () => {
 	isShowMiniPlayer.setIsShowMiniPlayer(false)
 }
 // 进度条拖动结束
-const dragEnd = () => {}
+const dragEnd = () => {
+	if (value.value == 0) return
+	const newTime = (value.value / 100) * audio.value!.duration
+	audio.value!.currentTime = newTime
+	currentTime.setCurrentTime(newTime)
+}
 // 设置循环格式
-const repeatMode = () => {}
+const repeatMode = () => {
+	if (playMode.playMode == PlayMode.Sequence) {
+		playMode.setPlayMode(PlayMode.Repeat)
+		return
+	}
+	playMode.setPlayMode(PlayMode.Sequence)
+}
 // 上一首
-const prev = () => {}
+const prev = () => {
+	if (currentTrack.url === '') return
+	currentIndex.setCurrentIndex(currentIndex.currentIndex - 1)
+}
 // 播放/暂停
 const play = () => {
 	if (currentTrack.url === '') return
 	isPlaying.setIsPlaying(!isPlaying.isPlaying)
 }
 // 下一首
-const next = () => {}
+const next = () => {
+	setIndex()
+}
 // 随机播放
-const shuffle = () => {}
+const shuffle = () => {
+	if (playMode.playMode == PlayMode.Shuffle) {
+		usePlayModeStore().setPlayMode(PlayMode.Sequence)
+		return
+	}
+	usePlayModeStore().setPlayMode(PlayMode.Shuffle)
+}
 // 静音
-const mute = () => {}
+const mute = () => {
+	const audioVolume = audio.value!.volume
+	if (audioVolume > 0) {
+		audio.value!.volume = 0
+		volume.value = 0
+		return
+	}
+	const restoreVolume = JSON.parse(localStorage.getItem('volumeBeforeMuted') || '')
+	volume.value = restoreVolume
+	audio.value!.volume = restoreVolume
+}
 // 音量改变
 const volumeChanged = () => {}
 // 播放结束
-const end = () => {}
+const end = () => {
+	setIndex()
+}
 // 播放时间改变
-const timeupdate = () => {}
+const timeupdate = () => {
+	if (!audio.value) return
+	const curTime = audio.value.currentTime
+	const duration = audio.value.duration
+	const newValue = (curTime / duration) * 100
+	if (isNaN(newValue)) return
+	value.value = newValue
+	currentTime.setCurrentTime(curTime)
+	currentProgress.setCurrentProgress(newValue)
+}
 // 显示播放列表
 const showNowPlayingList = () => {}
 // 设置下一首播放歌曲的索引
 const setIndex = () => {
-	if (playMode == PlayMode.Sequence) {
+	if (playMode.playMode == PlayMode.Sequence) {
 		// 顺序循环
 		currentIndex.setCurrentIndex(currentIndex.currentIndex + 1)
-	} else if (playMode == PlayMode.Shuffle) {
+	} else if (playMode.playMode == PlayMode.Shuffle) {
 		// 随机播放
 		const index = getRandomIntInclusive(0, globalQueue.globalQueue.length - 1)
 		currentIndex.setCurrentIndex(index)
@@ -390,6 +436,7 @@ const setIndex = () => {
 		audio.value!.play()
 		// 单曲循环
 	}
+	console.log(currentIndex.currentIndex)
 	// TODO 更新歌曲播放次数
 }
 onMounted(() => {
@@ -420,8 +467,8 @@ watch(
 			if (playPromise !== undefined) {
 				playPromise
 					.then(() => {
-						isPlaying.setIsPlaying(true)
 						player!.play()
+						isPlaying.setIsPlaying(true)
 					})
 					.catch(_err => {
 						player!.play()
@@ -436,7 +483,6 @@ watch(
 watch(
 	() => isPlaying,
 	(newValue, oldValue) => {
-		console.log('isPlaying', newValue.isPlaying)
 		if (currentTrack.name === '' && oldValue.isPlaying === false) return
 		if (newValue.isPlaying) {
 			audio.value!.play()
