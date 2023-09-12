@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-03 00:14:23
  * @LastEditors  : lastshrek
- * @LastEditTime : 2023-09-12 14:49:59
+ * @LastEditTime : 2023-09-12 21:48:12
  * @FilePath     : /src/views/Playlist.vue
  * @Description  : Playlist
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -190,15 +190,8 @@ import { useCurrentTrackStore } from '@/store/modules/currentTrack'
 import { Artist } from '@/interfaces/artist'
 import { useFullScreenStore } from '@/store/modules/fullScreen'
 import { useGlobalQueueStore } from '@/store/modules/globalQueue'
-import { useCurrentIndexStore } from '@/store/modules/currentIndex'
 import Loading from 'vue-loading-overlay'
 import dailyImageSrc from '@/assets/images/daily.jpg'
-const route = useRoute()
-const router = useRouter()
-const isLoading = ref(true)
-const isDailyTracks = ref(false)
-const isModalOpen = ref(false)
-const playlistType = ref('')
 let playlist = reactive({
 	title: '',
 	cover: '',
@@ -209,12 +202,28 @@ let playlist = reactive({
 	currentIndex: -1,
 	tracks: [] as Track[],
 })
+// 路由
+const route = useRoute()
+const router = useRouter()
+// 加载中
+const isLoading = ref(true)
+// 是否是网易日推
+const isDailyTracks = ref(false)
+// 模态框
+const isModalOpen = ref(false)
+// 歌单类型
+const playlistType = ref('')
+// 描述
 const description = ref('')
+// 更新时间
 const updateTime = ref('')
+// 当前播放歌曲索引
 const active_el = ref(-1)
+// 今天
 const today = getCurrentDate()
+// 当前歌曲
 const currentTrack = useCurrentTrackStore()
-const currentIndex = useCurrentIndexStore()
+// 播放队列
 const globalQueue = useGlobalQueueStore()
 onMounted(async () => {
 	const url = route.fullPath
@@ -327,10 +336,10 @@ const handleArtistClick = (artistId: number) => {
 }
 const selectTrack = (index: number) => {
 	useFullScreenStore().setIsFullScreen(false)
-	currentIndex.setCurrentIndex(index)
 	playlist.currentIndex = index
-	globalQueue.setGlobalQueue(playlist.tracks)
+	globalQueue.setGlobalQueue(playlist.tracks, index)
 	active_el.value = playlist.tracks[index].id
+	// TODO update play counts
 }
 </script>
 
@@ -358,3 +367,4 @@ const selectTrack = (index: number) => {
 	opacity: 0;
 }
 </style>
+@/store/modules/currentTrack

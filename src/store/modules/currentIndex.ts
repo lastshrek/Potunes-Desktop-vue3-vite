@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-06 12:56:04
  * @LastEditors  : lastshrek
- * @LastEditTime : 2023-09-12 15:09:24
+ * @LastEditTime : 2023-09-12 20:25:07
  * @FilePath     : /src/store/modules/currentIndex.ts
  * @Description  : currentIndex store module
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -29,6 +29,7 @@ export const useCurrentIndexStore = defineStore({
 				index = 0
 			}
 			this.currentIndex = index
+			console.log('currentIndex: ' + this.currentIndex)
 			if (useGlobalQueueStore().globalQueue.length > 0) {
 				useCurrentTrackStore().setCurrentTrack(useGlobalQueueStore().globalQueue[index])
 			}

@@ -2,14 +2,14 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-01 21:16:34
  * @LastEditors  : lastshrek
- * @LastEditTime : 2023-09-05 19:51:26
+ * @LastEditTime : 2023-09-12 20:53:54
  * @FilePath     : /src/views/Home.vue
  * @Description  : Home
  * Copyright 2023 lastshrek, All Rights Reserved.
  * 2023-09-01 21:16:34
 -->
 <template>
-	<div class="md:flex flex-col md:flex-row min-h-screen w-full shadow bg-black pt-14 pb-20">
+	<div class="md:flex flex-col md:flex-row min-h-screen container mx-auto shadow bg-black pt-14 pb-20">
 		<div class="w-full px-4 pt-2">
 			<!-- Mine -->
 			<div v-show="isUser">

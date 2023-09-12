@@ -334,6 +334,8 @@ import { useCurrentTimeStore } from '@/store/modules/currentTime'
 import { getRandomIntInclusive } from '@/utils'
 import { useCurrentProgressStore } from '@/store/modules/currentProgress'
 import VueSlider from 'vue-slider-component'
+// eventBus
+import mitt from 'mitt'
 import 'vue-slider-component/theme/default.css'
 import '@/assets/css/slider.css'
 const currentTrack = useCurrentTrackStore()
@@ -348,6 +350,7 @@ const currentIndex = useCurrentIndexStore()
 const globalQueue = useGlobalQueueStore()
 const currentTime = useCurrentTimeStore()
 const currentProgress = useCurrentProgressStore()
+const emitter = mitt()
 // 显示歌词界面
 const showLyrics = () => {
 	if (currentTrack.url === '') return
@@ -404,7 +407,12 @@ const mute = () => {
 	audio.value!.volume = restoreVolume
 }
 // 音量改变
-const volumeChanged = () => {}
+const volumeChanged = () => {
+	const newVolume = volume.value
+	audio.value!.volume = newVolume
+	if (newVolume == 0) return
+	localStorage.setItem('volumeBeforeMuted', JSON.stringify(newVolume))
+}
 // 播放结束
 const end = () => {
 	setIndex()
@@ -421,7 +429,9 @@ const timeupdate = () => {
 	currentProgress.setCurrentProgress(newValue)
 }
 // 显示播放列表
-const showNowPlayingList = () => {}
+const showNowPlayingList = () => {
+	emitter.emit('showNowPlayingList')
+}
 // 设置下一首播放歌曲的索引
 const setIndex = () => {
 	if (playMode.playMode == PlayMode.Sequence) {
@@ -440,12 +450,17 @@ const setIndex = () => {
 	// TODO 更新歌曲播放次数
 }
 onMounted(() => {
+	// TODO: bind keyboard type
+	// key('space', () => {
+	// 	this.play()
+	// })
 	const version = navigator.userAgent.toLowerCase()
 	const mac = version.indexOf('mac')
 	const os = version.indexOf('os')
 	if (mac > 0 && os > 0) {
 		isMac.value = true
 	}
+	emitter.on('showLyrics', value => (audio.value!.currentTime = value as number))
 	// TODO 通知主进程播放
 	// ipcRenderer.on('play', () => {
 	//     this.setIsPlaying(!this.isPlaying)
@@ -456,6 +471,9 @@ onMounted(() => {
 	//   ipcRenderer.on('next', () => {
 	//     this.next()
 	//   })
+	if (isPlaying.isPlaying) {
+		audio.value!.play()
+	}
 })
 watch(
 	() => currentTrack,
@@ -507,3 +525,4 @@ watch(
 	-webkit-app-region: no-drag;
 }
 </style>
+@/store/modules/currentTrack
