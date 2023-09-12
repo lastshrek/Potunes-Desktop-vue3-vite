@@ -390,6 +390,7 @@ const setIndex = () => {
 		audio.value!.play()
 		// 单曲循环
 	}
+	// TODO 更新歌曲播放次数
 }
 onMounted(() => {
 	const version = navigator.userAgent.toLowerCase()
