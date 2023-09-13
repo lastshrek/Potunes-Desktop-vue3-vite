@@ -525,4 +525,3 @@ watch(
 	-webkit-app-region: no-drag;
 }
 </style>
-@/store/modules/currentTrack
