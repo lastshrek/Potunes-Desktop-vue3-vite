@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-02 15:51:57
  * @LastEditors  : lastshrek
- * @LastEditTime : 2023-09-12 22:02:55
+ * @LastEditTime : 2023-09-13 11:42:06
  * @FilePath     : /src/router/index.ts
  * @Description  : router
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -80,7 +80,6 @@ const routes: Array<RouteRecordRaw> = [
 		path: '/artist/:id',
 		name: 'artist',
 		component: Artist,
-		meta: { keepAlive: true },
 	},
 	{
 		path: '/login',

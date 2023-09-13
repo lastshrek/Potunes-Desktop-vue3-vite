@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-02 17:09:39
  * @LastEditors  : lastshrek
- * @LastEditTime : 2023-09-05 13:19:43
+ * @LastEditTime : 2023-09-13 11:37:58
  * @FilePath     : /src/api/index.ts
  * @Description  : api
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -27,3 +27,10 @@ export const neteaseDailyTracks = (data: { cookie: string }) => post('/netease/r
 export const weeklyTrends = () => get('/tracks/topCharts/week')
 // 获取网易云歌单详情及歌曲
 export const neteasePlaylistDetail = (id: string) => get(`/netease/playlist_detail/${id}`)
+// 获取网易云音乐歌手详情
+export const neteaseArtist = (id: string) => get(`/netease/artist/${id}`)
+// 获取网易云音乐歌手专辑
+export const neteaseArtistAlbum = (id: string, limit: string, offset: string) =>
+	get(`/netease/artist_album?id=${id}&limit=${limit}&offset=${offset}`)
+// 获取网易云音乐歌手热门歌曲
+export const neteaseArtistHotSongs = (id: string) => get(`/netease/artist_hot_songs/${id}`)

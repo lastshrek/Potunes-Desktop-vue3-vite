@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-03 00:14:23
  * @LastEditors  : lastshrek
- * @LastEditTime : 2023-09-12 21:48:12
+ * @LastEditTime : 2023-09-13 14:50:00
  * @FilePath     : /src/views/Playlist.vue
  * @Description  : Playlist
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -298,23 +298,6 @@ onMounted(async () => {
 		isLoading.value = false
 	}
 })
-watch(
-	() => playlist,
-	newValue => {
-		// 格式化时间
-		const updateAt = new Date(newValue.updated_at).getTime()
-		const time = new Date(updateAt)
-		updateTime.value = time.getFullYear() + '年' + `${time.getMonth() + 1}` + '月' + time.getDate() + '日'
-	},
-	{ deep: true }
-)
-watch(
-	() => globalQueue,
-	() => {
-		getActiveTrack(playlist.tracks)
-	},
-	{ deep: true }
-)
 const getActiveTrack = (tracks: Track[]) => {
 	if (tracks.length == 0) return
 	for (let index = 0; index < tracks.length; index++) {
@@ -341,6 +324,23 @@ const selectTrack = (index: number) => {
 	active_el.value = playlist.tracks[index].id
 	// TODO update play counts
 }
+watch(
+	() => playlist,
+	newValue => {
+		// 格式化时间
+		const updateAt = new Date(newValue.updated_at).getTime()
+		const time = new Date(updateAt)
+		updateTime.value = time.getFullYear() + '年' + `${time.getMonth() + 1}` + '月' + time.getDate() + '日'
+	},
+	{ deep: true }
+)
+watch(
+	() => globalQueue,
+	() => {
+		getActiveTrack(playlist.tracks)
+	},
+	{ deep: true }
+)
 </script>
 
 <style scoped lang="scss">
@@ -367,4 +367,3 @@ const selectTrack = (index: number) => {
 	opacity: 0;
 }
 </style>
-@/store/modules/currentTrack

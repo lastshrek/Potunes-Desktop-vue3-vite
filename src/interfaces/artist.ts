@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-02 23:30:20
  * @LastEditors  : lastshrek
- * @LastEditTime : 2023-09-02 23:30:20
+ * @LastEditTime : 2023-09-13 10:35:15
  * @FilePath     : /src/interfaces/artist.ts
  * @Description  : atrtist
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -11,6 +11,7 @@
 
 export interface Artist {
 	name: string
+	avatar: string
 	id: number
 	picId: number
 	img1v1Id: number
