@@ -1,15 +1,14 @@
 <template>
 	<div class="bg-black">
 		<NavBar />
-		<transition enter-from-class="opacity-0" enter-active-class="transition duration-300">
-			<router-view v-slot="{ Component }">
-				<keep-alive>
-					<component :is="Component" v-if="$route.meta.keepAlive" />
+		<router-view v-slot="{ Component }">
+			<transition enter-from-class="translate-x-[150%] opacity-0" enter-active-class="transition duration-300">
+				<keep-alive v-if="$route.meta.keepAlive">
+					<component :is="Component" />
 				</keep-alive>
-				<component :is="Component" v-if="!$route.meta.keepAlive" />
-			</router-view>
-		</transition>
-
+				<component :is="Component" v-else />
+			</transition>
+		</router-view>
 		<BottomPlayer />
 	</div>
 </template>

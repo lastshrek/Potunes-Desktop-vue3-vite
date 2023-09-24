@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-01 21:16:34
  * @LastEditors  : lastshrek
- * @LastEditTime : 2023-09-12 21:08:28
+ * @LastEditTime : 2023-09-24 10:09:57
  * @FilePath     : /src/components/navbar/NavBar.vue
  * @Description  : 
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -20,23 +20,13 @@
 				/>
 			</div>
 			<!-- middle navigator -->
-			<!-- <div class="flex gap-x-8 mx-auto h-full justify-between items-center">
-      <a type="button" class="nav-a" @click="redirect('Home')">
-        Home
-      </a>
-      <a @click="redirect('trends')" type="button" class="nav-a">
-        Weekly
-        Trends </a>
-      <a @click="redirect('feature')" type="button" class="nav-a">
-        Implement a Feature</a>      
-    </div> -->
 			<div class="w-full max-w-md px-2 sm:px-0">
 				<TabGroup>
 					<TabList class="flex space-x-1 rounded-xl p-1">
 						<Tab v-for="(category, index) in categories" as="template" :key="category" v-slot="{ selected }">
 							<button
 								:class="[
-									'w-full rounded-lg py-2.5 text-sm font-bold leading-5 text-white hover:border-pink-400 hover:border-2',
+									'w-full rounded-lg py-2.5 text-sm font-bold leading-5 text-white',
 									selected ? 'bg-pink-500 shadow' : 'hover:text-white',
 								]"
 								@click="tabChange(index)"

@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-02 15:51:57
  * @LastEditors  : lastshrek
- * @LastEditTime : 2023-09-13 11:42:06
+ * @LastEditTime : 2023-09-23 23:27:23
  * @FilePath     : /src/router/index.ts
  * @Description  : router
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -62,7 +62,6 @@ const routes: Array<RouteRecordRaw> = [
 		path: '/albums/:type',
 		name: 'albums',
 		component: Albums,
-		meta: { keepAlive: true },
 	},
 	{
 		path: '/trends',
@@ -93,5 +92,9 @@ const router = createRouter({
 	history: createWebHistory(),
 	routes,
 })
-
+/** 解决跳转重复路由报错问题 */
+const originalPush = router.push
+router.push = function push(location: any) {
+	return (originalPush.call(this, location) as any).catch((err: any) => err)
+}
 export default router

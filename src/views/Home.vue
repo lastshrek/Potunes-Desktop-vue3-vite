@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-01 21:16:34
  * @LastEditors  : lastshrek
- * @LastEditTime : 2023-09-12 20:53:54
+ * @LastEditTime : 2023-09-23 22:53:33
  * @FilePath     : /src/views/Home.vue
  * @Description  : Home
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -231,7 +231,7 @@ const toPlaylist = (id: number, type: string) => {
 // to all playlist(collection, final, albums)
 const pushToPlaylists = (type: string) => {
 	router.push({
-		path: `playlist-detail/${type}`,
+		path: `albums/${type}`,
 	})
 }
 onMounted(async () => {
