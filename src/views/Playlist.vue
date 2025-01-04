@@ -2,14 +2,14 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-03 00:14:23
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-03 19:01:47
+ * @LastEditTime : 2025-01-04 12:21:05
  * @FilePath     : /src/views/Playlist.vue
  * @Description  : Playlist
  * Copyright 2023 lastshrek, All Rights Reserved.
  * 2023-09-03 00:14:23
 -->
 <template>
-	<div class="bg-black w-full pt-14 pb-16 h-screen">
+	<div class="bg-black w-full pb-16 h-screen">
 		<div class="container mx-auto h-full overflow-y-scroll flex flex-col text-white">
 			<!-- title card -->
 			<div class="rounded-lg shadow-md flex p-4" v-if="!isDailyTracks && playlistType !== 'trends'">
@@ -353,6 +353,7 @@ watch(
 .custom-truncate {
 	display: -webkit-box;
 	-webkit-line-clamp: 4;
+	line-clamp: 4;
 	-webkit-box-orient: vertical;
 	overflow: hidden;
 }

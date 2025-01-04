@@ -36,10 +36,7 @@
 
 			<div class="flex justify-center items-center space-x-4">
 				<!-- 循环 -->
-				<button
-					@click="repeatMode"
-					class="px-2 w-10 h-10 flex justify-center items-center rounded-full hover:bg-albumcardhover"
-				>
+				<Button variant="link" size="icon" @click="repeatMode">
 					<svg
 						t="1691598118430"
 						v-if="playMode.playMode === 0 || playMode.playMode === 2"
@@ -79,12 +76,9 @@
 							fill="#ffffff"
 						></path>
 					</svg>
-				</button>
+				</Button>
 				<!-- 上一首 -->
-				<button
-					@click="prev"
-					class="px-2 w-10 h-10 flex justify-center items-center rounded-full hover:bg-albumcardhover"
-				>
+				<Button variant="link" size="icon" @click="prev">
 					<svg
 						t="1691598810697"
 						class="icon"
@@ -101,13 +95,9 @@
 							p-id="2976"
 						></path>
 					</svg>
-				</button>
+				</Button>
 				<!-- 暂停/播放 -->
-				<button
-					ref="play"
-					@click="play"
-					class="px-2 w-10 h-10 flex justify-center items-center rounded-full hover:bg-albumcardhover"
-				>
+				<Button variant="link" size="icon" ref="play" @click="play">
 					<svg
 						t="1691599025349"
 						v-if="!isPlaying.isPlaying"
@@ -142,12 +132,9 @@
 							p-id="6674"
 						></path>
 					</svg>
-				</button>
+				</Button>
 				<!-- 下一首 -->
-				<button
-					@click="next"
-					class="px-2 w-10 h-10 flex justify-center items-center rounded-full hover:bg-albumcardhover"
-				>
+				<Button variant="link" size="icon" @click="next">
 					<svg
 						t="1691598713799"
 						class="icon"
@@ -165,12 +152,9 @@
 							p-id="14071"
 						></path>
 					</svg>
-				</button>
+				</Button>
 				<!-- 随机 -->
-				<button
-					@click="shuffle"
-					class="px-2 w-10 h-10 flex justify-center items-center rounded-full hover:bg-albumcardhover"
-				>
+				<Button variant="link" size="icon" @click="shuffle">
 					<svg
 						v-if="playMode.playMode !== 2"
 						t="1691599262562"
@@ -204,76 +188,24 @@
 							d="M11.484 6.166 13 4h6m0 0-3-3m3 3-3 3M1 14h5l1.577-2.253M1 4h5l7 10h6m0 0-3 3m3-3-3-3"
 						/>
 					</svg>
-				</button>
+				</Button>
 			</div>
 		</div>
 		<!-- volume -->
 		<div class="flex items-center justify-end h-full w-full pr-4 space-x-4 flex-1">
 			<!-- now playing list -->
 			<div class="flex flex-col items-center justify-center">
-				<button
-					icon
-					@click="showNowPlayingList"
-					class="px-2 w-10 h-10 flex justify-center items-center rounded-full hover:bg-albumcardhover"
-				>
-					<svg
-						class="w-6 h-6 text-gray-50"
-						aria-hidden="true"
-						xmlns="http://www.w3.org/2000/svg"
-						fill="currentColor"
-						viewBox="0 0 18 16"
-					>
-						<path
-							d="M14.316.051A1 1 0 0 0 13 1v8.473A4.49 4.49 0 0 0 11 9c-2.206 0-4 1.525-4 3.4s1.794 3.4 4 3.4 4-1.526 4-3.4a2.945 2.945 0 0 0-.067-.566c.041-.107.064-.22.067-.334V2.763A2.974 2.974 0 0 1 16 5a1 1 0 0 0 2 0C18 1.322 14.467.1 14.316.051ZM10 3H1a1 1 0 0 1 0-2h9a1 1 0 1 1 0 2Z"
-						/>
-						<path d="M10 7H1a1 1 0 0 1 0-2h9a1 1 0 1 1 0 2Zm-5 4H1a1 1 0 0 1 0-2h4a1 1 0 1 1 0 2Z" />
-					</svg>
-				</button>
+				<Button variant="link" size="icon" @click="showNowPlayingList">
+					<ListMusic class="w-6 h-6" />
+				</Button>
 			</div>
 			<!-- volume control -->
 			<div class="flex flex-col items-center justify-center">
-				<button
-					@click="mute"
-					class="px-2 w-10 h-10 flex justify-center items-center rounded-full hover:bg-albumcardhover"
-				>
-					<svg
-						v-if="volume > 0.5"
-						class="w-6 h-6 text-gray-50"
-						aria-hidden="true"
-						xmlns="http://www.w3.org/2000/svg"
-						fill="currentColor"
-						viewBox="0 0 20 18"
-					>
-						<path
-							d="M10.836.357a1.978 1.978 0 0 0-2.138.3L3.63 5H2a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h1.63l5.07 4.344a1.985 1.985 0 0 0 2.142.299A1.98 1.98 0 0 0 12 15.826V2.174A1.98 1.98 0 0 0 10.836.357Zm2.728 4.695a1.001 1.001 0 0 0-.29 1.385 4.887 4.887 0 0 1 0 5.126 1 1 0 0 0 1.674 1.095A6.645 6.645 0 0 0 16 9a6.65 6.65 0 0 0-1.052-3.658 1 1 0 0 0-1.384-.29Zm4.441-2.904a1 1 0 0 0-1.664 1.11A10.429 10.429 0 0 1 18 9a10.465 10.465 0 0 1-1.614 5.675 1 1 0 1 0 1.674 1.095A12.325 12.325 0 0 0 20 9a12.457 12.457 0 0 0-1.995-6.852Z"
-						/>
-					</svg>
-					<svg
-						v-else-if="volume <= 0.5 && volume !== 0"
-						class="w-6 h-6 text-gray-50"
-						aria-hidden="true"
-						xmlns="http://www.w3.org/2000/svg"
-						fill="currentColor"
-						viewBox="0 0 16 18"
-					>
-						<path
-							d="M10.836.357a1.978 1.978 0 0 0-2.138.3L3.63 5H2a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h1.63l5.07 4.344a1.985 1.985 0 0 0 2.142.299A1.98 1.98 0 0 0 12 15.826V2.174A1.98 1.98 0 0 0 10.836.357Zm4.112 4.985a1 1 0 1 0-1.674 1.095 4.887 4.887 0 0 1 0 5.126 1 1 0 1 0 1.674 1.095A6.645 6.645 0 0 0 16 9a6.65 6.65 0 0 0-1.052-3.658Z"
-						/>
-					</svg>
-					<!-- 静音 -->
-					<svg
-						v-else
-						class="w-6 h-6 text-gray-50"
-						aria-hidden="true"
-						xmlns="http://www.w3.org/2000/svg"
-						fill="currentColor"
-						viewBox="0 0 16 18"
-					>
-						<path
-							d="M10.836.357a1.978 1.978 0 0 0-2.138.3L3.63 5H2a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h1.63l5.07 4.344a1.985 1.985 0 0 0 2.142.299A1.98 1.98 0 0 0 12 15.826V2.174A1.98 1.98 0 0 0 10.836.357Zm4.112 4.985a1 1 0 1 0-1.674 1.095 4.887 4.887 0 0 1 0 5.126 1 1 0 1 0 1.674 1.095A6.645 6.645 0 0 0 16 9a6.65 6.65 0 0 0-1.052-3.658Z"
-						/>
-					</svg>
-				</button>
+				<Button @click="mute" variant="link" size="icon">
+					<Volume2 v-if="volume > 0.5" class="w-6 h-6 text-gray-50" />
+					<Volume1 v-else-if="volume <= 0.5 && volume !== 0" class="w-6 h-6 text-gray-50" />
+					<VolumeOff v-else class="w-6 h-6 text-gray-50" />
+				</Button>
 			</div>
 			<!-- volume slider -->
 			<div class="mx-2 items-center w-32 justify-center">
@@ -293,11 +225,7 @@
 				></vue-slider>
 			</div>
 			<div class="flex flex-col items-center justify-center">
-				<button
-					icon
-					@click="showLyrics"
-					class="px-2 w-10 h-10 flex justify-center items-center rounded-full hover:bg-albumcardhover"
-				>
+				<Button variant="link" size="icon" @click="showLyrics">
 					<svg
 						t="1691597908372"
 						class="w-4 h-4"
@@ -314,7 +242,7 @@
 							fill="#ffffff"
 						></path>
 					</svg>
-				</button>
+				</Button>
 			</div>
 		</div>
 		<audio :src="currentTrack.url" ref="audio" @timeupdate="timeupdate" @ended="end"></audio>
@@ -323,7 +251,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
-import { useCurrentTrackStore } from '@/store/modules/currentTrack'
+import { useCurrentTrackStore } from '@/store/modules/currenttrack'
 import { useIsShowMiniPlayerStore } from '@/store/modules/isShowMiniPlayer'
 import { useFullScreenStore } from '@/store/modules/fullScreen'
 import { useGlobalQueueStore } from '@/store/modules/globalQueue'
@@ -333,6 +261,8 @@ import { useCurrentIndexStore } from '@/store/modules/currentIndex'
 import { useCurrentTimeStore } from '@/store/modules/currentTime'
 import { getRandomIntInclusive } from '@/utils'
 import { useCurrentProgressStore } from '@/store/modules/currentProgress'
+import { Button } from '@/components/ui/button'
+import { ListMusic, Volume1, Volume2, VolumeOff } from 'lucide-vue-next'
 import VueSlider from 'vue-slider-component'
 // eventBus
 import mitt from 'mitt'
