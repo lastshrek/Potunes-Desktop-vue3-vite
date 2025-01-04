@@ -2,14 +2,14 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-01 21:16:34
  * @LastEditors  : lastshrek
- * @LastEditTime : 2023-09-23 22:53:33
+ * @LastEditTime : 2025-01-04 10:23:46
  * @FilePath     : /src/views/Home.vue
  * @Description  : Home
  * Copyright 2023 lastshrek, All Rights Reserved.
  * 2023-09-01 21:16:34
 -->
 <template>
-	<div class="md:flex flex-col md:flex-row min-h-screen container mx-auto shadow bg-black pt-14 pb-20">
+	<div class="md:flex flex-col md:flex-row min-h-screen container mx-auto shadow bg-black pb-20">
 		<div class="w-full px-4 pt-2">
 			<!-- Mine -->
 			<div v-show="isUser">
@@ -110,7 +110,7 @@
 		<loading
 			:active="isLoading"
 			:can-cancel="true"
-			:is-full-page="true"
+			:is-full-page="false"
 			background-color="rgba(0, 0, 0, 0.5)"
 			color="#EC4899"
 		/>

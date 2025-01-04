@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-01 21:16:34
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-04 09:50:07
+ * @LastEditTime : 2025-01-04 12:08:07
  * @FilePath     : /src/components/navbar/NavBar.vue
  * @Description  : 
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -12,38 +12,31 @@
 	<div class="fixed top-0 left-0 w-full h-14 z-50 bg-black shadow-md" style="-webkit-app-region: drag">
 		<div class="container mx-auto flex items-center justify-between px-4 h-full">
 			<!-- navigator button -->
-			<div class="flex items-center" style="-webkit-app-region: no-drag">
-				<ChevronLeftIcon
-					class="h-10 w-10 py-1 px-2 text-2xl rounded-full hover:bg-album-hover cursor-pointer"
-					@click="go('back')"
-				/>
-				<ChevronRightIcon
-					class="h-10 w-10 py-1 ml-2 px-2 text-2xl rounded-full hover:bg-album-hover cursor-pointer"
-					@click="go('forward')"
-				/>
+			<div class="flex items-center pl-20 space-x-2" style="-webkit-app-region: no-drag">
+				<Button variant="link" size="icon" @click="go('back')">
+					<ChevronLeft class="w-6 h-6" />
+				</Button>
+				<Button variant="link" size="icon" @click="go('forward')">
+					<ChevronRight class="w-6 h-6" />
+				</Button>
 			</div>
 
 			<!-- middle navigator -->
-			<div class="w-full max-w-md px-2 sm:px-0" style="-webkit-app-region: no-drag">
-				<TabGroup>
-					<TabList class="flex space-x-1 rounded-xl p-1">
-						<Tab v-for="(category, index) in categories" as="template" :key="category" v-slot="{ selected }">
-							<button
-								:class="[
-									'w-full rounded-lg py-2.5 text-sm font-bold leading-5 text-white',
-									selected ? 'bg-pink-500 shadow' : 'hover:text-white hover:border-primary',
-								]"
-								@click="tabChange(index)"
-							>
-								{{ category }}
-							</button>
-						</Tab>
-					</TabList>
-				</TabGroup>
+			<div
+				class="w-full max-w-md mx-auto absolute left-1/2 -translate-x-1/2 flex justify-center"
+				style="-webkit-app-region: no-drag"
+			>
+				<Tabs v-model="currentTab">
+					<TabsList class="gap-4">
+						<TabsTrigger value="home">Home</TabsTrigger>
+						<TabsTrigger value="trends">Trends</TabsTrigger>
+						<TabsTrigger value="feature">Feature</TabsTrigger>
+					</TabsList>
+				</Tabs>
 			</div>
 
 			<!-- user profile -->
-			<div style="-webkit-app-region: no-drag">
+			<div class="relative z-10" style="-webkit-app-region: no-drag">
 				<button
 					class="hover:bg-albumcardhover text-white py-2 px-4 rounded text-sm"
 					@click="go('login')"
@@ -79,26 +72,44 @@
 </template>
 
 <script setup lang="ts">
-import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/vue/24/solid'
-import { TabGroup, TabList, Tab } from '@headlessui/vue'
-import { ref } from 'vue'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ref, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { Button } from '@/components/ui/button'
+import { ChevronRight, ChevronLeft } from 'lucide-vue-next'
+
 const router = useRouter()
 const route = useRoute()
 const neteaseUser = ref({}) as any
 const isUserExist = ref(false)
 const isNeteaseLogin = ref(false)
+const currentTab = ref('home')
+
+// 监听 currentTab 的变化
+watch(currentTab, newValue => {
+	console.log('Tab changed to:', newValue)
+	router.push({ name: newValue }).catch(err => {
+		console.error('Navigation failed:', err)
+	})
+})
+
+// 监听路由变化
+watch(
+	() => route.name,
+	newName => {
+		if (typeof newName === 'string') {
+			console.log('Route changed to:', newName)
+			currentTab.value = newName.toLowerCase()
+		}
+	},
+	{ immediate: true }
+)
+
 // 返回前进按钮
 const go = (where: string) => {
 	console.log('go', where)
 	if (where === route.path) return
-	if (where === 'back') {
-		router.go(-1)
-		return
-	}
-	if (route.path) {
-		router.go(1)
-	}
+
 	switch (where) {
 		case 'back':
 			router.go(-1)
@@ -114,33 +125,7 @@ const go = (where: string) => {
 	}
 }
 
-const tabChange = (index: number) => {
-	switch (index) {
-		case 0:
-			router.push({ name: 'Home' })
-			break
-		case 1:
-			router.push({ name: 'trends' })
-			break
-		case 2:
-			router.push({ name: 'feature' })
-			break
-		default:
-			break
-	}
-}
-const categories = ref(['Home', 'Trending', 'Implement'])
 const showProfile = () => {
 	console.log('show profile')
 }
 </script>
-
-<style lang="scss" scoped>
-.nav-a {
-	@apply text-sm font-semibold leading-6 text-white;
-}
-
-.nav-a:hover {
-	@apply underline text-pink-500;
-}
-</style>

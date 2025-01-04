@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-02 15:51:57
  * @LastEditors  : lastshrek
- * @LastEditTime : 2023-09-23 23:27:23
+ * @LastEditTime : 2025-01-04 11:31:45
  * @FilePath     : /src/router/index.ts
  * @Description  : router
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -20,7 +20,7 @@ import Login from '@/views/Login.vue'
 const routes: Array<RouteRecordRaw> = [
 	{
 		path: '/',
-		name: 'Home',
+		name: 'home',
 		component: Home,
 		meta: { keepAlive: true },
 	},
