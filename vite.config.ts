@@ -3,8 +3,16 @@ import electron from 'vite-plugin-electron'
 import renderer from 'vite-plugin-electron-renderer'
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
+import autoprefixer from 'autoprefixer'
+import tailwind from 'tailwindcss'
+import { fileURLToPath, URL } from 'node:url'
 // https://vitejs.dev/config/
 export default defineConfig({
+	css: {
+		postcss: {
+			plugins: [autoprefixer(), tailwind()],
+		},
+	},
 	plugins: [
 		vue(),
 		electron([
@@ -15,8 +23,6 @@ export default defineConfig({
 			{
 				entry: 'electron/preload.ts',
 				onstart(options) {
-					// Notify the Renderer-Process to reload the page when the Preload-Scripts build is complete,
-					// instead of restarting the entire Electron App.
 					options.reload()
 				},
 			},
@@ -24,7 +30,9 @@ export default defineConfig({
 		renderer(),
 	],
 	resolve: {
-		alias: { '@': path.resolve(__dirname, 'src') },
+		alias: {
+			'@': fileURLToPath(new URL('./src', import.meta.url)),
+		},
 	},
 	server: {
 		port: 5151,

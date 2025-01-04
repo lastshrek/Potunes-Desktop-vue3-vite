@@ -2,32 +2,36 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-01 21:16:34
  * @LastEditors  : lastshrek
- * @LastEditTime : 2023-09-24 10:09:57
+ * @LastEditTime : 2025-01-04 09:50:07
  * @FilePath     : /src/components/navbar/NavBar.vue
  * @Description  : 
  * Copyright 2023 lastshrek, All Rights Reserved.
  * 2023-09-01 21:16:34
 -->
 <template>
-	<div class="fixed top-0 left-0 bg-black w-full h-14 bar">
-		<div class="container mx-auto flex items-center justify-between px-4">
+	<div class="fixed top-0 left-0 w-full h-14 z-50 bg-black shadow-md" style="-webkit-app-region: drag">
+		<div class="container mx-auto flex items-center justify-between px-4 h-full">
 			<!-- navigator button -->
-			<div class="flex">
-				<ChevronLeftIcon class="h-10 w-10 py-1 px-2 text-2xl rounded-full hover:bg-album-hover" @click="go('back')" />
+			<div class="flex items-center" style="-webkit-app-region: no-drag">
+				<ChevronLeftIcon
+					class="h-10 w-10 py-1 px-2 text-2xl rounded-full hover:bg-album-hover cursor-pointer"
+					@click="go('back')"
+				/>
 				<ChevronRightIcon
-					class="h-10 w-10 py-1 ml-2 px-2 text-2xl rounded-full hover:bg-album-hover"
+					class="h-10 w-10 py-1 ml-2 px-2 text-2xl rounded-full hover:bg-album-hover cursor-pointer"
 					@click="go('forward')"
 				/>
 			</div>
+
 			<!-- middle navigator -->
-			<div class="w-full max-w-md px-2 sm:px-0">
+			<div class="w-full max-w-md px-2 sm:px-0" style="-webkit-app-region: no-drag">
 				<TabGroup>
 					<TabList class="flex space-x-1 rounded-xl p-1">
 						<Tab v-for="(category, index) in categories" as="template" :key="category" v-slot="{ selected }">
 							<button
 								:class="[
 									'w-full rounded-lg py-2.5 text-sm font-bold leading-5 text-white',
-									selected ? 'bg-pink-500 shadow' : 'hover:text-white',
+									selected ? 'bg-pink-500 shadow' : 'hover:text-white hover:border-primary',
 								]"
 								@click="tabChange(index)"
 							>
@@ -39,7 +43,7 @@
 			</div>
 
 			<!-- user profile -->
-			<div class="">
+			<div style="-webkit-app-region: no-drag">
 				<button
 					class="hover:bg-albumcardhover text-white py-2 px-4 rounded text-sm"
 					@click="go('login')"
@@ -86,6 +90,7 @@ const isUserExist = ref(false)
 const isNeteaseLogin = ref(false)
 // 返回前进按钮
 const go = (where: string) => {
+	console.log('go', where)
 	if (where === route.path) return
 	if (where === 'back') {
 		router.go(-1)
@@ -131,11 +136,6 @@ const showProfile = () => {
 </script>
 
 <style lang="scss" scoped>
-// 可以拖动
-.bar {
-	-webkit-app-region: drag;
-}
-
 .nav-a {
 	@apply text-sm font-semibold leading-6 text-white;
 }

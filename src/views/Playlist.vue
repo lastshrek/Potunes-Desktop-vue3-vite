@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-03 00:14:23
  * @LastEditors  : lastshrek
- * @LastEditTime : 2023-09-13 14:50:00
+ * @LastEditTime : 2025-01-03 19:01:47
  * @FilePath     : /src/views/Playlist.vue
  * @Description  : Playlist
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -191,7 +191,7 @@ import { Artist } from '@/interfaces/artist'
 import { useFullScreenStore } from '@/store/modules/fullScreen'
 import { useGlobalQueueStore } from '@/store/modules/globalQueue'
 import Loading from 'vue-loading-overlay'
-import dailyImageSrc from '@/assets/images/daily.jpg'
+import dailyImageSrc from '@/assets/images/daily.png'
 let playlist = reactive({
 	title: '',
 	cover: '',

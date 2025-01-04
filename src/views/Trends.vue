@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-05 16:28:54
  * @LastEditors  : lastshrek
- * @LastEditTime : 2023-09-12 22:02:17
+ * @LastEditTime : 2025-01-03 19:11:55
  * @FilePath     : /src/views/Trends.vue
  * @Description  : Trends
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -171,6 +171,7 @@ const handleArtistClick = (artistId: number) => {
 .custom-truncate {
 	display: -webkit-box;
 	-webkit-line-clamp: 4;
+	line-clamp: 4;
 	-webkit-box-orient: vertical;
 	overflow: hidden;
 }
