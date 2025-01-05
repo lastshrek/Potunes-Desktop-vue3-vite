@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-02 17:09:39
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-04 13:45:17
+ * @LastEditTime : 2025-01-05 15:57:40
  * @FilePath     : /src/api/index.ts
  * @Description  : api
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -17,6 +17,8 @@ export const neteaseTopAlbum = () => get('/netease/top_album')
 export const neteaseRecommendDaily = (data: { cookie: string }) => post('/netease/recommend_daily', data)
 // 获取歌单歌曲
 export const tracks = (id: string) => get(`playlists/by/${id}`)
+// 获取网易云Top歌单列表
+export const neteaseToplist = () => get('/netease/toplist')
 // 获取网易云Top歌单详情及歌单内歌曲
 export const neteasePlaylist = (id: string) => get(`/netease/toplist/${id}`)
 // 获取网易云音乐专辑详情
@@ -42,3 +44,17 @@ export const finals = () => get('/playlists/finals')
 export const innerAlbums = () => get('/playlists/albums')
 export const getLyrics = (id: number, nId?: number, userId: number = 0) =>
 	get(`/tracks/lyrics/v2/${id}/${nId}/${userId}`)
+
+/**
+ * @description: v1 版本
+ */
+
+const playlistsPrefix = '/v1/playlists'
+// 获取最新月度精选集
+export const latestCollection = () => get(`${playlistsPrefix}/collection/latest`)
+// 获取所有月度精选集
+export const allCollections = () => get(`${playlistsPrefix}/collection/all`)
+// 获取所有年终精选集
+export const allFinals = () => get(`${playlistsPrefix}/finals`)
+// 获取所有站内专辑
+export const allInnerAlbums = () => get(`${playlistsPrefix}/albums`)

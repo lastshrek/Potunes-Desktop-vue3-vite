@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-02 17:08:49
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-05 11:59:19
+ * @LastEditTime : 2025-01-05 14:52:59
  * @FilePath     : /src/api/network.ts
  * @Description  : network
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -27,7 +27,7 @@ export const get = (url: string, params: any = {}) => {
 		axios
 			.get(url, { params: params })
 			.then(res => {
-				resolve(res.data)
+				resolve(res.data.data)
 			})
 			.catch(err => {
 				reject(err.data)
@@ -40,7 +40,7 @@ export const post = (url: string, params: any = {}) => {
 		axios
 			.post(url, params)
 			.then(res => {
-				resolve(res.data)
+				resolve(res.data.data)
 			})
 			.catch(err => {
 				reject(err.data)
@@ -53,7 +53,7 @@ export const put = (url: string, params: any = {}) => {
 		axios
 			.put(url, params)
 			.then(res => {
-				resolve(res.data)
+				resolve(res.data.data)
 			})
 			.catch(err => {
 				reject(err.data)
@@ -66,7 +66,7 @@ export const del = (url: string, params: any = {}) => {
 		axios
 			.delete(url, { params: params })
 			.then(res => {
-				resolve(res.data)
+				resolve(res.data.data)
 			})
 			.catch(err => {
 				reject(err.data)
@@ -79,7 +79,7 @@ export const patch = (url: string, params: any = {}) => {
 		axios
 			.patch(url, params)
 			.then(res => {
-				resolve(res.data)
+				resolve(res.data.data)
 			})
 			.catch(err => {
 				reject(err.data)

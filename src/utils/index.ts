@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-02 18:30:22
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-04 14:47:36
+ * @LastEditTime : 2025-01-05 15:44:40
  * @FilePath     : /src/utils/index.ts
  * @Description  : utils
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -57,4 +57,21 @@ export const getRandomIntInclusive = (min: number, max: number) => {
 	min = Math.ceil(min)
 	max = Math.floor(max)
 	return Math.floor(Math.random() * (max - min + 1)) + min // 含最大值，含最小值
+}
+
+// 格式化专辑更新时间
+export const formatPlaylistUpdateTime = (time: string) => {
+	const date = new Date(time)
+	// 使用英文locale
+	const month = date.toLocaleString('en-US', { month: 'long' })
+	return `${date.getDate()} ${month}. ${date.getFullYear()}`
+}
+
+// 格式化专辑时长
+export const formatPlaylistDurationToHourStr = (millisecond: number) => {
+	const hour = Math.floor(millisecond / 60 / 60 / 1000)
+	const min = Math.floor((millisecond / 60 / 1000) % 60)
+	if (hour > 0) return `${hour}h ${min}m`
+	if (min > 0) return `${min}m`
+	return ''
 }

@@ -26,12 +26,14 @@
 			</template>
 		</router-view>
 		<BottomPlayer />
+		<Toaster />
 	</div>
 </template>
 
 <script setup lang="ts">
 import NavBar from '@/components/navbar/NavBar.vue'
 import BottomPlayer from './components/player/BottomPlayer.vue'
+import { Toaster } from '@/components/ui/toast'
 </script>
 
 <style scoped lang="scss">

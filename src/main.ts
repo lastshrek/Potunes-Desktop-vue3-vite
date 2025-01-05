@@ -13,10 +13,13 @@ import 'vue-loading-overlay/dist/css/index.css'
 const pinia = createPinia()
 // lazy image
 import VueLazyLoad from 'vue3-lazyload'
+import { Toaster } from '@/components/ui/toast'
+
 createApp(App)
 	.use(pinia)
 	.use(router)
 	.use(LoadingPlugin)
 	.use(VueLazyLoad, {})
+	.component('Toaster', Toaster)
 	.mount('#app')
 	.$nextTick(() => postMessage({ payload: 'removeLoading' }, '*'))

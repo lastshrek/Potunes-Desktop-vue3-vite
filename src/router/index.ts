@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-02 15:51:57
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-05 12:17:59
+ * @LastEditTime : 2025-01-05 14:30:27
  * @FilePath     : /src/router/index.ts
  * @Description  : router
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -14,14 +14,14 @@ import Playlist from '@/views/Playlist.vue'
 import Favourites from '@/views/Favourites.vue'
 import Albums from '@/views/Albums.vue'
 import Trends from '@/views/Trends.vue'
-import Suggestions from '@/views/Suggestion.vue'
+import Suggestion from '@/views/Suggestion.vue'
 import Artist from '@/views/Artist.vue'
 import Login from '@/views/Login.vue'
 const routes: Array<RouteRecordRaw> = [
 	{
 		path: '/',
 		name: 'home',
-		component: Home,
+		component: Suggestion,
 		meta: { keepAlive: true },
 	},
 	{
@@ -72,7 +72,7 @@ const routes: Array<RouteRecordRaw> = [
 	{
 		path: '/feature',
 		name: 'feature',
-		component: Suggestions,
+		component: Suggestion,
 		meta: { keepAlive: true },
 	},
 	{
