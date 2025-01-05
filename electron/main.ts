@@ -6,7 +6,7 @@
  * @Description:
  * @FilePath: /potunes-desktop-vue3-vite/electron/main.ts
  */
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, ipcMain } from 'electron'
 import path from 'node:path'
 
 // The built directory structure
@@ -38,6 +38,7 @@ function createWindow() {
 		frame: false,
 		titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'hidden',
 		backgroundColor: '#000000',
+		trafficLightPosition: { x: 20, y: 24 },
 	})
 
 	// if (process.platform === 'darwin') {
@@ -59,6 +60,23 @@ function createWindow() {
 		// win.loadFile('dist/index.html')
 		win.loadFile(path.join(process.env.DIST, 'index.html'))
 	}
+
+	// 处理窗口控制事件
+	ipcMain.on('window-minimize', () => {
+		win?.minimize()
+	})
+
+	ipcMain.on('window-maximize', () => {
+		if (win?.isMaximized()) {
+			win?.unmaximize()
+		} else {
+			win?.maximize()
+		}
+	})
+
+	ipcMain.on('window-close', () => {
+		win?.close()
+	})
 }
 
 app.on('window-all-closed', () => {

@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-03 00:14:23
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-04 14:13:19
+ * @LastEditTime : 2025-01-05 11:29:33
  * @FilePath     : /src/views/Playlist.vue
  * @Description  : Playlist
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -10,7 +10,7 @@
 -->
 <template>
 	<div>
-		<div class="bg-black w-full pb-16 h-screen">
+		<div class="bg-black w-full pt-14 pb-16 h-screen">
 			<div class="container mx-auto h-full overflow-y-scroll flex flex-col text-white">
 				<!-- title card -->
 				<div class="rounded-lg shadow-md flex p-4" v-if="!isDailyTracks && playlistType !== 'trends'">

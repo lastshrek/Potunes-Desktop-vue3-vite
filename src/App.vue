@@ -3,17 +3,29 @@
 		<!-- 导航栏可拖拽 -->
 		<NavBar />
 		<!-- 内容区域不可拖拽 -->
-		<div class="pt-14">
-			<router-view v-slot="{ Component }">
-				<transition enter-from-class="translate-x-[150%] opacity-0" enter-active-class="transition duration-300">
-					<keep-alive v-if="$route.meta.keepAlive">
-						<component :is="Component" />
-					</keep-alive>
-					<component :is="Component" v-else />
+		<router-view v-slot="{ Component, route }">
+			<template v-if="$route.meta.keepAlive">
+				<keep-alive>
+					<transition
+						enter-from-class="translate-x-[150%] opacity-0"
+						enter-active-class="transition duration-300"
+						mode="out-in"
+					>
+						<component :is="Component" :key="route.path" />
+					</transition>
+				</keep-alive>
+			</template>
+			<template v-else>
+				<transition
+					enter-from-class="translate-x-[150%] opacity-0"
+					enter-active-class="transition duration-300"
+					mode="out-in"
+				>
+					<component :is="Component" :key="route.path" />
 				</transition>
-			</router-view>
-			<BottomPlayer />
-		</div>
+			</template>
+		</router-view>
+		<BottomPlayer />
 	</div>
 </template>
 

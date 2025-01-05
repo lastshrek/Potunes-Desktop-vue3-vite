@@ -2,14 +2,14 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-01 21:16:34
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-04 13:51:33
+ * @LastEditTime : 2025-01-05 11:32:30
  * @FilePath     : /src/components/navbar/NavBar.vue
  * @Description  : 
  * Copyright 2023 lastshrek, All Rights Reserved.
  * 2023-09-01 21:16:34
 -->
 <template>
-	<div class="fixed top-0 left-0 w-full h-14 z-50 bg-black shadow-md" style="-webkit-app-region: drag">
+	<div class="fixed top-0 left-0 w-full h-16 z-50 bg-black shadow-md" style="-webkit-app-region: drag">
 		<div class="container mx-auto flex items-center justify-between px-4 h-full">
 			<!-- navigator button -->
 			<div class="flex items-center pl-20 space-x-2" style="-webkit-app-region: no-drag">
@@ -87,9 +87,19 @@ const currentTab = ref('home')
 
 // 监听 currentTab 的变化
 watch(currentTab, newValue => {
-	if (newValue === 'playlist') {
+	if (
+		newValue === 'playlist' ||
+		newValue === 'albums' ||
+		newValue === 'collections' ||
+		newValue === 'finals' ||
+		newValue === 'album-details' ||
+		newValue === 'netease-playlist' ||
+		newValue === 'netease-album' ||
+		newValue === 'netease-daily'
+	) {
 		return
 	}
+	console.log('Tab changed to:', newValue)
 	router.push({ name: newValue }).catch(err => {
 		console.error('Navigation failed:', err)
 	})
@@ -100,7 +110,16 @@ watch(
 	() => route.name,
 	newName => {
 		if (typeof newName === 'string') {
-			if (newName === 'playlist') {
+			if (
+				newName === 'playlist' ||
+				newName === 'albums' ||
+				newName === 'collections' ||
+				newName === 'finals' ||
+				newName === 'album-details' ||
+				newName === 'netease-playlist' ||
+				newName === 'netease-album' ||
+				newName === 'netease-daily'
+			) {
 				currentTab.value = 'home'
 				return
 			}

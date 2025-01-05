@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2025-01-04 12:48:57
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-05 10:51:21
+ * @LastEditTime : 2025-01-05 10:57:25
  * @FilePath     : /src/views/Lyrics.vue
  * @Description  : Lyrics
  * Copyright 2025 lastshrek, All Rights Reserved.
@@ -78,7 +78,7 @@
 					</div>
 
 					<!-- 右侧：歌词区域 -->
-					<div class="w-1/2 h-full border-l border-gray-800 relative">
+					<div class="w-1/2 h-full relative">
 						<!-- 歌词内容 -->
 						<div class="h-full overflow-y-auto relative" style="-webkit-app-region: no-drag" ref="lyricsContainer">
 							<div v-if="lyricsStore.loading" class="text-center py-4">加载中...</div>

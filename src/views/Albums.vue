@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-05 16:26:25
  * @LastEditors  : lastshrek
- * @LastEditTime : 2023-09-23 23:35:55
+ * @LastEditTime : 2025-01-05 11:15:24
  * @FilePath     : /src/views/Albums.vue
  * @Description  : Albums
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -12,7 +12,7 @@
 	<div class="overflow-y-scroll pt-16 pb-16 container mx-auto bg-black min-h-screen">
 		<div class="flex-row flex-wrap grid grid-cols-4 gap-4 w-full px-4">
 			<div v-for="album in albums" :key="album.id">
-				<router-link :to="{ name: 'Playlist', params: { id: album.id } }">
+				<router-link :to="{ name: 'playlist', params: { id: album.id } }">
 					<AlbumCard
 						:name="album.title"
 						:cover_url="album.cover"
@@ -50,7 +50,7 @@ const router = useRouter()
 const route = useRoute()
 // 点击专辑
 const selectItem = (id: string) => {
-	router.push({ name: 'album-details', params: { id } })
+	router.push({ name: 'playlist', params: { id } })
 }
 onMounted(async () => {
 	const type = route.params.type

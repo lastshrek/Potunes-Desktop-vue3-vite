@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-01 21:16:34
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-04 10:23:46
+ * @LastEditTime : 2025-01-05 11:28:33
  * @FilePath     : /src/views/Home.vue
  * @Description  : Home
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -95,7 +95,7 @@
 					@click.native="toPlaylist(list.nId, 'netease')"
 				></AlbumCard>
 			</div>
-			<HeaderTitle title="热门新碟" @click.native="pushToPlaylists('albums')"></HeaderTitle>
+			<HeaderTitle title="热门新碟" @click.native="pushToPlaylists('albums')" :showmore="false"></HeaderTitle>
 			<div class="mt-4 md:grid md:grid-cols-5 md:gap-4 flex flex-wrap">
 				<AlbumCard
 					v-for="album in netease_topalbums"
@@ -130,9 +130,8 @@ import 'vue-toast-notification/dist/theme-sugar.css'
 // 本地图片
 import dailySrc from '@/assets/images/daily.png'
 import heartSrc from '@/assets/images/heart.png'
-// import radioSrc from '@/assets/images/radio.png'
+import { emitter } from '@/utils/mitt'
 // eventBus
-import mitt from 'mitt'
 
 // 今天日期
 const today = getCurrentDate()
@@ -146,7 +145,6 @@ const netease_toplist: Ref<Playlist[]> = ref([])
 const isUser = ref(false)
 // router
 const router = useRouter()
-const emitter = mitt()
 // gethome
 const homedata = async () => {
 	try {
@@ -194,6 +192,7 @@ const getNeteaseDaily = async () => {
 }
 // toplaylist
 const toPlaylist = (id: number, type: string) => {
+	console.log('toPlaylist', id, type)
 	if (type == '') {
 		router.push({
 			path: `playlist/${id}`,
