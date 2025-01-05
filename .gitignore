@@ -13,6 +13,7 @@ dist-ssr
 dist-electron
 release
 *.local
+new_home.png
 
 # Editor directories and files
 .vscode/*

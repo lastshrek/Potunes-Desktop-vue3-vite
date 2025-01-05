@@ -2,14 +2,14 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-05 16:32:07
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-04 14:13:07
+ * @LastEditTime : 2025-01-05 11:38:25
  * @FilePath     : /src/views/Artist.vue
  * @Description  : Artist Page
  * Copyright 2023 lastshrek, All Rights Reserved.
  * 2023-09-05 16:32:07
 -->
 <template>
-	<div class="bg-black overflow-y-scroll pt-14 pb-16 h-screen container mx-auto">
+	<div class="bg-black overflow-y-scroll pt-16 pb-20 h-screen container mx-auto">
 		<div class="w-full mt-4 h-full overflow-y-scroll flex flex-col text-white px-4">
 			<!-- artist info -->
 			<div class="flex flex-wrap lg:flex-no-wrap">

@@ -2,14 +2,14 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-05 16:28:54
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-04 14:14:53
+ * @LastEditTime : 2025-01-05 11:38:44
  * @FilePath     : /src/views/Trends.vue
  * @Description  : Trends
  * Copyright 2023 lastshrek, All Rights Reserved.
  * 2023-09-05 16:28:54
 -->
 <template>
-	<div class="bg-black w-full h-screen pt-14 pb-16">
+	<div class="bg-black w-full h-screen pt-16 pb-20">
 		<div class="container mx-auto h-full overflow-y-scroll flex flex-col text-white">
 			<!-- 周榜card -->
 			<div class="rounded-lg shadow-md flex p-4">

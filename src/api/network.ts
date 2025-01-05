@@ -2,15 +2,15 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-02 17:08:49
  * @LastEditors  : lastshrek
- * @LastEditTime : 2023-09-02 17:10:03
+ * @LastEditTime : 2025-01-05 11:59:19
  * @FilePath     : /src/api/network.ts
  * @Description  : network
  * Copyright 2023 lastshrek, All Rights Reserved.
  * 2023-09-02 17:08:49
  */
 import axios from 'axios'
-axios.defaults.baseURL = 'https://api.poche.pink'
-axios.defaults.timeout = 20000
+// axios.defaults.baseURL = 'https://api.poche.pink'
+axios.defaults.baseURL = 'http://localhost:3000'
 
 // add request interceptor
 axios.interceptors.request.use(
