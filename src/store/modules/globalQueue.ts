@@ -2,14 +2,14 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-06 12:46:29
  * @LastEditors  : lastshrek
- * @LastEditTime : 2023-09-12 20:30:52
+ * @LastEditTime : 2025-01-04 13:34:49
  * @FilePath     : /src/store/modules/globalQueue.ts
  * @Description  : Global Queue
  * Copyright 2023 lastshrek, All Rights Reserved.
  * 2023-09-06 12:46:29
  */
 import { defineStore } from 'pinia'
-import { useCurrentTrackStore } from './currentTrack'
+import { useCurrentTrackStore } from './currenttrack'
 import { useCurrentIndexStore } from './currentIndex'
 export const useGlobalQueueStore = defineStore({
 	id: 'globalQueue',

@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-02 17:09:39
  * @LastEditors  : lastshrek
- * @LastEditTime : 2023-09-23 11:42:57
+ * @LastEditTime : 2025-01-04 13:45:17
  * @FilePath     : /src/api/index.ts
  * @Description  : api
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -40,3 +40,5 @@ export const playlists = () => get('/playlists')
 export const finals = () => get('/playlists/finals')
 // 获取所有站内专辑
 export const innerAlbums = () => get('/playlists/albums')
+export const getLyrics = (id: number, nId?: number, userId: number = 0) =>
+	get(`/tracks/lyrics/v2/${id}/${nId}/${userId}`)

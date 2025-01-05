@@ -246,6 +246,16 @@
 			</div>
 		</div>
 		<audio :src="currentTrack.url" ref="audio" @timeupdate="timeupdate" @ended="end"></audio>
+		<Transition
+			enter-active-class="transition duration-300 ease-out"
+			enter-from-class="transform translate-y-full"
+			enter-to-class="transform translate-y-0"
+			leave-active-class="transition duration-200 ease-in"
+			leave-from-class="transform translate-y-0"
+			leave-to-class="transform translate-y-full"
+		>
+			<Lyrics v-if="showLyricsPanel" @close="showLyricsPanel = false" />
+		</Transition>
 	</div>
 </template>
 
@@ -253,7 +263,6 @@
 import { onMounted, ref, watch } from 'vue'
 import { useCurrentTrackStore } from '@/store/modules/currenttrack'
 import { useIsShowMiniPlayerStore } from '@/store/modules/isShowMiniPlayer'
-import { useFullScreenStore } from '@/store/modules/fullScreen'
 import { useGlobalQueueStore } from '@/store/modules/globalQueue'
 import { useIsPlayingStore } from '@/store/modules/isPlaying'
 import { PlayMode, usePlayModeStore } from '@/store/modules/playMode'
@@ -265,9 +274,11 @@ import { Button } from '@/components/ui/button'
 import { ListMusic, Volume1, Volume2, VolumeOff } from 'lucide-vue-next'
 import VueSlider from 'vue-slider-component'
 // eventBus
-import mitt from 'mitt'
 import 'vue-slider-component/theme/default.css'
 import '@/assets/css/slider.css'
+import Lyrics from '@/views/Lyrics.vue'
+import { useLyricsStore } from '@/store/modules/lyrics'
+import { emitter } from '@/utils/mitt'
 const currentTrack = useCurrentTrackStore()
 const isShowMiniPlayer = useIsShowMiniPlayerStore()
 const volume = ref(JSON.parse(localStorage.getItem('volumeBeforeMuted') || '1'))
@@ -280,12 +291,13 @@ const currentIndex = useCurrentIndexStore()
 const globalQueue = useGlobalQueueStore()
 const currentTime = useCurrentTimeStore()
 const currentProgress = useCurrentProgressStore()
-const emitter = mitt()
-// 显示歌词界面
+
+// 添加控制歌词面板的状态
+const showLyricsPanel = ref(false)
+// 修改 showLyrics 方法
 const showLyrics = () => {
 	if (currentTrack.url === '') return
-	useFullScreenStore().setIsFullScreen(true)
-	isShowMiniPlayer.setIsShowMiniPlayer(false)
+	showLyricsPanel.value = true
 }
 // 进度条拖动结束
 const dragEnd = () => {
@@ -391,6 +403,10 @@ onMounted(() => {
 		isMac.value = true
 	}
 	emitter.on('showLyrics', value => (audio.value!.currentTime = value as number))
+	emitter.on('next', () => {
+		console.log('next')
+		next()
+	})
 	// TODO 通知主进程播放
 	// ipcRenderer.on('play', () => {
 	//     this.setIsPlaying(!this.isPlaying)
@@ -447,6 +463,26 @@ watch(
 		}
 	},
 	{ deep: true }
+)
+const lyricsStore = useLyricsStore()
+// 监听歌曲变化
+watch(
+	() => currentTrack,
+	async newTrack => {
+		if (newTrack && newTrack.id) {
+			const type = newTrack.type
+			let id = newTrack.id
+			const nId = newTrack.nId
+			// 播放网易的歌曲需要调换id的位置，因为网易的歌曲id是nId
+			if (type === 'netease') {
+				id = 0
+			}
+			await lyricsStore.fetchLyrics(id, nId)
+		} else {
+			lyricsStore.clearLyrics()
+		}
+	},
+	{ immediate: true, deep: true }
 )
 </script>
 

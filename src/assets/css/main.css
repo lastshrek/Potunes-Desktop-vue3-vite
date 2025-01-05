@@ -3,6 +3,13 @@
 @tailwind utilities;
 
 @layer base {
+	* {
+		-webkit-user-select: none;
+		-moz-user-select: none;
+		-ms-user-select: none;
+		user-select: none;
+	}
+
 	:root {
 		--background: 340 65% 65%;
 		--foreground: 0 0% 100%;

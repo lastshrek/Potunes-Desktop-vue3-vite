@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-01 21:16:34
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-04 12:13:22
+ * @LastEditTime : 2025-01-04 13:51:33
  * @FilePath     : /src/components/navbar/NavBar.vue
  * @Description  : 
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -87,7 +87,6 @@ const currentTab = ref('home')
 
 // 监听 currentTab 的变化
 watch(currentTab, newValue => {
-	console.log('Tab changed to:', newValue)
 	if (newValue === 'playlist') {
 		return
 	}
@@ -100,7 +99,6 @@ watch(currentTab, newValue => {
 watch(
 	() => route.name,
 	newName => {
-		console.log('Route changed to:', newName)
 		if (typeof newName === 'string') {
 			if (newName === 'playlist') {
 				currentTab.value = 'home'
@@ -114,7 +112,6 @@ watch(
 
 // 返回前进按钮
 const go = (where: string) => {
-	console.log('go', where)
 	if (where === route.path) return
 
 	switch (where) {

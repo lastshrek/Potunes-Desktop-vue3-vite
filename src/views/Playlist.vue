@@ -2,175 +2,177 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-03 00:14:23
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-04 12:21:05
+ * @LastEditTime : 2025-01-04 14:13:19
  * @FilePath     : /src/views/Playlist.vue
  * @Description  : Playlist
  * Copyright 2023 lastshrek, All Rights Reserved.
  * 2023-09-03 00:14:23
 -->
 <template>
-	<div class="bg-black w-full pb-16 h-screen">
-		<div class="container mx-auto h-full overflow-y-scroll flex flex-col text-white">
-			<!-- title card -->
-			<div class="rounded-lg shadow-md flex p-4" v-if="!isDailyTracks && playlistType !== 'trends'">
-				<!-- 左侧图片 -->
-				<div class="w-full md:w-1/3">
-					<img v-lazy="playlist.cover" class="w-full h-auto rounded-lg mr-4 border border-gray-800" />
-				</div>
-				<!-- 右侧三段 -->
-				<div class="w-full md:w-2/3 md:flex md:flex-col md:justify-end px-4">
-					<div>
-						<p class="text-lg font-semibold mb-2">
-							{{ playlist.title }}
-						</p>
-						<!-- 专辑时展示歌手 -->
-						<div class="text-xs font-semibold mb-2 flex" v-if="playlistType == 'netease-album'">
-							<div
-								v-for="(artist, index) in playlist.artists"
-								:key="artist.id"
-								@click.stop="handleArtistClick(artist.id)"
-							>
-								<span class="cursor-pointer hover:underline">
-									{{ artist.name }}
-								</span>
-								<span v-if="index < playlist.artists.length - 1 && playlist.artists.length > 1" class="mx-1">/</span>
+	<div>
+		<div class="bg-black w-full pb-16 h-screen">
+			<div class="container mx-auto h-full overflow-y-scroll flex flex-col text-white">
+				<!-- title card -->
+				<div class="rounded-lg shadow-md flex p-4" v-if="!isDailyTracks && playlistType !== 'trends'">
+					<!-- 左侧图片 -->
+					<div class="w-full md:w-1/3">
+						<img v-lazy="playlist.cover" class="w-full h-auto rounded-lg mr-4 border border-gray-800" />
+					</div>
+					<!-- 右侧三段 -->
+					<div class="w-full md:w-2/3 md:flex md:flex-col md:justify-end px-4">
+						<div>
+							<p class="text-lg font-semibold mb-2">
+								{{ playlist.title }}
+							</p>
+							<!-- 专辑时展示歌手 -->
+							<div class="text-xs font-semibold mb-2 flex" v-if="playlistType == 'netease-album'">
+								<div
+									v-for="(artist, index) in playlist.artists"
+									:key="artist.id"
+									@click.stop="handleArtistClick(artist.id)"
+								>
+									<span class="cursor-pointer hover:underline">
+										{{ artist.name }}
+									</span>
+									<span v-if="index < playlist.artists.length - 1 && playlist.artists.length > 1" class="mx-1">/</span>
+								</div>
 							</div>
+							<!-- 专辑时改成发行时间 -->
+							<p class="text-gray-400 mb-2">
+								{{ playlistType == 'netease-album' ? '发行时间：' : '最后更新于' }}{{ updateTime }}·
+								{{ playlist.count || playlist.tracks.length }}首歌
+							</p>
 						</div>
-						<!-- 专辑时改成发行时间 -->
-						<p class="text-gray-400 mb-2">
-							{{ playlistType == 'netease-album' ? '发行时间：' : '最后更新于' }}{{ updateTime }}·
-							{{ playlist.count || playlist.tracks.length }}首歌
-						</p>
-					</div>
-					<!-- 专辑介绍 -->
-					<!-- <p class="text-gray-50 custom-line-clamp" v-html="playlist.content"></p> -->
-					<p class="mb-4 custom-truncate text-gray-400 max-h-16" v-html="playlist.content"></p>
-					<div v-if="description.length > 80">
-						<button @click="toggleShowMore" class="text-blue-500">查看更多</button>
-					</div>
-				</div>
-			</div>
-			<!-- 日推 card -->
-			<div v-else-if="isDailyTracks" class="rounded-lg shadow-md flex p-4">
-				<!-- 左侧图片 -->
-				<div class="w-full md:w-40 relative text-center">
-					<img :src="dailyImageSrc" class="w-full h-auto rounded-lg mr-4 border border-gray-800" />
-					<div class="absolute inset-0 flex items-center justify-center">
-						<p class="text-gray-800 text-center text-4xl font-semibold">
-							{{ today }}
-						</p>
-					</div>
-				</div>
-				<!-- 右侧三段 -->
-				<div class="w-full md:flex-1 md:flex md:flex-col justify-end px-4">
-					<div>
-						<p class="text-lg font-semibold mb-2">每日歌曲推荐</p>
-					</div>
-					<!-- 专辑介绍 -->
-					<!-- <p class="text-gray-50 custom-line-clamp" v-html="playlist.content"></p> -->
-					<p class="mb-4 custom-truncate text-gray-400 max-h-16">根据你的口味生成,每天6:00更新</p>
-				</div>
-			</div>
-			<!-- 周榜card -->
-			<div v-else class="rounded-lg shadow-md flex p-4">
-				<!-- 左侧图片 -->
-				<div class="w-full md:w-40 relative text-center">
-					<img :src="dailyImageSrc" class="w-full h-auto rounded-lg mr-4 border border-gray-800" />
-					<div class="absolute inset-0 flex items-center justify-center">
-						<p class="text-gray-800 text-center text-4xl font-semibold">
-							{{ today }}
-						</p>
-					</div>
-				</div>
-				<!-- 右侧三段 -->
-				<div class="w-full md:flex-1 md:flex md:flex-col justify-end px-4">
-					<div>
-						<p class="text-lg font-semibold mb-2">
-							{{ playlistType == 'trends' ? '大家最爱' : '每日歌曲推荐' }}
-						</p>
-					</div>
-					<!-- 专辑介绍 -->
-					<!-- <p class="text-gray-50 custom-line-clamp" v-html="playlist.content"></p> -->
-					<p class="mb-4 custom-truncate text-gray-400 max-h-16">
-						{{ playlistType == 'trends' ? '一周歌曲收听排行' : '根据你的口味生成,每天6:00更新' }}
-					</p>
-				</div>
-			</div>
-			<!-- tracklist -->
-			<div class="w-full">
-				<div
-					v-for="(item, index) in playlist.tracks"
-					:key="'index' + index"
-					class="h-14 w-full flex justify-around items-center space-x-4 rounded-lg shadow-md mb-4"
-					:class="{
-						active: currentTrack.type == 'netease' ? currentTrack.nId == item.nId : currentTrack.id == item.id,
-					}"
-					@click="selectTrack(index)"
-				>
-					<!-- index -->
-					<div class="mx-4 w-4">
-						{{ index + 1 }}
-					</div>
-					<!-- cover -->
-					<img v-lazy="item.cover_url" class="w-10 h-10 rounded" />
-					<!-- meta -->
-					<div class="flex-1 flex-col justify-end">
-						<p class="text-xs font-semibold">{{ item.name }}</p>
-						<div
-							class="flex text-xs font-semibold text-gray-400 mt-0.5"
-							:class="{
-								active: currentTrack.type == 'netease' ? currentTrack.nId == item.nId : currentTrack.id == item.id,
-							}"
-						>
-							<div
-								v-for="(artist, index) in item.ar"
-								:key="'artist' + artist.id + index"
-								@click.stop="handleArtistClick(artist.id)"
-							>
-								<span class="cursor-pointer hover:underline">
-									{{ artist.name }}
-								</span>
-								<span v-if="index < item.ar.length - 1 && item.ar.length > 1" class="mx-1">/</span>
-							</div>
+						<!-- 专辑介绍 -->
+						<!-- <p class="text-gray-50 custom-line-clamp" v-html="playlist.content"></p> -->
+						<p class="mb-4 custom-truncate text-gray-400 max-h-16" v-html="playlist.content"></p>
+						<div v-if="description.length > 80">
+							<button @click="toggleShowMore" class="text-blue-500">查看更多</button>
 						</div>
 					</div>
-					<div class="flex justify-center items-center space-x-4 px-4">
-						<!-- duration -->
-						<p class="text-xs font-semibold text-gray-50">
-							{{ formatTime(item.duration) }}
+				</div>
+				<!-- 日推 card -->
+				<div v-else-if="isDailyTracks" class="rounded-lg shadow-md flex p-4">
+					<!-- 左侧图片 -->
+					<div class="w-full md:w-40 relative text-center">
+						<img :src="dailyImageSrc" class="w-full h-auto rounded-lg mr-4 border border-gray-800" />
+						<div class="absolute inset-0 flex items-center justify-center">
+							<p class="text-gray-800 text-center text-4xl font-semibold">
+								{{ today }}
+							</p>
+						</div>
+					</div>
+					<!-- 右侧三段 -->
+					<div class="w-full md:flex-1 md:flex md:flex-col justify-end px-4">
+						<div>
+							<p class="text-lg font-semibold mb-2">每日歌曲推荐</p>
+						</div>
+						<!-- 专辑介绍 -->
+						<!-- <p class="text-gray-50 custom-line-clamp" v-html="playlist.content"></p> -->
+						<p class="mb-4 custom-truncate text-gray-400 max-h-16">根据你的口味生成,每天6:00更新</p>
+					</div>
+				</div>
+				<!-- 周榜card -->
+				<div v-else class="rounded-lg shadow-md flex p-4">
+					<!-- 左侧图片 -->
+					<div class="w-full md:w-40 relative text-center">
+						<img :src="dailyImageSrc" class="w-full h-auto rounded-lg mr-4 border border-gray-800" />
+						<div class="absolute inset-0 flex items-center justify-center">
+							<p class="text-gray-800 text-center text-4xl font-semibold">
+								{{ today }}
+							</p>
+						</div>
+					</div>
+					<!-- 右侧三段 -->
+					<div class="w-full md:flex-1 md:flex md:flex-col justify-end px-4">
+						<div>
+							<p class="text-lg font-semibold mb-2">
+								{{ playlistType == 'trends' ? '大家最爱' : '每日歌曲推荐' }}
+							</p>
+						</div>
+						<!-- 专辑介绍 -->
+						<!-- <p class="text-gray-50 custom-line-clamp" v-html="playlist.content"></p> -->
+						<p class="mb-4 custom-truncate text-gray-400 max-h-16">
+							{{ playlistType == 'trends' ? '一周歌曲收听排行' : '根据你的口味生成,每天6:00更新' }}
 						</p>
-						<!-- <button class="px-4 py-2 bg-blue-500 text-white rounded">按钮</button> -->
+					</div>
+				</div>
+				<!-- tracklist -->
+				<div class="w-full">
+					<div
+						v-for="(item, index) in playlist.tracks"
+						:key="'index' + index"
+						class="h-14 w-full flex justify-around items-center space-x-4 rounded-lg shadow-md mb-4"
+						:class="{
+							active: currentTrack.type == 'netease' ? currentTrack.nId == item.nId : currentTrack.id == item.id,
+						}"
+						@click="selectTrack(index)"
+					>
+						<!-- index -->
+						<div class="mx-4 w-4">
+							{{ index + 1 }}
+						</div>
+						<!-- cover -->
+						<img v-lazy="item.cover_url" class="w-10 h-10 rounded" />
+						<!-- meta -->
+						<div class="flex-1 flex-col justify-end">
+							<p class="text-xs font-semibold">{{ item.name }}</p>
+							<div
+								class="flex text-xs font-semibold text-gray-400 mt-0.5"
+								:class="{
+									active: currentTrack.type == 'netease' ? currentTrack.nId == item.nId : currentTrack.id == item.id,
+								}"
+							>
+								<div
+									v-for="(artist, index) in item.ar"
+									:key="'artist' + artist.id + index"
+									@click.stop="handleArtistClick(artist.id)"
+								>
+									<span class="cursor-pointer hover:underline">
+										{{ artist.name }}
+									</span>
+									<span v-if="index < item.ar.length - 1 && item.ar.length > 1" class="mx-1">/</span>
+								</div>
+							</div>
+						</div>
+						<div class="flex justify-center items-center space-x-4 px-4">
+							<!-- duration -->
+							<p class="text-xs font-semibold text-gray-50">
+								{{ formatTime(item.duration) }}
+							</p>
+							<!-- <button class="px-4 py-2 bg-blue-500 text-white rounded">按钮</button> -->
+						</div>
 					</div>
 				</div>
 			</div>
-		</div>
-		<!-- 模态框 -->
-		<transition name="fade" mode="out-in">
-			<div class="fixed top-14 bottom-14 flex items-center justify-center z-40" :class="{ hidden: !isModalOpen }">
-				<!-- 背景遮罩 -->
-				<div
-					class="absolute inset-0 bg-black opacity-50 backdrop-filter backdrop-blur-md"
-					@click="toggleShowMore"
-				></div>
+			<!-- 模态框 -->
+			<transition name="fade" mode="out-in">
+				<div class="fixed top-14 bottom-14 flex items-center justify-center z-40" :class="{ hidden: !isModalOpen }">
+					<!-- 背景遮罩 -->
+					<div
+						class="absolute inset-0 bg-black opacity-50 backdrop-filter backdrop-blur-md"
+						@click="toggleShowMore"
+					></div>
 
-				<!-- 模态框内容 -->
-				<div class="bg-white opacity-90 rounded-lg p-4 w-full h-full z-10 overflow-scroll" @click="toggleShowMore">
-					<div class="flex justify-end items-center w-full">
-						<button class="text-black text-center px-4 py-2 rounded hover:bg-blue-600" @click.stop="toggleShowMore">
-							x
-						</button>
+					<!-- 模态框内容 -->
+					<div class="bg-white opacity-90 rounded-lg p-4 w-full h-full z-10 overflow-scroll" @click="toggleShowMore">
+						<div class="flex justify-end items-center w-full">
+							<button class="text-black text-center px-4 py-2 rounded hover:bg-blue-600" @click.stop="toggleShowMore">
+								x
+							</button>
+						</div>
+						<p class="my-2 text-black">{{ description }}</p>
 					</div>
-					<p class="my-2 text-black">{{ description }}</p>
 				</div>
-			</div>
-		</transition>
-		<loading
-			:active.sync="isLoading"
-			:can-cancel="true"
-			background-color="rgba(0, 0, 0, 0.5)"
-			color="#ec4899"
-			:is-full-page="true"
-		></loading>
+			</transition>
+			<loading
+				:active.sync="isLoading"
+				:can-cancel="true"
+				background-color="rgba(0, 0, 0, 0.5)"
+				color="#ec4899"
+				:is-full-page="true"
+			></loading>
+		</div>
 	</div>
 </template>
 
@@ -186,9 +188,8 @@ import {
 	neteasePlaylistDetail,
 } from '@/api/index'
 import { formatTime, handlePromise, showError, getCurrentDate } from '@/utils/index'
-import { useCurrentTrackStore } from '@/store/modules/currentTrack'
+import { useCurrentTrackStore } from '@/store/modules/currenttrack'
 import { Artist } from '@/interfaces/artist'
-import { useFullScreenStore } from '@/store/modules/fullScreen'
 import { useGlobalQueueStore } from '@/store/modules/globalQueue'
 import Loading from 'vue-loading-overlay'
 import dailyImageSrc from '@/assets/images/daily.png'
@@ -318,7 +319,6 @@ const handleArtistClick = (artistId: number) => {
 	})
 }
 const selectTrack = (index: number) => {
-	useFullScreenStore().setIsFullScreen(false)
 	playlist.currentIndex = index
 	globalQueue.setGlobalQueue(playlist.tracks, index)
 	active_el.value = playlist.tracks[index].id

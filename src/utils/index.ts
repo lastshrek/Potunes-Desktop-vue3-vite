@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-02 18:30:22
  * @LastEditors  : lastshrek
- * @LastEditTime : 2023-09-12 13:04:01
+ * @LastEditTime : 2025-01-04 14:47:36
  * @FilePath     : /src/utils/index.ts
  * @Description  : utils
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -32,6 +32,13 @@ export const formatTime = (time: number) => {
 	if (!time) return ''
 	const min = Math.floor(time / 1000 / 60)
 	let sec = Math.floor((time / 1000) % 60) + ''
+	sec = parseInt(sec) < 10 ? `0${sec}` : sec
+	return `${min}:${sec}`
+}
+// 格式化当前时间 秒转分钟
+export const formatCurrentTime = (time: number) => {
+	const min = Math.floor(time / 60)
+	let sec = Math.floor(time % 60) + ''
 	sec = parseInt(sec) < 10 ? `0${sec}` : sec
 	return `${min}:${sec}`
 }

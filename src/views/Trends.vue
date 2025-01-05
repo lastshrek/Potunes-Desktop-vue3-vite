@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-05 16:28:54
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-03 19:11:55
+ * @LastEditTime : 2025-01-04 14:14:53
  * @FilePath     : /src/views/Trends.vue
  * @Description  : Trends
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -96,9 +96,8 @@
 
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
-import { useCurrentTrackStore } from '@/store/modules/currentTrack'
+import { useCurrentTrackStore } from '@/store/modules/currenttrack'
 import { Artist } from '@/interfaces/artist'
-import { useFullScreenStore } from '@/store/modules/fullScreen'
 import { useGlobalQueueStore } from '@/store/modules/globalQueue'
 import { useRouter } from 'vue-router'
 import { formatTime, handlePromise, showError } from '@/utils/index'
@@ -147,7 +146,6 @@ onMounted(async () => {
 })
 // 点击歌曲
 const selectTrack = (index: number) => {
-	useFullScreenStore().setIsFullScreen(false)
 	playlist.currentIndex = index
 	globalQueue.setGlobalQueue(playlist.tracks, index)
 	active_el.value = playlist.tracks[index].id

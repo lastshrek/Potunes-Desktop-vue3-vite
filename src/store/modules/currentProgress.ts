@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-12 16:17:16
  * @LastEditors  : lastshrek
- * @LastEditTime : 2023-09-12 16:17:18
+ * @LastEditTime : 2025-01-04 14:42:45
  * @FilePath     : /src/store/modules/currentProgress.ts
  * @Description  : current progress module store
  * Copyright 2023 lastshrek, All Rights Reserved.

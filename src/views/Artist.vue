@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-05 16:32:07
  * @LastEditors  : lastshrek
- * @LastEditTime : 2023-09-13 14:20:36
+ * @LastEditTime : 2025-01-04 14:13:07
  * @FilePath     : /src/views/Artist.vue
  * @Description  : Artist Page
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -103,11 +103,11 @@
 		</transition>
 		<!-- loading -->
 		<loading
-			:active.sync="isLoading"
+			:active="isLoading"
 			:can-cancel="true"
 			background-color="rgba(0, 0, 0, 0.5)"
 			color="#ec4899"
-			:is-full-page="true"
+			:is-full-page="false"
 		></loading>
 	</div>
 </template>
@@ -118,11 +118,10 @@ import { onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { neteaseArtist, neteaseArtistAlbum, neteaseArtistHotSongs } from '@/api/index'
 import { formatTime, handlePromise, showError } from '@/utils/index'
-import { useCurrentTrackStore } from '@/store/modules/currentTrack'
+import { useCurrentTrackStore } from '@/store/modules/currenttrack'
 import HeaderTitle from '@/components/headertitle/HeaderTitle.vue'
 import AlbumCard from '@/components/albumcard/AlbumCard.vue'
 import Loading from 'vue-loading-overlay'
-import { useFullScreenStore } from '@/store/modules/fullScreen'
 import { useGlobalQueueStore } from '@/store/modules/globalQueue'
 const isLoading = ref(true)
 const description = ref('')
@@ -159,7 +158,9 @@ const getArtistInfo = async () => {
 	const [res, err] = await handlePromise(neteaseArtist(artist_id.value))
 	if (err) return showError('获取歌手信息失败')
 	artist = res.data as Artist
-	description.value = artist.briefDesc
+	if (artist.briefDesc) {
+		description.value = artist.briefDesc
+	}
 }
 // 获取歌手热门专辑
 const getArtistAlbums = async () => {
@@ -180,7 +181,6 @@ const toggleShowMore = () => {
 }
 // 点击歌曲
 const selectTrack = (index: number) => {
-	useFullScreenStore().setIsFullScreen(false)
 	playlist.currentIndex = index
 	globalQueue.setGlobalQueue(playlist.tracks, index)
 	active_el.value = playlist.tracks[index].id
@@ -204,6 +204,7 @@ const selectAlbum = (albumId: string) => {
 .custom-truncate {
 	display: -webkit-box;
 	-webkit-line-clamp: 4;
+	line-clamp: 4;
 	-webkit-box-orient: vertical;
 	overflow: hidden;
 }
