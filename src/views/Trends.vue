@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-05 16:28:54
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-05 11:38:44
+ * @LastEditTime : 2025-01-05 20:50:17
  * @FilePath     : /src/views/Trends.vue
  * @Description  : Trends
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -141,7 +141,7 @@ onMounted(async () => {
 	// 获取周榜
 	const [res, err] = await handlePromise(weeklyTrends())
 	if (err) showError('获取歌单详情失败')
-	playlist.tracks = res.data
+	playlist.tracks = res
 	isLoading.value = false
 })
 // 点击歌曲

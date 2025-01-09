@@ -2,10 +2,22 @@
 	<div class="bg-black min-h-screen" id="app">
 		<!-- 导航栏可拖拽 -->
 		<NavBar />
-		<!-- 内容区域不可拖拽 -->
-		<router-view v-slot="{ Component, route }">
-			<template v-if="$route.meta.keepAlive">
-				<keep-alive>
+		<div class="flex">
+			<LeftNav />
+			<!-- 内容区域不可拖拽 -->
+			<router-view v-slot="{ Component, route }">
+				<template v-if="$route.meta.keepAlive">
+					<keep-alive>
+						<transition
+							enter-from-class="translate-x-[150%] opacity-0"
+							enter-active-class="transition duration-300"
+							mode="out-in"
+						>
+							<component :is="Component" :key="route.path" />
+						</transition>
+					</keep-alive>
+				</template>
+				<template v-else>
 					<transition
 						enter-from-class="translate-x-[150%] opacity-0"
 						enter-active-class="transition duration-300"
@@ -13,18 +25,9 @@
 					>
 						<component :is="Component" :key="route.path" />
 					</transition>
-				</keep-alive>
-			</template>
-			<template v-else>
-				<transition
-					enter-from-class="translate-x-[150%] opacity-0"
-					enter-active-class="transition duration-300"
-					mode="out-in"
-				>
-					<component :is="Component" :key="route.path" />
-				</transition>
-			</template>
-		</router-view>
+				</template>
+			</router-view>
+		</div>
 		<BottomPlayer />
 		<Toaster />
 	</div>
@@ -34,6 +37,7 @@
 import NavBar from '@/components/navbar/NavBar.vue'
 import BottomPlayer from './components/player/BottomPlayer.vue'
 import { Toaster } from '@/components/ui/toast'
+import LeftNav from '@/components/navbar/LeftNav.vue'
 </script>
 
 <style scoped lang="scss">
