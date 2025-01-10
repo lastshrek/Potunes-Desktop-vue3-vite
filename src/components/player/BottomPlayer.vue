@@ -477,6 +477,7 @@ watch(
 			if (type === 'netease') {
 				id = 0
 			}
+			console.log('获取歌词')
 			await lyricsStore.fetchLyrics(id, nId)
 		} else {
 			lyricsStore.clearLyrics()

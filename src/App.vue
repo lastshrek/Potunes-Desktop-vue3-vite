@@ -9,8 +9,12 @@
 				<template v-if="$route.meta.keepAlive">
 					<keep-alive>
 						<transition
-							enter-from-class="translate-x-[150%] opacity-0"
-							enter-active-class="transition duration-300"
+							enter-from-class="translate-x-full opacity-0"
+							enter-active-class="transition-all duration-300 ease-out"
+							enter-to-class="translate-x-0 opacity-100"
+							leave-from-class="translate-x-0 opacity-100"
+							leave-active-class="transition-all duration-300 ease-in"
+							leave-to-class="translate-x-full opacity-0"
 							mode="out-in"
 						>
 							<component :is="Component" :key="route.path" />
@@ -19,8 +23,12 @@
 				</template>
 				<template v-else>
 					<transition
-						enter-from-class="translate-x-[150%] opacity-0"
-						enter-active-class="transition duration-300"
+						enter-from-class="translate-x-full opacity-0"
+						enter-active-class="transition-all duration-300 ease-out"
+						enter-to-class="translate-x-0 opacity-100"
+						leave-from-class="translate-x-0 opacity-100"
+						leave-active-class="transition-all duration-300 ease-in"
+						leave-to-class="translate-x-full opacity-0"
 						mode="out-in"
 					>
 						<component :is="Component" :key="route.path" />
@@ -40,7 +48,7 @@ import { Toaster } from '@/components/ui/toast'
 import LeftNav from '@/components/navbar/LeftNav.vue'
 </script>
 
-<style scoped lang="scss">
+<style lang="scss">
 /* 隐藏垂直滚动条 */
 ::-webkit-scrollbar {
 	width: 0;

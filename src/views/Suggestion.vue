@@ -2,117 +2,181 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-05 16:30:59
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-09 21:40:52
+ * @LastEditTime : 2025-01-10 22:00:30
  * @FilePath     : /src/views/Suggestion.vue
  * @Description  : Suggestions
  * Copyright 2023 lastshrek, All Rights Reserved.
  * 2023-09-05 16:30:59
 -->
 <template>
-	<div class="h-screen pt-16 pb-20 w-full">
-		<div class="container mx-auto pl-10 pr-6">
-			<div class="grid grid-cols-[1fr,300px] gap-12">
-				<!-- 内容区域 -->
-				<div class="h-[calc(100vh-4rem)] overflow-hidden">
-					<div class="flex items-center justify-between">
-						<h2 class="text-lg font-semibold tracking-tight text-white">New Collections</h2>
+	<div class="min-h-screen pt-16 pb-24 w-full bg-black">
+		<!-- 头部 -->
+		<div class="container mx-auto px-6">
+			<div class="h-80 w-full">
+				<div class="flex items-center gap-6">
+					<div class="w-2/3 flex items-center gap-6 justify-between">
+						<h2 class="text-lg font-semibold text-white">New Collections</h2>
 						<Button variant="link" class="text-[#da5597] text-xs">See all</Button>
 					</div>
-					<div class="relative rounded-lg overflow-hidden aspect-[32/15]">
-						<!-- 轮播图片 -->
-						<div
-							v-for="(collection, index) in lastestCollections"
-							:key="index"
-							class="absolute inset-0 transition-opacity duration-500 cursor-pointer"
-							:class="{ 'opacity-0': currentIndex !== index }"
-						>
-							<img
-								v-lazy="collection.cover"
-								class="absolute inset-0 w-full h-full object-cover"
-								:alt="collection.title"
-							/>
-							<div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
-							<div class="absolute bottom-0 left-0 p-6 w-full">
-								<h2 class="text-2xl font-bold text-white mb-2">{{ collection.title }}</h2>
-								<p class="text-gray-300">
-									{{ formatPlaylistDurationToHourStr(collection.duration || 0) }} •
-									{{ formatPlaylistUpdateTime(collection.updated_at || '') }} • {{ collection.count }}首歌
-								</p>
-								<div class="mt-4 flex items-center gap-2">
-									<Button class="bg-[#da5597] hover:bg-[#da5597]/90 text-white rounded-full">
-										<Play class="h-4 w-4" />
-										Play
-									</Button>
-									<Button variant="ghost" class="text-white hover:bg-white/10 rounded-full">
-										<Heart class="h-4 w-4" />
-									</Button>
-									<Button variant="ghost" class="text-white hover:bg-white/10 rounded-full">
-										<MoreHorizontal class="h-4 w-4" />
-									</Button>
-								</div>
-							</div>
-						</div>
-
-						<!-- 右下角缩略图 -->
-						<div class="absolute bottom-6 right-6 flex gap-2">
-							<div
-								v-for="(collection, index) in nextCollections"
-								:key="collection.id"
-								class="w-32 rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-[#da5597]/90 transition-all aspect-[32/15]"
-								@click="switchToCollection(getNextCollectionIndex(index))"
-							>
-								<img v-lazy="collection.cover" :alt="collection.title" class="w-full h-full object-cover" />
-							</div>
-						</div>
+					<div class="w-1/3 flex items-center gap-6 justify-between">
+						<h2 class="text-lg font-semibold text-white">New Final</h2>
+						<Button variant="link" class="text-[#da5597] text-xs">See all</Button>
 					</div>
 				</div>
+				<div class="flex gap-6 h-full">
+					<div class="w-2/3 rounded-lg overflow-hidden">
+						<div class="relative w-full h-full">
+							<template v-if="lastestCollections?.length">
+								<div
+									v-for="(collection, index) in lastestCollections"
+									:key="index"
+									class="absolute inset-0 transition-opacity duration-500"
+									:class="{ 'opacity-0': currentIndex !== index }"
+								>
+									<AlbumCard
+										:cover_url="collection.cover"
+										:name="collection.title"
+										:id="collection.id"
+										:info="`${formatPlaylistUpdateTime(collection.updated_at || '')} · ${
+											collection.count || 0
+										}首歌 · ${formatPlaylistDurationToHourStr(collection.duration || 0)}`"
+										max_width="w-full"
+										:showPlayButton="false"
+										:showControls="true"
+										:showInfo="true"
+										:titleSize="'text-2xl'"
+									/>
+								</div>
 
-				<!-- 右侧 -->
-				<div class="sticky top-16 h-[calc(100vh-4rem)]">
-					<div class="space-y-6">
-						<!-- New Final 部分 -->
-						<div class="relative p-[1px]">
-							<div class="flex items-center justify-between">
-								<h2 class="text-lg font-semibold text-white">New Final</h2>
-								<Button variant="link" class="text-[#da5597] text-xs">See all</Button>
-							</div>
-							<div class="w-full aspect-square z-10">
-								<img v-lazy="finalLatest?.cover" class="w-full h-full rounded-lg" />
-							</div>
-							<div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
-							<div class="absolute bottom-0 left-0 pb-2 w-full flex items-center justify-between">
-								<h2 class="text-2xl font-bold text-white w-full text-center">{{ finalLatest?.title }}</h2>
-								<!-- <Button class="bg-[#da5597] hover:bg-[#da5597]/90 text-white rounded-full">
-									<Play class="h-4 w-4" />
-									Play
-								</Button> -->
-							</div>
+								<!-- 右下角缩略图 -->
+								<div class="absolute bottom-6 right-6 flex gap-2 z-10">
+									<div
+										v-for="(collection, index) in nextCollections"
+										:key="collection.id"
+										class="w-32 aspect-[32/15] rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-[#da5597]/90 transition-all"
+										@click="switchToCollection(getNextCollectionIndex(index))"
+									>
+										<img v-lazy="collection.cover" :alt="collection.title" class="w-full h-full object-cover" />
+									</div>
+								</div>
+							</template>
+							<template v-else>
+								<AlbumCardSkeleton :imageRatio="'wide'" />
+							</template>
 						</div>
+					</div>
+					<div class="w-1/3 rounded-lg overflow-hidden">
+						<template v-if="finalLatest">
+							<AlbumCard
+								:cover_url="finalLatest?.cover"
+								:name="finalLatest?.title"
+								:id="finalLatest?.id"
+								max_width="w-full"
+								:showPlayButton="true"
+								:centerText="true"
+								:titleSize="'text-xl'"
+								imageRatio="square"
+							/>
+						</template>
+						<template v-else>
+							<AlbumCardSkeleton :imageRatio="'square'" />
+						</template>
 					</div>
 				</div>
 			</div>
 		</div>
-		<loading
-			:active="isLoading"
-			:can-cancel="true"
-			:is-full-page="false"
-			background-color="rgba(0, 0, 0, 0.5)"
-			color="#EC4899"
-		/>
+		<!-- 站内专辑 -->
+		<div class="container mx-auto px-6 mt-12">
+			<div class="flex items-center gap-6 justify-between">
+				<h2 class="text-lg font-semibold text-white">New Albums</h2>
+				<Button variant="link" class="text-[#da5597] text-xs" @click="pushToPlaylists('albums')">See all</Button>
+			</div>
+			<div class="mt-2 flex gap-4">
+				<template v-if="latestInnerAlbums?.length">
+					<AlbumCard
+						v-for="album in latestInnerAlbums"
+						:key="album.id"
+						:name="album.title"
+						:cover_url="album.cover"
+						:id="album.id"
+						:showPlayButton="true"
+						:showControls="false"
+						:showInfo="false"
+						max_width="w-1/5"
+						:image-ratio="'square'"
+					></AlbumCard>
+				</template>
+				<template v-else>
+					<AlbumCardSkeleton v-for="n in 5" :key="n" />
+				</template>
+			</div>
+		</div>
+		<!-- 网易榜单 -->
+		<div class="container mx-auto px-6 mt-4">
+			<div class="flex items-center gap-6 justify-between">
+				<h2 class="text-lg font-semibold text-white">Netease TopCharts</h2>
+			</div>
+			<div class="mt-2 flex flex-wrap gap-4">
+				<template v-if="neteaseTopChartsArr?.length">
+					<AlbumCard
+						v-for="album in neteaseTopChartsArr"
+						:key="album.id"
+						:name="album.title"
+						:cover_url="album.cover"
+						:id="album.nId"
+						:showPlayButton="true"
+						:showControls="false"
+						:showInfo="false"
+						:image-ratio="'square'"
+						type="netease"
+					></AlbumCard>
+				</template>
+				<template v-else>
+					<AlbumCardSkeleton v-for="n in 7" :key="n" />
+				</template>
+			</div>
+		</div>
+		<!-- 网易新碟 -->
+		<div class="container mx-auto px-6 mt-4">
+			<div class="flex items-center gap-6 justify-between">
+				<h2 class="text-lg font-semibold text-white">Netease TopAlbums</h2>
+			</div>
+			<div class="mt-2 flex flex-wrap gap-4">
+				<template v-if="neteaseTopAlbumArr.length">
+					<AlbumCard
+						v-for="album in neteaseTopAlbumArr"
+						:key="album.id"
+						:name="album.name"
+						:cover_url="album.picUrl"
+						:id="album.id"
+						:artist="album.artist?.name"
+						:showPlayButton="true"
+						:showControls="false"
+						:showInfo="false"
+						:image-ratio="'square'"
+						type="netease-album"
+					></AlbumCard>
+				</template>
+				<template v-else>
+					<AlbumCardSkeleton v-for="n in 10" :key="n" :showArtist="true" />
+				</template>
+			</div>
+		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, nextTick, Ref, computed, onUnmounted } from 'vue'
 import { Button } from '@/components/ui/button'
-import { latestCollection, latestFinal, allCollections, allFinals, allInnerAlbums, neteaseToplist } from '@/api'
+import { latestCollection, latestFinal, neteaseToplist, latestInnerAlbum, neteaseTopAlbum } from '@/api'
 import { formatPlaylistUpdateTime, formatPlaylistDurationToHourStr } from '@/utils'
-import Loading from 'vue-loading-overlay'
-import { Heart, Play, MoreHorizontal, MoreVertical, ChevronRight } from 'lucide-vue-next'
+import AlbumCard from '@/components/albumcard/AlbumCard.vue'
+import AlbumCardSkeleton from '@/components/albumcard/AlbumCardSkeleton.vue'
+import { useRouter } from 'vue-router'
 
 import { handlePromise } from '@/utils'
-import AlbumCard from '@/components/albumcard/AlbumCard.vue'
 import { Playlist } from '@/interfaces/collection'
+import { NeteaseAlbum } from '@/interfaces/netease_album'
 import { useToast } from '@/components/ui/toast'
 
 const toast = useToast()
@@ -143,10 +207,12 @@ onMounted(() => {
 			isLoading.value = true
 			await getLatestCollection()
 			await getLatestFinal()
-			await getAllCollections()
-			await getAllFinals()
-			await getAllInnerAlbums()
+			await getLatestInnerAlbum()
+			// await getAllCollections()
+			// await getAllFinals()
+			// await getAllInnerAlbums()
 			await getNeteaseTopCharts()
+			await getNeteaseTopAlbum()
 		} finally {
 			isLoading.value = false
 		}
@@ -155,13 +221,15 @@ onMounted(() => {
 /**
  * @description: 获取最新的一个月度精选集
  */
-const lastestCollections: Ref<Playlist[] | null> = ref(null)
+const lastestCollections: Ref<Playlist[] | null> = ref([])
 const getLatestCollection = async () => {
 	const [res] = await handlePromise(latestCollection())
 	if (!res) return
 	lastestCollections.value = res
 }
-
+/**
+ * @description: 获取最新的年度精选集
+ */
 const finalLatest: Ref<Playlist | null> = ref(null)
 const getLatestFinal = async () => {
 	const [res] = await handlePromise(latestFinal())
@@ -170,43 +238,35 @@ const getLatestFinal = async () => {
 	finalLatest.value = res
 	console.log(res)
 }
-/**
- * @description: 获取所有的月度精选集
- */
-const allCollectionsArr: Ref<Playlist[] | null> = ref([])
-const getAllCollections = async () => {
-	const [res] = await handlePromise(allCollections())
-	if (!res) return
-	allCollectionsArr.value = res
-}
-/**
- * @description: 获取所有年终精选集
- */
-const allFinalsArr: Ref<Playlist[] | null> = ref([])
-const getAllFinals = async () => {
-	const [res] = await handlePromise(allFinals())
-	if (!res) return
 
-	allFinalsArr.value = res
-}
 /**
- * @description: 获取所有站内专辑
+ * @description: 获取最新的站内专辑
  */
-const allInnerAlbumsArr: Ref<Playlist[] | null> = ref([])
-const getAllInnerAlbums = async () => {
-	const [res] = await handlePromise(allInnerAlbums())
+const latestInnerAlbums: Ref<Playlist[] | null> = ref([])
+const getLatestInnerAlbum = async () => {
+	const [res] = await handlePromise(latestInnerAlbum())
 	if (!res) return
-	allInnerAlbumsArr.value = res
+	latestInnerAlbums.value = Array.isArray(res) ? res : [res]
 }
 
 /**
- * @description: 获取网易云音乐热门新碟
+ * @description: 获取网易云热门榜单
  */
 const neteaseTopChartsArr: Ref<Playlist[] | null> = ref([])
 const getNeteaseTopCharts = async () => {
 	const [res] = await handlePromise(neteaseToplist())
 	if (!res) return
 	neteaseTopChartsArr.value = res
+}
+
+/**
+ * @description: 获取网易云音乐热门新碟
+ */
+const neteaseTopAlbumArr: Ref<NeteaseAlbum[]> = ref([])
+const getNeteaseTopAlbum = async () => {
+	const [res] = await handlePromise(neteaseTopAlbum())
+	if (!res) return
+	neteaseTopAlbumArr.value = res
 }
 
 const currentIndex = ref(0)
@@ -266,4 +326,23 @@ onUnmounted(() => {
 		clearInterval(autoplayInterval.value)
 	}
 })
+
+const router = useRouter()
+
+// 添加跳转方法
+const toPlaylist = (id: number, type: string) => {
+	if (type === '') {
+		router.push({
+			path: `playlist/${id}`,
+		})
+		return
+	}
+}
+
+// 添加跳转到专辑列表页面的方法
+const pushToPlaylists = (type: string) => {
+	router.push({
+		path: `albums/${type}`,
+	})
+}
 </script>

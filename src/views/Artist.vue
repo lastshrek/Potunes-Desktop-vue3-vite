@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-05 16:32:07
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-05 11:38:25
+ * @LastEditTime : 2025-01-10 22:12:27
  * @FilePath     : /src/views/Artist.vue
  * @Description  : Artist Page
  * Copyright 2023 lastshrek, All Rights Reserved.

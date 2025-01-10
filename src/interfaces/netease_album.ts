@@ -10,29 +10,23 @@
  */
 import { Artist } from './artist'
 
-export interface Netease_Album {
+export interface NeteaseArtist {
+	name: string
+	id: number
+	picUrl?: string
+	img1v1Url?: string
+	alias?: string[]
+}
+
+export interface NeteaseAlbum {
 	name: string
 	id: number
 	type: string
 	size: number
-	picId: number
-	blurPicUrl: string
-	companyId: number
-	pic: number
 	picUrl: string
-	publishTime: number
-	description: string
-	tags: string
-	company: string
-	briefDesc: string
-	artist: Artist
-	songs: any
-	alias: string[]
-	status: number
-	copyrightId: number
-	commentThreadId: string
-	artists: Artist[]
-	paid: boolean
-	onSale: boolean
-	picId_str: string
+	artist: NeteaseArtist
+	artists: NeteaseArtist[]
+	company?: string
+	description?: string
+	publishTime?: number
 }

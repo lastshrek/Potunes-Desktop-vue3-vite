@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-02 17:09:39
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-09 20:51:22
+ * @LastEditTime : 2025-01-10 20:16:24
  * @FilePath     : /src/api/index.ts
  * @Description  : api
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -54,6 +54,8 @@ const playlistsPrefix = '/v1/playlists'
 export const latestCollection = () => get(`${playlistsPrefix}/collection/latest`)
 // 获取最新年终精选集
 export const latestFinal = () => get(`${playlistsPrefix}/final/latest`)
+// 获取最新站内专辑
+export const latestInnerAlbum = () => get(`${playlistsPrefix}/album/latest`)
 // 获取所有月度精选集
 export const allCollections = () => get(`${playlistsPrefix}/collection/all`)
 // 获取所有年终精选集

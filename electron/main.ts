@@ -33,11 +33,13 @@ function createWindow() {
 			nodeIntegration: true,
 			contextIsolation: false,
 		},
-		width: 1200,
-		height: 800,
+		width: 1080,
+		height: 700,
 		frame: false,
+		resizable: false,
 		titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'hidden',
 		backgroundColor: '#000000',
+
 		trafficLightPosition: { x: 20, y: 24 },
 	})
 
