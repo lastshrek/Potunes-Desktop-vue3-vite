@@ -17,6 +17,8 @@ import Trends from '@/views/Trends.vue'
 import Suggestion from '@/views/Suggestion.vue'
 import Artist from '@/views/Artist.vue'
 import Login from '@/views/Login.vue'
+import NeteaseLink from '@/views/NeteaseLink.vue'
+import EditProfile from '@/views/EditProfile.vue'
 const routes: Array<RouteRecordRaw> = [
 	{
 		path: '/',
@@ -86,12 +88,35 @@ const routes: Array<RouteRecordRaw> = [
 		component: Login,
 		meta: { keepAlive: true },
 	},
+	{
+		path: '/netease-link',
+		name: 'netease-link',
+		component: NeteaseLink,
+		meta: { keepAlive: false },
+	},
+	{
+		path: '/edit-profile',
+		name: 'edit-profile',
+		component: EditProfile,
+		meta: { keepAlive: false },
+	},
 ]
 
 const router = createRouter({
 	history: createWebHistory(),
 	routes,
 })
+
+// 添加全局导航守卫
+router.beforeEach((to, from, next) => {
+	console.log('Navigation started:', { from: from.path, to: to.path })
+	next()
+})
+
+router.afterEach((to, from) => {
+	console.log('Navigation completed:', { from: from.path, to: to.path })
+})
+
 /** 解决跳转重复路由报错问题 */
 const originalPush = router.push
 router.push = function push(location: any) {

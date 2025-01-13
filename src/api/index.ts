@@ -2,13 +2,13 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-02 17:09:39
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-10 20:16:24
+ * @LastEditTime : 2025-01-13 12:44:12
  * @FilePath     : /src/api/index.ts
  * @Description  : api
  * Copyright 2023 lastshrek, All Rights Reserved.
  * 2023-09-02 17:09:39
  */
-import { get, post } from './network'
+import { get, patch, post } from './network'
 // 获取首页数据
 export const home = () => get('/playlists/home')
 // 获取网易云音乐新碟发布
@@ -44,11 +44,31 @@ export const finals = () => get('/playlists/finals')
 export const innerAlbums = () => get('/playlists/albums')
 export const getLyrics = (id: number, nId?: number, userId: number = 0) =>
 	get(`/tracks/lyrics/v2/${id}/${nId}/${userId}`)
-
+/**
+ * @description: 获取短信验证码
+ * @param {object} data
+ */
+export const captcha = (data: { phone: string }) => post('/users/captcha', data)
+/**
+ * @description: 验证短信验证码
+ * @param {object} data
+ */
+export const verifyCaptcha = (data: { phone: string; captcha: string }) => post('/users/verify', data)
+/**
+ * @description: 获取网易云扫码登录二维码
+ */
+export const neteaseQrCode = () => get('/netease/qrcode')
+/**
+ * @description: 获取网易云二维码登录状态
+ */
+export const neteaseQrCodeStatus = (key: string) => get(`/netease/qrcode_status/${key}`)
+/**
+ * @description: 获取网易云扫码登录状态
+ */
+export const neteaseLoginStatus = (cookie: string) => post('/netease/login_status', { cookie })
 /**
  * @description: v1 版本
  */
-
 const playlistsPrefix = '/v1/playlists'
 // 获取最新三个月的精选集
 export const latestCollection = () => get(`${playlistsPrefix}/collection/latest`)
@@ -62,3 +82,9 @@ export const allCollections = () => get(`${playlistsPrefix}/collection/all`)
 export const allFinals = () => get(`${playlistsPrefix}/finals`)
 // 获取所有站内专辑
 export const allInnerAlbums = () => get(`${playlistsPrefix}/albums`)
+// 更新用户头像
+export const updateUserAvatar = (avatar: string) => {
+	return patch('/v1/users/avatar', {
+		avatar,
+	})
+}
