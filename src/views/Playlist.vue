@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-03 00:14:23
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-10 22:05:28
+ * @LastEditTime : 2025-01-13 20:35:42
  * @FilePath     : /src/views/Playlist.vue
  * @Description  : Playlist
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -482,21 +482,22 @@ onMounted(async () => {
 			playlistType.value = 'netease-daily-tracks'
 			const cookie = localStorage.getItem('netease-cookie')
 			if (!cookie) return
-			const [res, err] = await handlePromise(
+			const [res] = await handlePromise(
 				neteaseDailyTracks({
 					cookie,
 				})
 			)
-			if (err) showError('获取歌单详情失败')
-			Object.assign(playlist, res.playlist)
-			playlist.tracks = res.tracks
+			console.log('res', res)
+			if (!res) return
+			Object.assign(playlist, res)
+			playlist.tracks = res
 			return
 		}
 		// 周榜
 		if (url.indexOf('trends') !== -1) {
 			playlistType.value = 'trends'
-			const [res, err] = await handlePromise(weeklyTrends())
-			if (err) showError('获取歌单详情失败')
+			const [res] = await handlePromise(weeklyTrends())
+			if (!res) return
 			Object.assign(playlist, res.playlist)
 			playlist.tracks = res.tracks
 			return

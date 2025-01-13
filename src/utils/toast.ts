@@ -2,14 +2,13 @@
  * @Author       : lastshrek
  * @Date         : 2025-01-05 14:42:57
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-05 14:42:59
+ * @LastEditTime : 2025-01-13 14:59:31
  * @FilePath     : /src/utils/toast.ts
  * @Description  :
  * Copyright 2025 lastshrek, All Rights Reserved.
  * 2025-01-05 14:42:57
  */
 import { toast as showToast } from '@/components/ui/toast'
-import type { ToastProps } from '@/components/ui/toast'
 
 type ToastType = 'success' | 'error' | 'info' | 'warning'
 

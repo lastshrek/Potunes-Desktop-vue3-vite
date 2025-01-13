@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-05 16:30:59
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-10 22:00:30
+ * @LastEditTime : 2025-01-13 20:30:11
  * @FilePath     : /src/views/Suggestion.vue
  * @Description  : Suggestions
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -83,6 +83,36 @@
 						</template>
 					</div>
 				</div>
+			</div>
+		</div>
+		<!-- 网易每日推荐歌单 -->
+		<div class="container mx-auto px-6 mt-12" v-if="isNeteaseLogin && neteaseDailyRecommendArr?.length">
+			<div class="flex items-center gap-6 justify-between">
+				<h2 class="text-lg font-semibold text-white">Netease Daily</h2>
+			</div>
+			<div class="mt-2 flex flex-wrap gap-4" v-if="neteaseDailyRecommendArr?.length">
+				<AlbumCard
+					name="每日歌曲推荐"
+					:cover_url="dailyIcon"
+					:showPlayButton="true"
+					:showControls="false"
+					:showInfo="false"
+					:image-ratio="'square'"
+					:centerNumber="getCurrentDate()"
+					type="netease-daily-tracks"
+				/>
+				<AlbumCard
+					v-for="playlist in neteaseDailyRecommendArr"
+					:key="playlist.id"
+					:name="playlist.title"
+					:cover_url="playlist.cover"
+					:id="playlist.id"
+					:showPlayButton="true"
+					:showControls="false"
+					:showInfo="false"
+					:image-ratio="'square'"
+					type="netease-daily"
+				/>
 			</div>
 		</div>
 		<!-- 站内专辑 -->
@@ -168,20 +198,24 @@
 <script setup lang="ts">
 import { ref, onMounted, nextTick, Ref, computed, onUnmounted } from 'vue'
 import { Button } from '@/components/ui/button'
-import { latestCollection, latestFinal, neteaseToplist, latestInnerAlbum, neteaseTopAlbum } from '@/api'
+import {
+	latestCollection,
+	latestFinal,
+	neteaseToplist,
+	latestInnerAlbum,
+	neteaseTopAlbum,
+	neteaseRecommendDaily,
+} from '@/api'
 import { formatPlaylistUpdateTime, formatPlaylistDurationToHourStr } from '@/utils'
 import AlbumCard from '@/components/albumcard/AlbumCard.vue'
 import AlbumCardSkeleton from '@/components/albumcard/AlbumCardSkeleton.vue'
 import { useRouter } from 'vue-router'
 
-import { handlePromise } from '@/utils'
+import { handlePromise, getCurrentDate } from '@/utils'
 import { Playlist } from '@/interfaces/collection'
 import { NeteaseAlbum } from '@/interfaces/netease_album'
-import { useToast } from '@/components/ui/toast'
 
-const toast = useToast()
-
-// 添加收藏艺术家数据
+import dailyIcon from '@/assets/images/daily.png'
 
 // 当前选中的标签
 const currentTab = ref('collections')
@@ -205,12 +239,17 @@ onMounted(() => {
 		}
 		try {
 			isLoading.value = true
+
+			// 检查网易云登录状态
+			const neteaseCookie = localStorage.getItem('netease-cookie')
+			if (neteaseCookie) {
+				isNeteaseLogin.value = true
+				await getNeteaseRecommendDaily()
+			}
+
 			await getLatestCollection()
 			await getLatestFinal()
 			await getLatestInnerAlbum()
-			// await getAllCollections()
-			// await getAllFinals()
-			// await getAllInnerAlbums()
 			await getNeteaseTopCharts()
 			await getNeteaseTopAlbum()
 		} finally {
@@ -345,4 +384,42 @@ const pushToPlaylists = (type: string) => {
 		path: `albums/${type}`,
 	})
 }
+
+// 添加网易云登录状态
+const isNeteaseLogin = ref(false)
+// 添加网易云每日推荐歌单数据
+const neteaseDailyRecommendArr: Ref<Playlist[] | null> = ref([])
+
+// 获取网易云每日推荐歌单
+const getNeteaseRecommendDaily = async () => {
+	const cookie = localStorage.getItem('netease-cookie')
+	if (!cookie) return
+
+	const [res] = await handlePromise(
+		neteaseRecommendDaily({
+			cookie,
+		})
+	)
+	if (!res) return
+	console.log({ res })
+	neteaseDailyRecommendArr.value = res
+	console.log({ neteaseDailyRecommendArr: neteaseDailyRecommendArr.value?.length })
+}
+
+// 添加网易云登录事件监听
+window.addEventListener('netease-login', () => {
+	isNeteaseLogin.value = true
+	getNeteaseRecommendDaily()
+})
+
+// 添加网易云退出登录事件监听
+window.addEventListener('netease-logout', () => {
+	isNeteaseLogin.value = false
+	neteaseDailyRecommendArr.value = []
+})
+
+onUnmounted(() => {
+	window.removeEventListener('netease-login', () => {})
+	window.removeEventListener('netease-logout', () => {})
+})
 </script>

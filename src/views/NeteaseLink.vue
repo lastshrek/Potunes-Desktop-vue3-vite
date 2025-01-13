@@ -111,9 +111,9 @@ const checkLoginStatus = async () => {
 			} catch (error) {
 				console.error('Error handling login success:', error)
 				toast({
-					variant: 'destructive',
 					title: '登录失败',
 					description: '处理登录信息时出错，请重试',
+					type: 'error',
 				})
 			}
 			break

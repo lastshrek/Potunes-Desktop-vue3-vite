@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-02 15:51:57
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-05 14:30:27
+ * @LastEditTime : 2025-01-13 20:32:10
  * @FilePath     : /src/router/index.ts
  * @Description  : router
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -45,7 +45,7 @@ const routes: Array<RouteRecordRaw> = [
 		component: Playlist,
 	},
 	{
-		path: '/netease-daily-tracks/',
+		path: '/netease-daily-tracks',
 		name: 'netease-daily-tracks',
 		component: Playlist,
 	},

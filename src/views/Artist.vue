@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-05 16:32:07
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-10 22:12:27
+ * @LastEditTime : 2025-01-13 20:47:51
  * @FilePath     : /src/views/Artist.vue
  * @Description  : Artist Page
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -35,6 +35,7 @@
 					:key="album.id"
 					:name="album.name"
 					:cover_url="album.picUrl"
+					:image-ratio="'square'"
 					@click.native="selectAlbum(album.id)"
 				></AlbumCard>
 			</div>
@@ -75,9 +76,6 @@
 						</p>
 						<!-- <button class="px-4 py-2 bg-blue-500 text-white rounded">按钮</button> -->
 					</div>
-					<!-- <div class="flex justify-around items-center space-x-4">
-
-          </div> -->
 				</div>
 			</div>
 		</div>
@@ -157,7 +155,7 @@ onMounted(async () => {
 const getArtistInfo = async () => {
 	const [res, err] = await handlePromise(neteaseArtist(artist_id.value))
 	if (err) return showError('获取歌手信息失败')
-	artist = res.data as Artist
+	artist = res as Artist
 	if (artist.briefDesc) {
 		description.value = artist.briefDesc
 	}
@@ -166,14 +164,14 @@ const getArtistInfo = async () => {
 const getArtistAlbums = async () => {
 	const [res, err] = await handlePromise(neteaseArtistAlbum(artist_id.value, '5', '0'))
 	if (err) return showError('获取歌手专辑失败')
-	albums.value = res.data
+	albums.value = res
 }
 // 获取歌手热门歌曲
 const getArtistHotSongs = async () => {
 	const [res, err] = await handlePromise(neteaseArtistHotSongs(artist_id.value))
 	if (err) return showError('获取歌手热门歌曲失败')
-	hotSongs.value = res.data
-	playlist.tracks = res.data
+	hotSongs.value = res
+	playlist.tracks = res
 }
 // 展示歌手介绍
 const toggleShowMore = () => {

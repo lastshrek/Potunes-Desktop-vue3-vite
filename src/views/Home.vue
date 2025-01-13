@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-01 21:16:34
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-05 11:37:41
+ * @LastEditTime : 2025-01-13 15:00:43
  * @FilePath     : /src/views/Home.vue
  * @Description  : Home
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -173,7 +173,7 @@ const getNeteaseTopAlbums = async () => {
 	}
 }
 // get netease user recommand playlist
-const netease_daily: Ref<Playlist[]> = ref([])
+const netease_daily: Ref<any[]> = ref([])
 const getNeteaseDaily = async () => {
 	// get netease user cookie
 	const cookie = localStorage.getItem('netease-cookie')

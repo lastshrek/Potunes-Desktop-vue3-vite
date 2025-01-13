@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-02 18:27:16
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-10 21:23:42
+ * @LastEditTime : 2025-01-13 20:37:44
  * @FilePath     : /src/components/albumcard/AlbumCard.vue
  * @Description  : album card
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -15,8 +15,15 @@
 		@click="handleClick"
 	>
 		<div class="relative w-full mb-2" :class="imageRatio === 'square' ? 'aspect-square' : 'aspect-[32/15]'">
-			<img v-lazy="cover_url" class="w-full h-full object-cover rounded-lg" />
+			<img
+				:src="getImageSrc(cover_url)"
+				class="w-full h-full object-cover rounded-lg"
+				:key="typeof cover_url === 'string' ? cover_url : 'local'"
+			/>
 			<div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent rounded-lg"></div>
+			<div v-if="centerNumber" class="absolute inset-0 flex items-center justify-center">
+				<span class="text-gray-800 text-3xl font-semibold mt-2">{{ centerNumber }}</span>
+			</div>
 			<div
 				v-if="showPlayButton"
 				class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
@@ -82,13 +89,21 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button'
 import { Heart, MoreHorizontal } from 'lucide-vue-next'
+import { PropType } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const emit = defineEmits(['play'])
 
+interface ImportMetaImage {
+	default: string
+}
+
 const props = defineProps({
-	cover_url: String,
+	cover_url: {
+		type: [String, Object] as PropType<string | ImportMetaImage>,
+		required: true,
+	},
 	name: String,
 	artist: String,
 	info: String,
@@ -128,21 +143,27 @@ const props = defineProps({
 		type: String,
 		default: 'wide', // 'wide' | 'square'
 	},
+	centerNumber: {
+		type: [Number, String],
+		default: null,
+	},
 })
+
+const getImageSrc = (url: string | ImportMetaImage): string => {
+	if (typeof url === 'string') return url
+	return url.default
+}
 
 const handleClick = () => {
 	const id = props.id
 	const type = props.type
+	console.log('type', type)
 
-	if (!id) return
-
-	if (type === 'netease') {
-		router.push(`/netease-playlist/${id}`)
-	} else if (type === 'netease-album') {
-		router.push(`/netease-album/${id}`)
-	} else {
-		router.push(`/playlist/${id}`)
-	}
+	if (type === 'netease') return router.push(`/netease-playlist/${id}`)
+	if (type === 'netease-album') return router.push(`/netease-album/${id}`)
+	if (type === 'netease-daily-tracks') return router.push(`/netease-daily-tracks`)
+	if (type === 'netease-daily') return router.push(`/netease-daily/${id}`)
+	router.push(`/playlist/${id}`)
 }
 
 const handlePlay = (e: Event) => {

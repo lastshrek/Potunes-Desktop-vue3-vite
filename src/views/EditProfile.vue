@@ -184,7 +184,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -491,20 +491,37 @@ const handleSubmit = async () => {
 			gender: form.value.gender,
 			avatar: form.value.avatar,
 		}
-		localStorage.setItem('user', JSON.stringify(updatedUser))
+
+		// 先调用接口更新
 		const [ures] = await handlePromise(updateUserInfo(updatedUser))
-		if (!ures) return
+		if (!ures) {
+			throw new Error('更新用户信息失败')
+		}
+
+		// 更新本地存储
+		localStorage.setItem('user', JSON.stringify(updatedUser))
+
+		// 立即触发用户信息更新事件
+		window.dispatchEvent(
+			new CustomEvent('user-updated', {
+				detail: updatedUser,
+			})
+		)
+
 		toast({
 			title: '保存成功',
 			description: '个人资料已更新',
+			variant: 'default',
 		})
 
+		// 等待一下确保事件处理完成
+		await nextTick()
 		router.back()
 	} catch (error) {
 		toast({
-			variant: 'destructive',
 			title: '保存失败',
-			description: '请稍后重试',
+			description: error instanceof Error ? error.message : '请稍后重试',
+			variant: 'destructive',
 		})
 	} finally {
 		isLoading.value = false
