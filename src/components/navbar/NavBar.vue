@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-01 21:16:34
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-13 13:59:00
+ * @LastEditTime : 2025-01-13 14:50:39
  * @FilePath     : /src/components/navbar/NavBar.vue
  * @Description  : 
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -118,10 +118,19 @@
 
 						<div class="flex flex-col items-end">
 							<p class="text-xs font-semibold text-right text-white">
-								{{ isNeteaseLogin ? neteaseUser.nickname : '欢迎你 ' + formatPhone(userPhone) }}
+								{{
+									userData.nickname
+										? userData.nickname
+										: isNeteaseLogin
+										? neteaseUser.nickname
+										: '欢迎你 ' + formatPhone(userPhone)
+								}}
 							</p>
-							<p v-if="isNeteaseLogin" class="text-xs text-gray-400 text-right truncate max-w-[150px]">
-								{{ neteaseUser.signature }}
+							<p
+								v-if="userData.intro || (isNeteaseLogin && !userData.intro)"
+								class="text-xs text-gray-400 text-right truncate max-w-[150px]"
+							>
+								{{ userData.intro || (isNeteaseLogin ? neteaseUser.signature : '') }}
 							</p>
 						</div>
 						<ChevronDown
@@ -137,6 +146,14 @@
 						@mouseenter="handleMenuEnter"
 						@mouseleave="handleMenuLeave"
 					>
+						<!-- 添加网易云账号信息 -->
+						<div v-if="isNeteaseLogin" class="px-4 py-2 border-b border-gray-800">
+							<div class="flex items-center gap-2 text-gray-400">
+								<img :src="NeteaseIcon" alt="网易云账号" class="h-4 w-4" />
+								<span class="text-sm text-gray-300">{{ neteaseUser.nickname }}</span>
+							</div>
+						</div>
+
 						<div class="flex flex-col">
 							<button
 								v-if="!isNeteaseLogin"
@@ -225,6 +242,7 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import NeteaseIcon from '@/assets/images/netease.png'
 
 const router = useRouter()
 const route = useRoute()

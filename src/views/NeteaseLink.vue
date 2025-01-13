@@ -23,7 +23,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Loader2 } from 'lucide-vue-next'
@@ -71,32 +71,52 @@ const checkLoginStatus = async () => {
 			// 登录成功
 			console.log('Login successful')
 			clearInterval(checkStatusInterval!)
+			console.log('res.cookie', res.cookie)
+			// 获取登录状态
 			const [loginRes] = await handlePromise(neteaseLoginStatus(res.cookie))
 			if (!loginRes) return
-			console.log(loginRes)
+			console.log('Login response:', loginRes)
 
-			// 保存用户信息和 cookie
-			const user = loginRes.profile
-			localStorage.setItem('netease-user', JSON.stringify(user))
-			localStorage.setItem('netease-cookie', res.cookie)
+			try {
+				// 保存用户信息和 cookie
+				const user = loginRes.profile
+				localStorage.setItem('netease-user', JSON.stringify(user))
+				localStorage.setItem('netease-cookie', res.cookie)
 
-			// 触发全局事件，通知 navbar 更新
-			window.dispatchEvent(
-				new CustomEvent('netease-login', {
-					detail: {
-						user,
-						cookie: res.cookie,
-					},
+				// 触发全局事件，通知 navbar 更新
+				window.dispatchEvent(
+					new CustomEvent('netease-login', {
+						detail: {
+							user,
+							cookie: res.cookie,
+						},
+					})
+				)
+
+				// 显示成功提示
+				toast({
+					title: '网易云登录成功',
+					description: '欢迎使用网易云音乐！',
 				})
-			)
 
-			toast({
-				title: '网易云登录成功',
-				description: '欢迎使用网易云音乐！',
-			})
-			router.push('/') // 登录成功后跳转
+				// 确保清理定时器
+				if (checkStatusInterval) {
+					clearInterval(checkStatusInterval)
+				}
+
+				// 使用 nextTick 确保状态更新后再跳转
+				nextTick(() => {
+					router.replace('/') // 使用 replace 而不是 push，这样返回时不会回到登录页
+				})
+			} catch (error) {
+				console.error('Error handling login success:', error)
+				toast({
+					variant: 'destructive',
+					title: '登录失败',
+					description: '处理登录信息时出错，请重试',
+				})
+			}
 			break
-		// 可以添加其他状态的处理
 	}
 }
 

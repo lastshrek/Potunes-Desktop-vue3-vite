@@ -204,7 +204,7 @@ import { toast } from '@/components/ui/toast'
 import { Cropper, CircleStencil } from 'vue-advanced-cropper'
 import 'vue-advanced-cropper/dist/style.css'
 import { handlePromise } from '@/utils'
-import { updateUserAvatar } from '@/api'
+import { updateUserAvatar, updateUserInfo } from '@/api'
 
 const router = useRouter()
 const isLoading = ref(false)
@@ -412,10 +412,6 @@ const handleCropComplete = async () => {
 
 		// 预览裁剪结果
 		previewBase64.value = base64
-
-		console.log('Base64 validation passed')
-		console.log('Base64 preview:', base64)
-
 		// 调用更新头像接口
 		const [res, error] = await handlePromise(updateUserAvatar(base64))
 		if (error) {
@@ -435,7 +431,6 @@ const handleCropComplete = async () => {
 			...form.value,
 			avatar: base64,
 		}
-		console.log('form.value', form.value)
 		// 更新存储后触发事件
 		window.dispatchEvent(
 			new CustomEvent('user-updated', {
@@ -497,7 +492,8 @@ const handleSubmit = async () => {
 			avatar: form.value.avatar,
 		}
 		localStorage.setItem('user', JSON.stringify(updatedUser))
-
+		const [ures] = await handlePromise(updateUserInfo(updatedUser))
+		if (!ures) return
 		toast({
 			title: '保存成功',
 			description: '个人资料已更新',

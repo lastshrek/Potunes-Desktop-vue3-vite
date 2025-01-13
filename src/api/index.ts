@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-02 17:09:39
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-13 12:44:12
+ * @LastEditTime : 2025-01-13 14:26:49
  * @FilePath     : /src/api/index.ts
  * @Description  : api
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -83,8 +83,6 @@ export const allFinals = () => get(`${playlistsPrefix}/finals`)
 // 获取所有站内专辑
 export const allInnerAlbums = () => get(`${playlistsPrefix}/albums`)
 // 更新用户头像
-export const updateUserAvatar = (avatar: string) => {
-	return patch('/v1/users/avatar', {
-		avatar,
-	})
-}
+export const updateUserAvatar = (avatar: string) => patch('/v1/users/avatar', { avatar })
+// 更新用户信息
+export const updateUserInfo = (data: any) => patch('/v1/users/profile', data)
