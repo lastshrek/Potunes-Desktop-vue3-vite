@@ -91,14 +91,14 @@
 									:key="index"
 									:class="{
 										'transform transition-all duration-300': true,
-										active: isCurrentLyric(item, index),
-										'opacity-50': !isCurrentLyric(item, index),
+										'active scale-110 opacity-100': isCurrentLyric(item, index),
+										'opacity-50 scale-100': !isCurrentLyric(item, index),
 									}"
 									:ref="el => (lyricRefs[index] = el as HTMLElement)"
 									class="transition-all duration-300 px-4 py-2"
 								>
 									<p
-										class="mb-1 text-center"
+										class="mb-1 text-center text-lg"
 										:class="{
 											'text-white font-bold': isCurrentLyric(item, index),
 											'text-gray-400': !isCurrentLyric(item, index),
@@ -212,7 +212,7 @@ const parsedLyrics = computed(() => {
 		}
 	})
 
-	// 过滤掉没有歌词的时间点
+	// 过滤掉没有歌词的时间点并排序
 	return Array.from(lrcMap.values())
 		.filter(item => item.lrc || item.translation)
 		.sort((a, b) => a.time - b.time)

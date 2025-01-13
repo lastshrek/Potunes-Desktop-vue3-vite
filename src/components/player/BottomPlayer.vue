@@ -260,7 +260,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, ref, watch, onUnmounted } from 'vue'
 import { useCurrentTrackStore } from '@/store/modules/currenttrack'
 import { useIsShowMiniPlayerStore } from '@/store/modules/isShowMiniPlayer'
 import { useGlobalQueueStore } from '@/store/modules/globalQueue'
@@ -279,6 +279,9 @@ import '@/assets/css/slider.css'
 import Lyrics from '@/views/Lyrics.vue'
 import { useLyricsStore } from '@/store/modules/lyrics'
 import { emitter } from '@/utils/mitt'
+
+const { electron } = window as Window & typeof globalThis & { electron: ElectronAPI }
+
 const currentTrack = useCurrentTrackStore()
 const isShowMiniPlayer = useIsShowMiniPlayerStore()
 const volume = ref(JSON.parse(localStorage.getItem('volumeBeforeMuted') || '1'))
@@ -291,14 +294,168 @@ const currentIndex = useCurrentIndexStore()
 const globalQueue = useGlobalQueueStore()
 const currentTime = useCurrentTimeStore()
 const currentProgress = useCurrentProgressStore()
+const lyricsStore = useLyricsStore()
+
+// 歌词相关状态
+const currentLyricIndex = ref(-1)
+const currentLyricLines = ref<string[]>([])
+let lyricUpdateHandler: (() => void) | null = null
 
 // 添加控制歌词面板的状态
 const showLyricsPanel = ref(false)
+
 // 修改 showLyrics 方法
 const showLyrics = () => {
 	if (currentTrack.url === '') return
 	showLyricsPanel.value = true
 }
+
+// 更新音频时间处理函数
+const updateLyric = () => {
+	if (!audio.value || currentLyricLines.value.length === 0) return
+	const currentTime = audio.value.currentTime
+
+	// 找到当前时间对应的歌词
+	for (let i = 0; i < currentLyricLines.value.length; i++) {
+		const line = currentLyricLines.value[i]
+		if (!line || line.trim() === '') continue
+
+		const match = line.match(/\[(\d{2}):(\d{2})\.(\d{3})\](.*)/)
+		if (!match) continue
+
+		const minutes = parseInt(match[1])
+		const seconds = parseInt(match[2])
+		const milliseconds = parseInt(match[3])
+		const time = minutes * 60 + seconds + milliseconds / 1000
+		const text = match[4].trim()
+
+		if (
+			currentTime >= time &&
+			(!currentLyricLines.value[i + 1] || currentTime < getLyricTime(currentLyricLines.value[i + 1]))
+		) {
+			if (i !== currentLyricIndex.value) {
+				currentLyricIndex.value = i
+				// 只发送有效的歌词文本
+				if (text && text.trim() !== '') {
+					electron.updateLyric(text)
+				}
+			}
+			break
+		}
+	}
+}
+
+// 辅助函数：获取歌词时间戳
+const getLyricTime = (line: string) => {
+	const match = line.match(/\[(\d{2}):(\d{2})\.(\d{3})\]/)
+	if (!match) return Infinity
+	const minutes = parseInt(match[1])
+	const seconds = parseInt(match[2])
+	const milliseconds = parseInt(match[3])
+	return minutes * 60 + seconds + milliseconds / 1000
+}
+
+// 设置歌词更新处理器
+const setupLyricHandler = () => {
+	if (lyricUpdateHandler) {
+		audio.value?.removeEventListener('timeupdate', lyricUpdateHandler)
+		lyricUpdateHandler = null
+	}
+
+	lyricUpdateHandler = updateLyric
+	audio.value?.addEventListener('timeupdate', lyricUpdateHandler)
+}
+
+// 监听歌词变化
+watch(
+	() => lyricsStore.lrc,
+	newLyric => {
+		// 清除当前歌词
+		electron.updateLyric('')
+		currentLyricIndex.value = -1
+
+		if (!newLyric) {
+			currentLyricLines.value = []
+			return
+		}
+
+		// 解析歌词，过滤掉空行
+		currentLyricLines.value = newLyric.split('\n').filter(line => line.trim() !== '')
+
+		console.log('解析后的歌词行:', currentLyricLines.value)
+
+		// 设置新的事件监听器
+		setupLyricHandler()
+
+		// 立即执行一次更新，显示当前时间点的歌词
+		updateLyric()
+	}
+)
+
+// 监听当前歌曲变化 - 更新歌曲信息
+watch(
+	() => currentTrack.$state,
+	newSong => {
+		// 清除当前歌词
+		electron.updateLyric('')
+		currentLyricIndex.value = -1
+		currentLyricLines.value = []
+
+		if (newSong && newSong.name) {
+			electron.updateSongInfo({
+				title: newSong.name,
+				artist: newSong.ar.map((a: { name: string }) => a.name).join('/'),
+			})
+			// 获取歌词
+			lyricsStore.fetchLyrics(newSong.id, newSong.nId)
+		} else {
+			electron.updateSongInfo({ title: '', artist: '' })
+			lyricsStore.clearLyrics()
+		}
+	},
+	{ deep: true }
+)
+
+// 监听当前歌曲变化 - 处理播放
+watch(
+	() => currentTrack.$state,
+	async newValue => {
+		if (!audio.value || !newValue.url) return
+
+		const player = audio.value
+
+		// 先暂停当前播放
+		try {
+			await player.pause()
+		} catch (err) {
+			console.log('暂停失败:', err)
+		}
+
+		// 设置新的音频源
+		player.src = newValue.url
+
+		// 设置音量
+		if (volume.value === 0) {
+			player.volume = 0
+		} else {
+			player.volume = volume.value
+		}
+
+		// 等待一小段时间确保音频源已经加载
+		await new Promise(resolve => setTimeout(resolve, 100))
+
+		try {
+			// 尝试播放
+			await player.play()
+			isPlaying.setIsPlaying(true)
+		} catch (err) {
+			console.error('播放出错:', err)
+			isPlaying.setIsPlaying(false)
+		}
+	},
+	{ deep: true }
+)
+
 // 进度条拖动结束
 const dragEnd = () => {
 	if (value.value == 0) return
@@ -320,9 +477,19 @@ const prev = () => {
 	currentIndex.setCurrentIndex(currentIndex.currentIndex - 1)
 }
 // 播放/暂停
-const play = () => {
+const play = async () => {
 	if (currentTrack.url === '') return
-	isPlaying.setIsPlaying(!isPlaying.isPlaying)
+
+	try {
+		if (isPlaying.isPlaying) {
+			await audio.value?.pause()
+		} else {
+			await audio.value?.play()
+		}
+		isPlaying.setIsPlaying(!isPlaying.isPlaying)
+	} catch (err) {
+		console.error('播放切换失败:', err)
+	}
 }
 // 下一首
 const next = () => {
@@ -391,100 +558,69 @@ const setIndex = () => {
 	console.log(currentIndex.currentIndex)
 	// TODO 更新歌曲播放次数
 }
+
+// 监听播放状态变化
+watch(
+	() => isPlaying.isPlaying,
+	async newValue => {
+		// 更新菜单栏播放状态
+		electron.updatePlayState(newValue)
+
+		if (!audio.value || currentTrack.url === '') return
+
+		try {
+			if (newValue) {
+				await audio.value.play()
+			} else {
+				await audio.value.pause()
+			}
+		} catch (err) {
+			console.error('播放状态切换失败:', err)
+			isPlaying.setIsPlaying(!newValue)
+		}
+	},
+	{ deep: true }
+)
+
 onMounted(() => {
-	// TODO: bind keyboard type
-	// key('space', () => {
-	// 	this.play()
-	// })
 	const version = navigator.userAgent.toLowerCase()
 	const mac = version.indexOf('mac')
 	const os = version.indexOf('os')
 	if (mac > 0 && os > 0) {
 		isMac.value = true
 	}
-	emitter.on('showLyrics', value => (audio.value!.currentTime = value as number))
-	emitter.on('next', () => {
-		console.log('next')
-		next()
+
+	// 监听进度跳转事件
+	emitter.on('showLyrics', async value => {
+		if (!audio.value) return
+		try {
+			audio.value.currentTime = value as number
+		} catch (err) {
+			console.error('设置播放进度失败:', err)
+		}
 	})
-	// TODO 通知主进程播放
-	// ipcRenderer.on('play', () => {
-	//     this.setIsPlaying(!this.isPlaying)
-	//   })
-	//   ipcRenderer.on('previous', () => {
-	//     this.prev()
-	//   })
-	//   ipcRenderer.on('next', () => {
-	//     this.next()
-	//   })
-	if (isPlaying.isPlaying) {
-		audio.value!.play()
+
+	// 监听下一首事件
+	emitter.on('next', next)
+
+	// 如果当前应该播放，尝试恢复播放
+	if (isPlaying.isPlaying && audio.value && currentTrack.url) {
+		audio.value.play().catch(err => {
+			console.error('恢复播放失败:', err)
+			isPlaying.setIsPlaying(false)
+		})
 	}
 })
-watch(
-	() => currentTrack,
-	newValue => {
-		if (newValue) {
-			const player = audio.value
-			if (volume.value == 0) player!.volume = 0
-			const playPromise = player!.play()
-			if (playPromise !== undefined) {
-				playPromise
-					.then(() => {
-						player!.play()
-						isPlaying.setIsPlaying(true)
-					})
-					.catch(_err => {
-						player!.play()
-						isPlaying.setIsPlaying(true)
-					})
-			}
-			player!.play()
-		}
-	},
-	{ deep: true }
-)
-watch(
-	() => isPlaying,
-	(newValue, oldValue) => {
-		if (currentTrack.name === '' && oldValue.isPlaying === false) return
-		if (newValue.isPlaying) {
-			audio.value!.play()
-			if (isMac.value) {
-				// TODO 通知主进程播放
-				// ipcRenderer.send('isPause')
-			}
-		} else {
-			audio.value!.pause()
-			if (isMac.value) {
-				// TODO 通知主进程暂停
-				// ipcRenderer.send('isPlay')
-			}
-		}
-	},
-	{ deep: true }
-)
-const lyricsStore = useLyricsStore()
-// 监听歌曲变化
-watch(
-	() => currentTrack,
-	async newTrack => {
-		if (newTrack && newTrack.id) {
-			const type = newTrack.type
-			let id = newTrack.id
-			const nId = newTrack.nId
-			// 播放网易的歌曲需要调换id的位置，因为网易的歌曲id是nId
-			if (type === 'netease') {
-				id = 0
-			}
-			console.log('获取歌词')
-			await lyricsStore.fetchLyrics(id, nId)
-		} else {
-			lyricsStore.clearLyrics()
-		}
-	},
-	{ immediate: true, deep: true }
-)
+
+// 在组件卸载时清除歌词
+onUnmounted(() => {
+	if (lyricUpdateHandler) {
+		audio.value?.removeEventListener('timeupdate', lyricUpdateHandler)
+		lyricUpdateHandler = null
+	}
+	electron.updateLyric('')
+	electron.updateSongInfo({ title: '', artist: '' })
+})
 </script>
 
 <style lang="scss" scoped>

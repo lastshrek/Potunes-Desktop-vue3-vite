@@ -405,6 +405,7 @@ import { formatTime, handlePromise, showError, getCurrentDate } from '@/utils/in
 import { useCurrentTrackStore } from '@/store/modules/currenttrack'
 import { Artist } from '@/interfaces/artist'
 import { useGlobalQueueStore } from '@/store/modules/globalQueue'
+import { useIsPlayingStore } from '@/store/modules/isPlaying'
 import dailyImageSrc from '@/assets/images/daily.png'
 let playlist = reactive({
 	title: '',
@@ -439,6 +440,7 @@ const today = getCurrentDate()
 const currentTrack = useCurrentTrackStore()
 // 播放队列
 const globalQueue = useGlobalQueueStore()
+const isPlaying = useIsPlayingStore()
 onMounted(async () => {
 	const url = route.fullPath
 	const id = route.params.id as string
@@ -537,7 +539,7 @@ const selectTrack = (index: number) => {
 	playlist.currentIndex = index
 	globalQueue.setGlobalQueue(playlist.tracks, index)
 	active_el.value = playlist.tracks[index].id
-	// TODO update play counts
+	isPlaying.setIsPlaying(true)
 }
 watch(
 	() => playlist,

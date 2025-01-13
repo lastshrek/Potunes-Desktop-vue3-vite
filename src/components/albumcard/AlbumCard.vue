@@ -80,7 +80,9 @@
 			</div>
 		</div>
 		<div :class="{ 'text-center': centerText }">
-			<h2 :class="['font-bold text-white line-clamp-1 overflow-hidden', titleSize]">{{ name }}</h2>
+			<h2 :class="['font-bold text-white overflow-hidden line-clamp-2 min-h-[2.5em]', titleSize]">
+				{{ name }}
+			</h2>
 			<p v-if="artist" class="text-gray-400 text-xs mt-1 line-clamp-1 overflow-hidden">{{ artist }}</p>
 		</div>
 	</div>
@@ -172,4 +174,11 @@ const handlePlay = (e: Event) => {
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+.line-clamp-2 {
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+</style>
