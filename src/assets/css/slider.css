@@ -6,7 +6,7 @@
 
 /* process style */
 .vue-slider-process {
-	background-color: #f06292 !important;
+	background-color: #f06292;
 	border-radius: 15px !important;
 }
 
@@ -62,42 +62,4 @@
 
 .volume-control:hover .vue-slider-process {
 	background-color: #335eea;
-}
-
-/* lyrics */
-.lyrics-page .vue-slider-rail {
-	background-color: rgba(128, 128, 128, 0.18);
-	border-radius: 2px;
-	height: 4px;
-	opacity: 0.88;
-}
-
-.lyrics-page .vue-slider-process {
-	background-color: #060606;
-}
-
-.lyrics-page .vue-slider-dot-handle {
-	background-color: #060606;
-	box-shadow: unset;
-}
-
-.lyrics-page .vue-slider-dot-tooltip {
-	display: none;
-}
-
-body[data-theme='dark'] .lyrics-page .vue-slider-process {
-	background-color: #fafafa;
-}
-
-body[data-theme='dark'] .lyrics-page .vue-slider-dot-handle {
-	background-color: #fff;
-}
-
-.lyrics-page[data-theme='dark'] .vue-slider-rail {
-	background-color: rgba(255, 255, 255, 0.18);
-}
-
-.lyrics-page[data-theme='dark'] .vue-slider-process,
-.lyrics-page[data-theme='dark'] .vue-slider-dot-handle {
-	background-color: #fff;
 }

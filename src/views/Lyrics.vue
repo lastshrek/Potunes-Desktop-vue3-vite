@@ -2,18 +2,35 @@
  * @Author       : lastshrek
  * @Date         : 2025-01-04 12:48:57
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-14 13:07:02
+ * @LastEditTime : 2025-01-14 13:50:45
  * @FilePath     : /src/views/Lyrics.vue
  * @Description  : Lyrics
  * Copyright 2025 lastshrek, All Rights Reserved.
  * 2025-01-04 12:48:57
 -->
 <template>
-	<div class="fixed inset-0 h-screen w-screen backdrop-blur-2xl z-50">
-		<!-- 原有内容，添加相对定位确保在动画上层 -->
+	<div
+		class="fixed inset-0 h-screen w-screen z-50"
+		:style="{
+			backgroundColor: `rgb(${dominantColor.join(',')})`,
+			backdropFilter: 'blur(30px)',
+			WebkitBackdropFilter: 'blur(30px)',
+			transition: 'background-color 0.5s ease-in-out',
+		}"
+	>
+		<!-- 添加一个半透明遮罩层 -->
+		<div class="absolute inset-0 bg-black/20"></div>
+		<!-- 原有内容，添加相对定位确保在遮罩层上层 -->
 		<div class="relative z-10">
 			<!-- 顶部拖动区域和关闭按钮 -->
-			<div class="h-14 w-full flex justify-between items-center backdrop-blur-2xl" style="-webkit-app-region: drag">
+			<div
+				class="h-14 w-full flex justify-between items-center"
+				:style="{
+					backgroundColor: `rgb(${dominantColor.join(',')})`,
+					transition: 'background-color 0.5s ease-in-out',
+				}"
+				style="-webkit-app-region: drag"
+			>
 				<div class="px-4"></div>
 				<Button
 					variant="link"
@@ -26,20 +43,31 @@
 				</Button>
 			</div>
 
-			<div class="fixed inset-x-0 bottom-0 h-[calc(100vh-3.5rem)] bg-black">
+			<div class="fixed inset-x-0 bottom-0 h-[calc(100vh-3.5rem)]">
 				<!-- 主要内容区域 -->
-				<div class="flex h-full">
+				<div
+					class="flex h-full"
+					:style="{
+						backgroundColor: `rgb(${dominantColor.join(',')})`,
+						transition: 'background-color 0.5s ease-in-out',
+					}"
+				>
 					<!-- 左侧：封面和控制区域 -->
-					<div class="w-1/2 h-full p-8 flex flex-col justify-center items-center space-y-8">
+					<div
+						:class="[
+							'h-full p-8 flex flex-col justify-center items-center space-y-8 transition-all duration-300',
+							{ 'w-full': shouldCenter, 'w-1/2': !shouldCenter },
+						]"
+					>
 						<!-- 封面 -->
-						<div class="w-64 h-64 rounded-lg overflow-hidden">
+						<div class="w-96 h-96 rounded-lg overflow-hidden">
 							<img :src="currentTrack?.cover_url" class="w-full h-full object-cover" />
 						</div>
 
 						<!-- 歌曲信息 -->
 						<div class="text-center space-y-2">
-							<h2 class="text-2xl font-bold">{{ currentTrack?.name }}</h2>
-							<p class="text-gray-400">{{ currentTrack?.artist }}</p>
+							<h2 class="text-2xl font-bold text-white">{{ currentTrack?.name }}</h2>
+							<p class="text-white">{{ currentTrack?.artist }}</p>
 						</div>
 
 						<!-- 进度条 -->
@@ -47,6 +75,7 @@
 							<vue-slider
 								v-model="value"
 								:min="0"
+								:max="100"
 								:interval="0.01"
 								:drag-on-click="true"
 								:duration="0"
@@ -57,8 +86,15 @@
 								@drag-end="dragEnd"
 								contain
 								class="my-4"
+								:process-style="{
+									backgroundColor: `rgb(${secondaryColor.join(',')})`,
+								}"
+								:rail-style="{ backgroundColor: 'rgba(255, 255, 255, 0.2)' }"
+								:dot-style="{
+									backgroundColor: `rgb(${secondaryColor.join(',')})`,
+								}"
 							></vue-slider>
-							<div class="flex justify-between text-sm text-gray-400">
+							<div class="flex justify-between text-sm text-white">
 								<span>{{ formatCurrentTime(currentTime) }}</span>
 								<span>{{ formatTime(currentTrack?.duration || 0) }}</span>
 							</div>
@@ -206,7 +242,7 @@
 					</div>
 
 					<!-- 右侧：歌词区域 -->
-					<div class="w-1/2 h-full relative">
+					<div v-if="!lyricsStore.loading && !lyricsStore.error && parsedLyrics.length" class="w-1/2 h-full relative">
 						<!-- 歌词内容 -->
 						<div class="h-full overflow-y-auto relative" style="-webkit-app-region: no-drag" ref="lyricsContainer">
 							<div v-if="lyricsStore.loading" class="text-center py-4">加载中...</div>
@@ -227,20 +263,18 @@
 									class="transition-all duration-300 px-4 py-2"
 								>
 									<p
-										class="mb-1 text-center text-lg"
+										class="mb-1 text-center text-lg text-white"
 										:class="{
-											'text-white font-bold': isCurrentLyric(item, index),
-											'text-gray-400': !isCurrentLyric(item, index),
+											'font-bold': isCurrentLyric(item, index),
 										}"
 									>
 										{{ item.lrc }}
 									</p>
 									<p
 										v-if="item.translation && item.translation !== 'unwritten'"
-										class="text-sm text-center"
+										class="text-sm text-center text-white"
 										:class="{
-											'text-white font-bold': isCurrentLyric(item, index),
-											'text-gray-400': !isCurrentLyric(item, index),
+											'font-bold': isCurrentLyric(item, index),
 										}"
 									>
 										{{ item.translation }}
@@ -266,9 +300,16 @@ import { useCurrentProgressStore } from '@/store/modules/currentProgress'
 import { formatTime, formatCurrentTime } from '@/utils'
 import { useLyricsStore } from '@/store/modules/lyrics'
 import { emitter } from '@/utils/mitt'
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
 import { useCurrentTrackStore } from '@/store/modules/currenttrack'
 import { PlayMode, usePlayModeStore } from '@/store/modules/playMode'
+import ColorThief from 'colorthief'
+
+interface LyricItem {
+	time: number
+	lrc: string
+	translation: string
+}
 
 defineEmits(['close'])
 const currentTrack = useCurrentTrackStore()
@@ -281,13 +322,8 @@ const lyricsStore = useLyricsStore()
 const currentProgress = useCurrentProgressStore()
 const playMode = usePlayModeStore()
 
-const value = ref(0)
-const lyricsContainer = ref<HTMLElement | null>(null)
-const lyricRefs = ref<HTMLElement[]>([])
-const audio = ref<HTMLAudioElement | null>(null)
-
 // 解析歌词
-const parsedLyrics = computed(() => {
+const parsedLyrics = computed<LyricItem[]>(() => {
 	const lrcMap = new Map()
 
 	// 解析原文歌词
@@ -328,10 +364,90 @@ const parsedLyrics = computed(() => {
 		.sort((a, b) => a.time - b.time)
 })
 
+// 添加延迟状态
+const shouldCenter = ref<boolean>(false)
+let timer: NodeJS.Timeout | null = null
+
+// 处理延迟居中
+const handleCenterDelay = () => {
+	if (timer) clearTimeout(timer)
+
+	if (!lyricsStore.loading && !lyricsStore.error && parsedLyrics.value.length) {
+		shouldCenter.value = false
+		return
+	}
+
+	timer = setTimeout(() => {
+		shouldCenter.value = !!(lyricsStore.loading || lyricsStore.error || !parsedLyrics.value.length)
+	}, 5000)
+}
+
+// 监听歌词状态变化
+watch([() => lyricsStore.loading, () => lyricsStore.error, () => parsedLyrics.value.length], handleCenterDelay, {
+	immediate: true,
+})
+
+// 组件卸载时清理定时器
+onUnmounted(() => {
+	if (timer) clearTimeout(timer)
+})
+
+const value = ref(0)
+const lyricsContainer = ref<HTMLElement | null>(null)
+const lyricRefs = ref<HTMLElement[]>([])
+const audio = ref<HTMLAudioElement | null>(null)
+
+// 添加主色调状态
+const dominantColor = ref<number[]>([0, 0, 0])
+const secondaryColor = ref<number[]>([0, 0, 0])
+
+// 获取图片主色调
+const getImageColor = async (imageUrl: string) => {
+	try {
+		const img = new Image()
+		img.crossOrigin = 'Anonymous'
+		img.src = imageUrl
+
+		await new Promise((resolve, reject) => {
+			img.onload = resolve
+			img.onerror = reject
+		})
+
+		const colorThief = new ColorThief()
+		const color = colorThief.getColor(img)
+		// 将主色调变深，将每个RGB分量减少30%
+		dominantColor.value = color.map(c => Math.max(0, Math.floor(c * 0.7)))
+
+		// 获取调色板并设置第二主色
+		const palette = colorThief.getPalette(img, 3)
+		// 使用第二个最显著的颜色，并提高亮度和饱和度
+		secondaryColor.value = palette[1].map(c => Math.min(255, Math.floor(c * 1.5))) // 提高亮度50%
+	} catch (error) {
+		console.error('获取图片颜色失败:', error)
+		// 设置默认颜色
+		dominantColor.value = [18, 18, 18]
+		secondaryColor.value = [255, 23, 68] // 使用更鲜艳的红色作为默认进度条颜色
+	}
+}
+
+// 监听封面变化
+watch(
+	() => currentTrack.cover_url,
+	async newUrl => {
+		if (newUrl) {
+			await getImageColor(newUrl)
+		} else {
+			// 当没有封面时也使用默认黑色背景
+			dominantColor.value = [18, 18, 18]
+		}
+	},
+	{ immediate: true }
+)
+
 // 滚动到当前歌词
 const scrollToCurrentLyric = (time: number, immediate = false) => {
 	const currentIndex = parsedLyrics.value.findIndex(
-		(item, index) => time >= item.time && time < (parsedLyrics.value[index + 1]?.time || Infinity)
+		(item: LyricItem, index: number) => time >= item.time && time < (parsedLyrics.value[index + 1]?.time || Infinity)
 	)
 
 	if (currentIndex === -1) return
@@ -373,7 +489,10 @@ const dragEnd = () => {
 	// 确保时间不超过总时长
 	const clampedTime = Math.min(newTime, durationInSeconds)
 
-	emitter.emit('showLyrics', clampedTime)
+	currentTimeStore.setCurrentTime(clampedTime)
+	if (audio.value) {
+		audio.value.currentTime = clampedTime
+	}
 }
 
 // 监听播放进度变化来更新进度条
@@ -431,7 +550,7 @@ onMounted(() => {
 })
 
 // 判断是否是当前播放的歌词
-const isCurrentLyric = (item: any, index: number) => {
+const isCurrentLyric = (item: LyricItem, index: number) => {
 	const time = currentTime.value
 	return time >= item.time && time < (parsedLyrics.value[index + 1]?.time || Infinity)
 }
@@ -469,101 +588,18 @@ const shuffle = () => {
 	border-radius: 2px;
 }
 
-/* 背景动画 */
-.bg-gradient-animate {
-	background-size: 400% 400% !important;
-	animation: gradientFlow 15s ease infinite;
+/* 添加文字描边效果 */
+.text-stroke {
+	color: white;
+	text-shadow: -0.5px -0.5px 0 rgba(0, 0, 0, 0.3), 0.5px -0.5px 0 rgba(0, 0, 0, 0.3), -0.5px 0.5px 0 rgba(0, 0, 0, 0.3),
+		0.5px 0.5px 0 rgba(0, 0, 0, 0.3);
 }
 
-@keyframes gradientFlow {
-	0% {
-		background-position: 0% 50%;
-	}
-	50% {
-		background-position: 100% 50%;
-	}
-	100% {
-		background-position: 0% 50%;
-	}
-}
-
-/* 添加玻璃拟态效果 */
-.glass-morphism {
-	background: rgba(0, 0, 0, 0.6);
-	backdrop-filter: blur(20px);
-	-webkit-backdrop-filter: blur(20px);
-}
-
-/* 添加内容区域的投影效果 */
-.fixed.inset-x-0.bottom-0 {
-	@apply glass-morphism;
-	box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.2);
-}
-
-/* 优化歌词容器的视觉效果 */
-.lyrics-container {
-	@apply glass-morphism;
-	mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
-	-webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
-	transform: translateZ(0);
-	backface-visibility: hidden;
-	perspective: 1000px;
-}
-
-.active {
-	transform: scale(1.1);
-	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-	will-change: transform, opacity;
-	font-weight: 600;
-}
-
-.floating-blob {
-	position: absolute;
-	width: var(--size);
-	height: var(--size);
-	background: var(--color);
-	border-radius: 50%;
-	filter: blur(60px);
-	opacity: 0.5;
-	mix-blend-mode: soft-light;
-	animation: float var(--delay) ease-in-out infinite alternate;
-	transform: translate(var(--x), var(--y));
-}
-
-@keyframes float {
-	0% {
-		transform: translate(var(--x), var(--y)) scale(1);
-	}
-	50% {
-		transform: translate(calc(var(--x) + 10%), calc(var(--y) - 10%)) scale(1.1);
-	}
-	100% {
-		transform: translate(var(--x), var(--y)) scale(1);
-	}
-}
-
-/* 移除之前的动画相关样式 */
-.bg-gradient-animate,
-.liquid-container,
-.liquid-blob {
-	display: none;
-}
-
-.karaoke-text,
-.karaoke-overlay {
-	display: none;
-}
-
-/* 保持其他样式不变 */
-.active {
-	transform: scale(1.1);
-	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-	will-change: transform, opacity;
-	font-weight: 600;
-}
-
-/* 优化不活跃状态的过渡 */
-li:not(.active) {
-	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+/* 应用到所有文字元素 */
+h2,
+p,
+span,
+li {
+	@apply text-stroke text-white;
 }
 </style>
