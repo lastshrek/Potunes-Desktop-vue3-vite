@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-02 18:27:16
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-14 10:05:09
+ * @LastEditTime : 2025-01-14 21:37:48
  * @FilePath     : /src/components/albumcard/AlbumCard.vue
  * @Description  : album card
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -10,8 +10,14 @@
 -->
 <template>
 	<div
-		class="relative w-full h-full bg-[#121212] hover:bg-[#181818] text-gray-50 cursor-pointer group p-4 rounded-lg shadow-lg transition-colors duration-200 flex-shrink-0 basis-[calc(20%-16px)]"
-		:class="max_width == 'md:w-full' ? 'md:w-full' : max_width"
+		class="relative w-full h-full text-gray-50 cursor-pointer group p-4 rounded-lg shadow-lg transition-all duration-200 flex-shrink-0 basis-[calc(20%-16px)] hover:brightness-110 backdrop-blur-md bg-opacity-60"
+		:class="[max_width == 'md:w-full' ? 'md:w-full' : max_width]"
+		:style="{
+			backgroundColor: dominantColorWithOpacity,
+			backdropFilter: 'blur(16px)',
+			WebkitBackdropFilter: 'blur(16px)',
+			'--hover-brightness': dominantColor === '#121212' ? '1.2' : '1.3',
+		}"
 		@click="handleClick"
 	>
 		<div class="relative w-full mb-2" :class="imageRatio === 'square' ? 'aspect-square' : 'aspect-[32/15]'">
@@ -19,6 +25,7 @@
 				:src="getImageSrc(cover_url)"
 				class="w-full h-full object-cover rounded-lg"
 				:key="typeof cover_url === 'string' ? cover_url : 'local'"
+				@load="handleImageLoad(getImageSrc(cover_url))"
 			/>
 			<div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent rounded-lg"></div>
 			<div v-if="centerNumber" class="absolute inset-0 flex items-center justify-center">
@@ -91,11 +98,20 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button'
 import { Heart, MoreHorizontal } from 'lucide-vue-next'
-import { PropType } from 'vue'
+import { PropType, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import ColorThief from 'colorthief'
 
 const router = useRouter()
 const emit = defineEmits(['play'])
+const dominantColor = ref<string>('#121212')
+const dominantColorWithOpacity = computed(() => {
+	if (dominantColor.value === '#121212') {
+		return 'rgba(18, 18, 18, 0.8)'
+	}
+	// 如果是 rgb 格式，转换为 rgba
+	return dominantColor.value.replace('rgb', 'rgba').replace(')', ', 0.8)')
+})
 
 interface ImportMetaImage {
 	default: string
@@ -149,6 +165,10 @@ const props = defineProps({
 		type: [Number, String],
 		default: null,
 	},
+	useColorThief: {
+		type: Boolean,
+		default: true,
+	},
 })
 
 const getImageSrc = (url: string | ImportMetaImage): string => {
@@ -172,6 +192,36 @@ const handlePlay = (e: Event) => {
 	e.stopPropagation()
 	emit('play')
 }
+
+// 获取图片主色调
+const getDominantColor = async (imageUrl: string) => {
+	try {
+		const img = new Image()
+		img.crossOrigin = 'Anonymous'
+		img.src = imageUrl
+
+		await new Promise((resolve, reject) => {
+			img.onload = resolve
+			img.onerror = reject
+		})
+
+		const colorThief = new ColorThief()
+		const color = colorThief.getColor(img)
+		// 将主色调变深，将每个RGB分量减少40%，使其更暗一些
+		const darkColor = color.map(c => Math.max(0, Math.floor(c * 0.6)))
+		dominantColor.value = `rgb(${darkColor.join(',')})`
+	} catch (error) {
+		console.error('获取图片颜色失败:', error)
+		dominantColor.value = '#121212'
+	}
+}
+
+// 图片加载完成后获取主色调
+const handleImageLoad = (url: string) => {
+	if (props.useColorThief) {
+		getDominantColor(url)
+	}
+}
 </script>
 
 <style scoped>
@@ -189,5 +239,15 @@ const handlePlay = (e: Event) => {
 	line-clamp: 2;
 	-webkit-box-orient: vertical;
 	overflow: hidden;
+}
+
+/* 添加 hover 效果 */
+.hover\:brightness-110:hover {
+	filter: brightness(var(--hover-brightness, 1.1));
+}
+
+/* 确保颜色过渡平滑 */
+div {
+	transition: background-color 0.2s ease-in-out, filter 0.2s ease-in-out;
 }
 </style>

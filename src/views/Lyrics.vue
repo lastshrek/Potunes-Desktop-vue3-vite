@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2025-01-04 12:48:57
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-14 13:50:45
+ * @LastEditTime : 2025-01-14 21:23:07
  * @FilePath     : /src/views/Lyrics.vue
  * @Description  : Lyrics
  * Copyright 2025 lastshrek, All Rights Reserved.
@@ -10,40 +10,29 @@
 -->
 <template>
 	<div
-		class="fixed inset-0 h-screen w-screen z-50"
+		class="fixed inset-0 h-screen w-screen z-50 transform"
 		:style="{
 			backgroundColor: `rgb(${dominantColor.join(',')})`,
 			backdropFilter: 'blur(30px)',
 			WebkitBackdropFilter: 'blur(30px)',
-			transition: 'background-color 0.5s ease-in-out',
+			transition: 'all 0.3s ease-in-out',
 		}"
 	>
 		<!-- 添加一个半透明遮罩层 -->
 		<div class="absolute inset-0 bg-black/20"></div>
 		<!-- 原有内容，添加相对定位确保在遮罩层上层 -->
 		<div class="relative z-10">
-			<!-- 顶部拖动区域和关闭按钮 -->
-			<div
-				class="h-14 w-full flex justify-between items-center"
-				:style="{
-					backgroundColor: `rgb(${dominantColor.join(',')})`,
-					transition: 'background-color 0.5s ease-in-out',
-				}"
-				style="-webkit-app-region: drag"
+			<!-- 添加关闭按钮 -->
+			<Button
+				variant="link"
+				size="icon"
+				class="absolute top-4 right-4 text-white z-50"
+				style="-webkit-app-region: no-drag"
+				@click="$emit('close')"
 			>
-				<div class="px-4"></div>
-				<Button
-					variant="link"
-					size="icon"
-					@click="$emit('close')"
-					class="h-10 w-10 mr-2 rounded-lg hover:bg-gray-800/50"
-					style="-webkit-app-region: no-drag"
-				>
-					<X class="h-5 w-5" />
-				</Button>
-			</div>
-
-			<div class="fixed inset-x-0 bottom-0 h-[calc(100vh-3.5rem)]">
+				<X class="h-6 w-6" />
+			</Button>
+			<div class="fixed inset-x-0 bottom-0 h-screen">
 				<!-- 主要内容区域 -->
 				<div
 					class="flex h-full"
@@ -242,9 +231,19 @@
 					</div>
 
 					<!-- 右侧：歌词区域 -->
-					<div v-if="!lyricsStore.loading && !lyricsStore.error && parsedLyrics.length" class="w-1/2 h-full relative">
+					<div
+						v-if="!lyricsStore.loading && !lyricsStore.error && parsedLyrics.length"
+						class="w-1/2 h-full py-20 relative"
+					>
 						<!-- 歌词内容 -->
-						<div class="h-full overflow-y-auto relative" style="-webkit-app-region: no-drag" ref="lyricsContainer">
+						<div
+							class="h-full overflow-y-auto overflow-x-hidden relative"
+							style="-webkit-app-region: no-drag"
+							ref="lyricsContainer"
+							@mouseenter="pauseAutoScroll"
+							@mouseleave="resumeAutoScroll"
+							@blur="resumeAutoScroll"
+						>
 							<div v-if="lyricsStore.loading" class="text-center py-4">加载中...</div>
 							<div v-else-if="lyricsStore.error" class="text-center text-red-500 py-4">
 								{{ lyricsStore.error }}
@@ -260,10 +259,11 @@
 										'opacity-50 scale-100': !isCurrentLyric(item, index),
 									}"
 									:ref="el => (lyricRefs[index] = el as HTMLElement)"
-									class="transition-all duration-300 px-4 py-2"
+									class="transition-all duration-300 px-4 py-2 cursor-pointer hover:opacity-100 w-full"
+									@click="seekToTime(item.time)"
 								>
 									<p
-										class="mb-1 text-center text-lg text-white"
+										class="mb-1 text-center text-lg text-white break-words whitespace-pre-wrap max-w-full"
 										:class="{
 											'font-bold': isCurrentLyric(item, index),
 										}"
@@ -272,7 +272,7 @@
 									</p>
 									<p
 										v-if="item.translation && item.translation !== 'unwritten'"
-										class="text-sm text-center text-white"
+										class="text-sm text-center text-white break-words whitespace-pre-wrap max-w-full"
 										:class="{
 											'font-bold': isCurrentLyric(item, index),
 										}"
@@ -294,6 +294,7 @@
 import { Button } from '@/components/ui/button'
 import { X, Play, Pause, SkipBack, SkipForward } from 'lucide-vue-next'
 import VueSlider from 'vue-slider-component'
+import { useRouter } from 'vue-router'
 import { useIsPlayingStore } from '@/store/modules/isPlaying'
 import { useCurrentTimeStore } from '@/store/modules/currentTime'
 import { useCurrentProgressStore } from '@/store/modules/currentProgress'
@@ -311,6 +312,7 @@ interface LyricItem {
 	translation: string
 }
 
+const router = useRouter()
 defineEmits(['close'])
 const currentTrack = useCurrentTrackStore()
 const isPlaying = useIsPlayingStore().isPlaying
@@ -396,10 +398,47 @@ const value = ref(0)
 const lyricsContainer = ref<HTMLElement | null>(null)
 const lyricRefs = ref<HTMLElement[]>([])
 const audio = ref<HTMLAudioElement | null>(null)
+let scrollTimeout: ReturnType<typeof setTimeout> | null = null
 
 // 添加主色调状态
 const dominantColor = ref<number[]>([0, 0, 0])
 const secondaryColor = ref<number[]>([0, 0, 0])
+
+// 添加自动滚动控制
+const isAutoScrollPaused = ref(false)
+
+// 暂停自动滚动
+const pauseAutoScroll = () => {
+	isAutoScrollPaused.value = true
+}
+
+// 恢复自动滚动
+const resumeAutoScroll = () => {
+	setTimeout(() => {
+		isAutoScrollPaused.value = false
+		// 恢复时立即滚动到当前歌词
+		if (currentTime.value > 0) {
+			scrollToCurrentLyric(currentTime.value, true)
+		}
+	}, 2000)
+}
+
+// 修改 debouncedScroll 函数，添加自动滚动控制
+const debouncedScroll = (time: number, immediate = false) => {
+	if (scrollTimeout) {
+		clearTimeout(scrollTimeout)
+		scrollTimeout = null
+	}
+	// 只有在未暂停自动滚动时才执行滚动
+	if (!isAutoScrollPaused.value) {
+		scrollTimeout = setTimeout(
+			() => {
+				scrollToCurrentLyric(time, immediate)
+			},
+			immediate ? 0 : 100
+		)
+	}
+}
 
 // 获取图片主色调
 const getImageColor = async (imageUrl: string) => {
@@ -464,17 +503,6 @@ const scrollToCurrentLyric = (time: number, immediate = false) => {
 	}
 }
 
-// 添加防抖的滚动处理
-let scrollTimeout: number | null = null
-const debouncedScroll = (time: number, immediate = false) => {
-	if (scrollTimeout) {
-		window.clearTimeout(scrollTimeout)
-	}
-	scrollTimeout = window.setTimeout(() => {
-		scrollToCurrentLyric(time, immediate)
-	}, 100)
-}
-
 // 进度条拖动结束
 const dragEnd = () => {
 	if (!currentTrack.duration) return
@@ -512,7 +540,9 @@ watch(
 	currentTime,
 	newTime => {
 		if (!currentTrack.duration) return
-		debouncedScroll(newTime)
+		if (!isAutoScrollPaused.value) {
+			debouncedScroll(newTime)
+		}
 	},
 	{ immediate: true }
 )
@@ -571,6 +601,16 @@ const shuffle = () => {
 		return
 	}
 	usePlayModeStore().setPlayMode(PlayMode.Shuffle)
+}
+
+// 跳转到指定时间
+const seekToTime = (time: number) => {
+	if (!currentTrack.duration) return
+
+	currentTimeStore.setCurrentTime(time)
+	if (audio.value) {
+		audio.value.currentTime = time
+	}
 }
 </script>
 

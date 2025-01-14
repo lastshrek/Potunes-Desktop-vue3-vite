@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-03 00:14:23
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-13 20:35:42
+ * @LastEditTime : 2025-01-14 21:16:46
  * @FilePath     : /src/views/Playlist.vue
  * @Description  : Playlist
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -18,7 +18,10 @@
 						<!-- 顶部信息区域 -->
 						<div class="flex items-start space-x-6 w-full">
 							<!-- 封面图片 -->
-							<div class="w-64 flex-shrink-0" :class="playlistType === 'collection' ? 'h-[180px]' : 'aspect-square'">
+							<div
+								class="flex-shrink-0"
+								:class="playlistType === 'collection' ? 'aspect-[32/15] h-36' : 'aspect-square w-64'"
+							>
 								<img v-lazy="playlist.cover" class="w-full h-full object-cover rounded-lg" />
 							</div>
 							<!-- 右侧信息 -->

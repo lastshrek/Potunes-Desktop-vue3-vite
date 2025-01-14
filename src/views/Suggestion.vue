@@ -29,7 +29,7 @@
 							<template v-if="lastestCollections?.length">
 								<div
 									v-for="(collection, index) in lastestCollections"
-									:key="index"
+									:key="collection.id"
 									class="absolute inset-0 transition-opacity duration-500"
 									:class="{ 'opacity-0': currentIndex !== index }"
 								>
@@ -45,6 +45,8 @@
 										:showControls="true"
 										:showInfo="true"
 										:titleSize="'text-2xl'"
+										:useColorThief="false"
+										@click="toPlaylist(collection.id, '')"
 									/>
 								</div>
 
@@ -54,7 +56,7 @@
 										v-for="(collection, index) in nextCollections"
 										:key="collection.id"
 										class="w-32 aspect-[32/15] rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-[#da5597]/90 transition-all"
-										@click="switchToCollection(getNextCollectionIndex(index))"
+										@click="toPlaylist(collection.id, '')"
 									>
 										<img v-lazy="collection.cover" :alt="collection.title" class="w-full h-full object-cover" />
 									</div>
@@ -76,6 +78,7 @@
 								:centerText="true"
 								:titleSize="'text-xl'"
 								imageRatio="square"
+								:useColorThief="false"
 							/>
 						</template>
 						<template v-else>
@@ -243,11 +246,25 @@ onMounted(() => {
 /**
  * @description: 获取最新的一个月度精选集
  */
-const lastestCollections: Ref<Playlist[] | null> = ref([])
+const lastestCollections: Ref<Playlist[]> = ref([])
 const getLatestCollection = async () => {
 	const [res] = await handlePromise(latestCollection())
 	if (!res) return
-	lastestCollections.value = res
+	console.log('Latest collections:', res) // 添加日志查看数据
+	// 确保数据的一致性
+	lastestCollections.value = Array.isArray(res)
+		? res.map(item => ({
+				...item,
+				id: item.id,
+				cover: item.cover,
+				title: item.title,
+		  }))
+		: [res].map(item => ({
+				...item,
+				id: item.id,
+				cover: item.cover,
+				title: item.title,
+		  }))
 }
 /**
  * @description: 获取最新的年度精选集
@@ -300,16 +317,21 @@ const nextCollections = computed(() => {
 
 	const next1 = getNextIndex(currentIndex.value + 1)
 	const next2 = getNextIndex(currentIndex.value + 2)
-	return [lastestCollections.value[next1], lastestCollections.value[next2]]
+	const collections = [lastestCollections.value[next1], lastestCollections.value[next2]]
+	console.log('Next collections:', collections) // 添加日志查看数据
+	return collections
 })
 
 // 获取点击缩略图对应的索引
 const getNextCollectionIndex = (thumbnailIndex: number) => {
-	return getNextIndex(currentIndex.value + thumbnailIndex + 1)
+	const nextIndex = getNextIndex(currentIndex.value + thumbnailIndex + 1)
+	console.log('Next index:', nextIndex, 'Collection:', lastestCollections.value[nextIndex]) // 添加日志查看数据
+	return nextIndex
 }
 
 // 切换到指定合集
 const switchToCollection = (index: number) => {
+	console.log('Switching to collection:', index, lastestCollections.value[index]) // 添加日志查看数据
 	currentIndex.value = index
 	resetAutoplay()
 }
@@ -355,7 +377,8 @@ const router = useRouter()
 const toPlaylist = (id: number, type: string) => {
 	if (type === '') {
 		router.push({
-			path: `playlist/${id}`,
+			name: 'playlist',
+			params: { id: id.toString() },
 		})
 		return
 	}

@@ -6,7 +6,7 @@
  * @Description:
  * @FilePath: /potunes-desktop-vue3-vite/electron/main.ts
  */
-import { app, BrowserWindow, ipcMain, Tray, nativeImage } from 'electron'
+import { app, BrowserWindow, ipcMain, Tray, nativeImage, globalShortcut, Menu } from 'electron'
 import path from 'node:path'
 
 let win: BrowserWindow | null = null
@@ -138,7 +138,9 @@ function createWindow() {
 		height: 800,
 		minWidth: 1200,
 		minHeight: 800,
-		frame: false,
+		frame: process.platform !== 'darwin',
+		titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
+		trafficLightPosition: { x: 12, y: 22 },
 		webPreferences: {
 			nodeIntegration: true,
 			contextIsolation: true,
@@ -155,10 +157,108 @@ function createWindow() {
 		win.loadFile(path.join(__dirname, '../../dist/index.html'))
 	}
 
-	win.on('closed', () => {
-		win = null
+	// 处理窗口关闭按钮点击事件
+	win.on('close', event => {
+		if (process.platform === 'darwin') {
+			event.preventDefault()
+			win?.hide()
+			return false
+		}
 	})
 }
+
+// 点击托盘图标时显示窗口
+const showWindow = () => {
+	if (win) {
+		win.show()
+		win.focus()
+	} else {
+		createWindow()
+	}
+}
+
+// 创建应用菜单
+const createMenu = () => {
+	const template = [
+		{
+			label: app.name,
+			submenu: [
+				{ role: 'about' },
+				{ type: 'separator' },
+				{ role: 'services' },
+				{ type: 'separator' },
+				{ role: 'hide' },
+				{ role: 'hideOthers' },
+				{ role: 'unhide' },
+				{ type: 'separator' },
+				{
+					label: 'Quit',
+					accelerator: 'Command+Q',
+					click: () => {
+						app.quit()
+					},
+				},
+			],
+		},
+		{
+			label: 'Edit',
+			submenu: [
+				{ role: 'undo' },
+				{ role: 'redo' },
+				{ type: 'separator' },
+				{ role: 'cut' },
+				{ role: 'copy' },
+				{ role: 'paste' },
+				{ role: 'selectAll' },
+			],
+		},
+		{
+			label: 'Window',
+			submenu: [{ role: 'minimize' }, { role: 'zoom' }, { type: 'separator' }, { role: 'front' }],
+		},
+	]
+
+	Menu.setApplicationMenu(Menu.buildFromTemplate(template as any))
+}
+
+app.on('ready', () => {
+	createWindow()
+	createMenu() // 创建应用菜单
+	// 等待一会儿再创建托盘图标
+	setTimeout(() => {
+		const tray = createMenuBarControls()
+		if (tray) {
+			tray.on('click', showWindow)
+		}
+	}, 1000)
+
+	// 移除全局快捷键注册，因为现在通过菜单处理
+	// globalShortcut.register('Command+Q', () => {
+	// 	app.quit()
+	// })
+})
+
+app.on('window-all-closed', () => {
+	if (process.platform !== 'darwin') {
+		cleanupTrayIcons()
+		app.quit()
+	}
+})
+
+// 处理 dock 图标点击和应用重新激活
+app.on('activate', () => {
+	showWindow()
+})
+
+app.on('before-quit', () => {
+	cleanupTrayIcons()
+})
+
+// 确保在应用退出时清理资源
+app.on('will-quit', () => {
+	// 注销所有快捷键
+	globalShortcut.unregisterAll()
+})
 
 // 监听播放状态变化
 ipcMain.on('update-play-state', (_, isPlaying: boolean) => {
@@ -188,8 +288,6 @@ ipcMain.on('update-lyric', (_, lyric: string) => {
 		return
 	}
 
-	console.log('收到原始歌词:', lyric)
-
 	// 如果没有歌词，显示空白
 	if (!lyric || lyric === 'undefined' || lyric === 'null' || lyric === '[object Object]') {
 		console.log('歌词为空或无效')
@@ -204,11 +302,8 @@ ipcMain.on('update-lyric', (_, lyric: string) => {
 		.replace(/\【\d{2}:\d{2}\.\d{1,3}\】/g, '') // 【00:27.462】
 		.trim()
 
-	console.log('清理后的歌词:', cleanLyric)
-
 	// 如果清理后没有内容，显示空白
 	if (!cleanLyric || cleanLyric.length === 0) {
-		console.log('清理后歌词为空')
 		lyricsTray.setTitle('')
 		return
 	}
@@ -216,7 +311,6 @@ ipcMain.on('update-lyric', (_, lyric: string) => {
 	// 如果歌词长度小于等于最大长度，直接显示
 	const maxLength = 60
 	if (cleanLyric.length <= maxLength) {
-		console.log('显示完整歌词:', cleanLyric)
 		lyricsTray.setTitle(cleanLyric)
 		return
 	}
@@ -256,7 +350,6 @@ ipcMain.on('update-lyric', (_, lyric: string) => {
 		}
 
 		const displayText = scrollText.substring(currentPosition, currentPosition + maxLength)
-		console.log('显示滚动歌词:', displayText)
 		lyricsTray.setTitle(displayText)
 
 		// 使用 setTimeout 来模拟 requestAnimationFrame
@@ -292,25 +385,8 @@ ipcMain.on('update-song-info', (_, { title, artist }: { title: string; artist: s
 	}
 })
 
-app.on('ready', () => {
-	createWindow()
-	// 等待一会儿再创建托盘图标
-	setTimeout(createMenuBarControls, 1000)
-})
-
-app.on('window-all-closed', () => {
+// 添加退出应用的方法
+ipcMain.on('quit-app', () => {
 	cleanupTrayIcons()
-	if (process.platform !== 'darwin') {
-		app.quit()
-	}
-})
-
-app.on('activate', () => {
-	if (!win) {
-		createWindow()
-	}
-})
-
-app.on('before-quit', () => {
-	cleanupTrayIcons()
+	app.quit()
 })
