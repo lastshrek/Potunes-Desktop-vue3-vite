@@ -108,9 +108,11 @@ const createMenuBarControls = () => {
 		})
 
 		// 创建歌词显示托盘（放在最左侧，最后创建）
-		const emptyIcon = nativeImage.createEmpty()
+		const emptyIcon = nativeImage.createFromPath(
+			path.join(__dirname, '../src/assets/images/menubar/empty-template.png')
+		)
 		emptyIcon.setTemplateImage(true)
-		lyricsTray = new Tray(emptyIcon)
+		lyricsTray = new Tray(emptyIcon.resize({ width: 18, height: 18, quality: 'best' }))
 		lyricsTray.setToolTip('歌词')
 		// 设置初始空白标题
 		lyricsTray.setTitle('')
@@ -214,13 +216,16 @@ ipcMain.on('update-lyric', (_, lyric: string) => {
 	// 如果歌词长度小于等于最大长度，直接显示
 	const maxLength = 60
 	if (cleanLyric.length <= maxLength) {
-		lyricsTray.setTitle(cleanLyric)
 		console.log('显示完整歌词:', cleanLyric)
+		lyricsTray.setTitle(cleanLyric)
 		return
 	}
 
 	// 在歌词后面加上空格，只滚动一次
 	const scrollText = cleanLyric + '     '
+
+	// 重置当前位置
+	currentPosition = 0
 
 	// 创建滚动效果
 	let lastTime = Date.now()
@@ -251,6 +256,7 @@ ipcMain.on('update-lyric', (_, lyric: string) => {
 		}
 
 		const displayText = scrollText.substring(currentPosition, currentPosition + maxLength)
+		console.log('显示滚动歌词:', displayText)
 		lyricsTray.setTitle(displayText)
 
 		// 使用 setTimeout 来模拟 requestAnimationFrame
@@ -258,6 +264,10 @@ ipcMain.on('update-lyric', (_, lyric: string) => {
 	}
 
 	// 启动动画
+	if (animationTimer) {
+		clearTimeout(animationTimer)
+		animationTimer = null
+	}
 	updateScroll()
 })
 

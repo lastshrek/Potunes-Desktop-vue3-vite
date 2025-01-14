@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-02 18:27:16
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-13 20:37:44
+ * @LastEditTime : 2025-01-14 10:05:09
  * @FilePath     : /src/components/albumcard/AlbumCard.vue
  * @Description  : album card
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -80,7 +80,7 @@
 			</div>
 		</div>
 		<div :class="{ 'text-center': centerText }">
-			<h2 :class="['font-bold text-white overflow-hidden line-clamp-2 min-h-[2.5em]', titleSize]">
+			<h2 :class="['font-bold text-white overflow-hidden line-clamp-1 min-h-[1.25em]', titleSize]">
 				{{ name }}
 			</h2>
 			<p v-if="artist" class="text-gray-400 text-xs mt-1 line-clamp-1 overflow-hidden">{{ artist }}</p>
@@ -175,9 +175,18 @@ const handlePlay = (e: Event) => {
 </script>
 
 <style scoped>
+.line-clamp-1 {
+	display: -webkit-box;
+	-webkit-line-clamp: 1;
+	line-clamp: 1;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
 .line-clamp-2 {
 	display: -webkit-box;
 	-webkit-line-clamp: 2;
+	line-clamp: 2;
 	-webkit-box-orient: vertical;
 	overflow: hidden;
 }

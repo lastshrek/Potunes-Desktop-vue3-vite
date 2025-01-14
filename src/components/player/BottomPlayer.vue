@@ -320,7 +320,7 @@ const updateLyric = () => {
 		const line = currentLyricLines.value[i]
 		if (!line || line.trim() === '') continue
 
-		const match = line.match(/\[(\d{2}):(\d{2})\.(\d{3})\](.*)/)
+		const match = line.match(/\[(\d{2}):(\d{2})\.(\d{1,3})\](.*)/)
 		if (!match) continue
 
 		const minutes = parseInt(match[1])
@@ -335,10 +335,7 @@ const updateLyric = () => {
 		) {
 			if (i !== currentLyricIndex.value) {
 				currentLyricIndex.value = i
-				// 只发送有效的歌词文本
-				if (text && text.trim() !== '') {
-					electron.updateLyric(text)
-				}
+				electron.updateLyric(text)
 			}
 			break
 		}
@@ -347,7 +344,7 @@ const updateLyric = () => {
 
 // 辅助函数：获取歌词时间戳
 const getLyricTime = (line: string) => {
-	const match = line.match(/\[(\d{2}):(\d{2})\.(\d{3})\]/)
+	const match = line.match(/\[(\d{2}):(\d{2})\.(\d{1,3})\]/)
 	if (!match) return Infinity
 	const minutes = parseInt(match[1])
 	const seconds = parseInt(match[2])
@@ -381,8 +378,6 @@ watch(
 
 		// 解析歌词，过滤掉空行
 		currentLyricLines.value = newLyric.split('\n').filter(line => line.trim() !== '')
-
-		console.log('解析后的歌词行:', currentLyricLines.value)
 
 		// 设置新的事件监听器
 		setupLyricHandler()

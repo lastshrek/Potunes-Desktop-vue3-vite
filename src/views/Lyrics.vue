@@ -182,35 +182,34 @@ const parsedLyrics = computed(() => {
 	// 解析原文歌词
 	const lrcLines = lyricsStore.lrc.split('\n')
 	lrcLines.forEach(line => {
-		const match = line.match(/\[(\d{2}):(\d{2})\.(\d{3})\](.*?)$/)
+		const match = line.match(/\[(\d{2}):(\d{2})\.(\d{1,3})\](.*)/)
 		if (match) {
 			const minutes = parseInt(match[1])
 			const seconds = parseInt(match[2])
 			const milliseconds = parseInt(match[3])
 			const time = minutes * 60 + seconds + milliseconds / 1000
 			const text = match[4].trim()
-			// 只添加非空歌词
-			if (text) {
-				lrcMap.set(time, { time, lrc: text, translation: '' })
-			}
+			lrcMap.set(time, { time, lrc: text, translation: '' })
 		}
 	})
 
 	// 解析翻译歌词
-	const lrcCnLines = lyricsStore.lrc_cn.split('\n')
-	lrcCnLines.forEach(line => {
-		const match = line.match(/\[(\d{2}):(\d{2})\.(\d{3})\](.*?)$/)
-		if (match) {
-			const minutes = parseInt(match[1])
-			const seconds = parseInt(match[2])
-			const milliseconds = parseInt(match[3])
-			const time = minutes * 60 + seconds + milliseconds / 1000
-			const text = match[4].trim()
-			if (lrcMap.has(time)) {
-				lrcMap.get(time).translation = text
+	if (lyricsStore.lrc_cn) {
+		const lrcCnLines = lyricsStore.lrc_cn.split('\n')
+		lrcCnLines.forEach(line => {
+			const match = line.match(/\[(\d{2}):(\d{2})\.(\d{1,3})\](.*)/)
+			if (match) {
+				const minutes = parseInt(match[1])
+				const seconds = parseInt(match[2])
+				const milliseconds = parseInt(match[3])
+				const time = minutes * 60 + seconds + milliseconds / 1000
+				const text = match[4].trim()
+				if (lrcMap.has(time)) {
+					lrcMap.get(time).translation = text
+				}
 			}
-		}
-	})
+		})
+	}
 
 	// 过滤掉没有歌词的时间点并排序
 	return Array.from(lrcMap.values())

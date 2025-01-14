@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-05 16:30:59
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-13 21:45:16
+ * @LastEditTime : 2025-01-14 10:17:08
  * @FilePath     : /src/views/Suggestion.vue
  * @Description  : Suggestions
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -12,7 +12,7 @@
 	<div class="min-h-screen pt-16 pb-24 w-full bg-black">
 		<!-- 头部 -->
 		<div class="container mx-auto px-6">
-			<div class="h-80 w-full">
+			<div class="h-96 w-full">
 				<div class="flex items-center gap-6">
 					<div class="w-2/3 flex items-center gap-6 justify-between">
 						<h2 class="text-lg font-semibold text-white">New Collections</h2>
@@ -23,7 +23,7 @@
 						<Button variant="link" class="text-[#da5597] text-xs">See all</Button>
 					</div>
 				</div>
-				<div class="flex gap-6 h-full">
+				<div class="flex gap-6 h-[calc(100%-2rem)]">
 					<div class="w-2/3 rounded-lg overflow-hidden">
 						<div class="relative w-full h-full">
 							<template v-if="lastestCollections?.length">
@@ -86,11 +86,11 @@
 			</div>
 		</div>
 		<!-- 网易每日推荐歌单 -->
-		<div class="container mx-auto px-6 mt-12" v-if="isNeteaseLogin && neteaseDailyRecommendArr?.length">
+		<div class="container mx-auto px-6 mt-8" v-if="isNeteaseLogin && neteaseDailyRecommendArr?.length">
 			<div class="flex items-center gap-6 justify-between">
 				<h2 class="text-lg font-semibold text-white">Netease Daily</h2>
 			</div>
-			<div class="mt-2 flex flex-wrap gap-4" v-if="neteaseDailyRecommendArr?.length">
+			<div class="mt-4 flex flex-wrap gap-4" v-if="neteaseDailyRecommendArr?.length">
 				<AlbumCard
 					name="每日歌曲推荐"
 					:cover_url="dailyIcon"
@@ -116,12 +116,12 @@
 			</div>
 		</div>
 		<!-- 站内专辑 -->
-		<div class="container mx-auto px-6 mt-12">
+		<div class="container mx-auto px-6 mt-8">
 			<div class="flex items-center gap-6 justify-between">
 				<h2 class="text-lg font-semibold text-white">New Albums</h2>
 				<Button variant="link" class="text-[#da5597] text-xs" @click="pushToPlaylists('albums')">See all</Button>
 			</div>
-			<div class="mt-2 flex gap-4">
+			<div class="mt-4 flex gap-4">
 				<template v-if="latestInnerAlbums?.length">
 					<AlbumCard
 						v-for="album in latestInnerAlbums"
@@ -142,11 +142,11 @@
 			</div>
 		</div>
 		<!-- 网易榜单 -->
-		<div class="container mx-auto px-6 mt-4">
+		<div class="container mx-auto px-6 mt-8">
 			<div class="flex items-center gap-6 justify-between">
 				<h2 class="text-lg font-semibold text-white">Netease TopCharts</h2>
 			</div>
-			<div class="mt-2 flex flex-wrap gap-4">
+			<div class="mt-4 flex flex-wrap gap-4">
 				<template v-if="neteaseTopChartsArr?.length">
 					<AlbumCard
 						v-for="album in neteaseTopChartsArr"
@@ -167,11 +167,11 @@
 			</div>
 		</div>
 		<!-- 网易新碟 -->
-		<div class="container mx-auto px-6 mt-4">
+		<div class="container mx-auto px-6 mt-8">
 			<div class="flex items-center gap-6 justify-between">
 				<h2 class="text-lg font-semibold text-white">Netease TopAlbums</h2>
 			</div>
-			<div class="mt-2 flex flex-wrap gap-4">
+			<div class="mt-4 flex flex-wrap gap-4">
 				<template v-if="neteaseTopAlbumArr.length">
 					<AlbumCard
 						v-for="album in neteaseTopAlbumArr"
@@ -207,36 +207,19 @@ import {
 	neteaseRecommendDaily,
 } from '@/api'
 import { formatPlaylistUpdateTime, formatPlaylistDurationToHourStr } from '@/utils'
-import AlbumCard from '@/components/albumcard/AlbumCard.vue'
-import AlbumCardSkeleton from '@/components/albumcard/AlbumCardSkeleton.vue'
 import { useRouter } from 'vue-router'
-
 import { handlePromise, getCurrentDate } from '@/utils'
 import { Playlist } from '@/interfaces/collection'
 import { NeteaseAlbum } from '@/interfaces/netease_album'
-
 import dailyIcon from '@/assets/images/daily.png'
-
-// 当前选中的标签
-const currentTab = ref('collections')
-
-// 添加标签页位置管理
-const tabRefs = ref<HTMLElement[]>([])
-const activeTabLeft = ref(0)
-const activeTabWidth = ref(0)
-
-const shouldAnimate = ref(false)
+import AlbumCard from '@/components/albumcard/AlbumCard.vue'
+import AlbumCardSkeleton from '@/components/albumcard/AlbumCardSkeleton.vue'
 
 // 是否在加载中
 const isLoading = ref(false)
 // 初始化时也触发动画
 onMounted(() => {
 	nextTick(async () => {
-		if (tabRefs.value[0]) {
-			activeTabLeft.value = tabRefs.value[0].offsetLeft
-			activeTabWidth.value = tabRefs.value[0].offsetWidth
-			shouldAnimate.value = true
-		}
 		try {
 			isLoading.value = true
 
