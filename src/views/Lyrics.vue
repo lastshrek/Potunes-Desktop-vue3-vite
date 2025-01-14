@@ -233,7 +233,7 @@
 					<!-- 右侧：歌词区域 -->
 					<div
 						v-if="!lyricsStore.loading && !lyricsStore.error && parsedLyrics.length"
-						class="w-1/2 h-full py-20 relative"
+						class="w-1/2 h-full py-20 relative lyrics-container"
 					>
 						<!-- 歌词内容 -->
 						<div
@@ -641,5 +641,30 @@ p,
 span,
 li {
 	@apply text-stroke text-white;
+}
+
+/* 添加歌词专用样式 */
+.lyrics-container {
+	font-family: 'Inter', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+}
+
+.lyrics-line {
+	@apply transition-all duration-300;
+	font-weight: 400;
+}
+
+.lyrics-line.active {
+	font-weight: 600;
+	@apply text-[#da5597];
+}
+
+/* 中文歌词特殊处理 */
+.lyrics-line-cn {
+	font-weight: 400;
+	letter-spacing: 0.02em;
+}
+
+.lyrics-line-cn.active {
+	font-weight: 500;
 }
 </style>

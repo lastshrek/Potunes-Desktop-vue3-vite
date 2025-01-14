@@ -29,6 +29,7 @@ const config = {
 	server: {
 		port: 5151,
 	},
+	assetsInclude: ['**/*.woff2'],
 } as UserConfig
 
 // 导出配置

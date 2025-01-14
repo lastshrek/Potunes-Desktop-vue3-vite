@@ -157,12 +157,17 @@ function createWindow() {
 		win.loadFile(path.join(__dirname, '../../dist/index.html'))
 	}
 
-	// 处理窗口关闭按钮点击事件
+	// 监听窗口关闭事件
 	win.on('close', event => {
+		// 如果是通过 Command+Q 触发的关闭，让它直接关闭
+		if (app.isQuitting) {
+			return
+		}
+
 		if (process.platform === 'darwin') {
+			// 在 macOS 上阻止默认关闭行为
 			event.preventDefault()
-			win?.hide()
-			return false
+			handleWindowClose()
 		}
 	})
 }
@@ -232,10 +237,26 @@ app.on('ready', () => {
 		}
 	}, 1000)
 
-	// 移除全局快捷键注册，因为现在通过菜单处理
-	// globalShortcut.register('Command+Q', () => {
-	// 	app.quit()
-	// })
+	// 注册全局快捷键
+	globalShortcut.register('Command+Q', () => {
+		console.log('Command+Q 快捷键被触发')
+		// Command+Q 时直接退出应用
+		app.isQuitting = true // 标记应用正在退出
+		cleanupTrayIcons()
+		app.quit()
+	})
+
+	globalShortcut.register('Command+W', () => {
+		console.log('Command+W 快捷键被触发')
+		// Command+W 时隐藏窗口
+		if (win) {
+			win.hide()
+		}
+	})
+
+	// 检查快捷键是否注册成功
+	console.log('Command+Q registered:', globalShortcut.isRegistered('Command+Q'))
+	console.log('Command+W registered:', globalShortcut.isRegistered('Command+W'))
 })
 
 app.on('window-all-closed', () => {
@@ -245,12 +266,21 @@ app.on('window-all-closed', () => {
 	}
 })
 
-// 处理 dock 图标点击和应用重新激活
+// 处理 dock 图标点击
 app.on('activate', () => {
-	showWindow()
+	if (win) {
+		win.show()
+	} else {
+		createWindow()
+	}
 })
 
 app.on('before-quit', () => {
+	// 标记应用正在退出
+	app.isQuitting = true
+	// 注销所有快捷键
+	globalShortcut.unregisterAll()
+	// 清理托盘图标
 	cleanupTrayIcons()
 })
 
@@ -390,3 +420,20 @@ ipcMain.on('quit-app', () => {
 	cleanupTrayIcons()
 	app.quit()
 })
+
+// 处理窗口关闭
+const handleWindowClose = () => {
+	console.log('handleWindowClose 被调用，平台:', process.platform)
+	if (process.platform === 'darwin') {
+		// macOS 上点击关闭按钮时只隐藏窗口
+		if (win) {
+			console.log('macOS: 隐藏窗口')
+			win.hide()
+		}
+	} else {
+		// 其他平台直接退出应用
+		console.log('非 macOS: 退出应用')
+		cleanupTrayIcons()
+		app.quit()
+	}
+}

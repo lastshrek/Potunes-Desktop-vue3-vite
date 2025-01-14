@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-05 16:26:25
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-14 22:00:33
+ * @LastEditTime : 2025-01-14 22:09:51
  * @FilePath     : /src/views/Albums.vue
  * @Description  : Albums
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -28,7 +28,7 @@
 						max_width="md:max-w-md"
 						@click="selectItem(album.id)"
 						:useColorThief="false"
-						:showPlayButton="false"
+						:showPlayButton="true"
 						:image-ratio="type === 'collections' ? '' : 'square'"
 					></AlbumCard>
 				</router-link>

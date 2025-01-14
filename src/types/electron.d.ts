@@ -1,3 +1,11 @@
+import { App } from 'electron'
+
+declare module 'electron' {
+	interface App {
+		isQuitting?: boolean
+	}
+}
+
 interface IpcRendererEvent extends Event {
 	sender: any
 	senderId: number
