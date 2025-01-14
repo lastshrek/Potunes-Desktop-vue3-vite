@@ -299,7 +299,7 @@ const lyricsStore = useLyricsStore()
 // 歌词相关状态
 const currentLyricIndex = ref(-1)
 const currentLyricLines = ref<string[]>([])
-let lyricUpdateHandler: (() => void) | null = null
+let lyricUpdateHandler: number | null = null
 
 // 添加控制歌词面板的状态
 const showLyricsPanel = ref(false)
@@ -355,12 +355,16 @@ const getLyricTime = (line: string) => {
 // 设置歌词更新处理器
 const setupLyricHandler = () => {
 	if (lyricUpdateHandler) {
-		audio.value?.removeEventListener('timeupdate', lyricUpdateHandler)
+		clearInterval(lyricUpdateHandler)
 		lyricUpdateHandler = null
 	}
 
-	lyricUpdateHandler = updateLyric
-	audio.value?.addEventListener('timeupdate', lyricUpdateHandler)
+	// 使用 setInterval 替代 timeupdate 事件
+	lyricUpdateHandler = window.setInterval(() => {
+		if (audio.value && !audio.value.paused) {
+			updateLyric()
+		}
+	}, 100) // 每 100ms 更新一次歌词
 }
 
 // 监听歌词变化
@@ -610,7 +614,7 @@ onMounted(() => {
 // 在组件卸载时清除歌词
 onUnmounted(() => {
 	if (lyricUpdateHandler) {
-		audio.value?.removeEventListener('timeupdate', lyricUpdateHandler)
+		clearInterval(lyricUpdateHandler)
 		lyricUpdateHandler = null
 	}
 	electron.updateLyric('')
