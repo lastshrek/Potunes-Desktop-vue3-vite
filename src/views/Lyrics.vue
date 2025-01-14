@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2025-01-04 12:48:57
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-05 10:57:25
+ * @LastEditTime : 2025-01-14 12:50:38
  * @FilePath     : /src/views/Lyrics.vue
  * @Description  : Lyrics
  * Copyright 2025 lastshrek, All Rights Reserved.
@@ -16,10 +16,10 @@
 			<div class="h-14 w-full flex justify-between items-center backdrop-blur-2xl" style="-webkit-app-region: drag">
 				<div class="px-4"></div>
 				<Button
-					variant="ghost"
+					variant="link"
 					size="icon"
 					@click="$emit('close')"
-					class="h-10 w-10 mr-2 rounded-lg hover:bg-gray-800/50 hover:text-white"
+					class="h-10 w-10 mr-2 rounded-lg hover:bg-gray-800/50"
 					style="-webkit-app-region: no-drag"
 				>
 					<X class="h-5 w-5" />
@@ -45,15 +45,17 @@
 						<!-- 进度条 -->
 						<div class="w-full max-w-md" style="-webkit-app-region: no-drag">
 							<vue-slider
-								:model-value="currentProgress.currentProgress"
-								@update:model-value="handleSliderChange"
+								v-model="value"
 								:min="0"
-								:max="100"
 								:interval="0.01"
+								:drag-on-click="true"
 								:duration="0"
 								:dot-size="12"
 								:height="3"
 								:tooltip="'none'"
+								:lazy="true"
+								@drag-end="dragEnd"
+								contain
 								class="my-4"
 							></vue-slider>
 							<div class="flex justify-between text-sm text-gray-400">
@@ -64,15 +66,141 @@
 
 						<!-- 播放控制 -->
 						<div class="flex items-center justify-center space-x-8" style="-webkit-app-region: no-drag">
-							<Button variant="ghost" size="icon" @click="prev">
-								<SkipBack class="h-6 w-6" />
+							<!-- 循环 -->
+							<Button variant="link" size="icon" @click="repeatMode">
+								<svg
+									t="1691598118430"
+									v-if="playMode.playMode === 0 || playMode.playMode === 2"
+									class="icon"
+									viewBox="0 0 1024 1024"
+									version="1.1"
+									xmlns="http://www.w3.org/2000/svg"
+									p-id="7057"
+									width="24"
+									height="24"
+								>
+									<path
+										d="M361.5 727.8c-119.1 0-215.9-96.9-215.9-215.9 0-119.1 96.9-215.9 215.9-215.9 2.3 0 4.6-0.2 6.8-0.6v58.3c0 12.3 14 19.4 23.9 12.1l132.6-97.6c8.1-6 8.1-18.2 0-24.2l-132.6-97.6c-9.9-7.3-23.9-0.2-23.9 12.1v58.1c-2.2-0.4-4.5-0.6-6.8-0.6-39.8 0-78.5 7.9-115 23.4-35.2 15-66.8 36.3-94 63.5s-48.6 58.8-63.5 94c-15.5 36.5-23.4 75.2-23.4 115s7.9 78.5 23.4 115c15 35.2 36.3 66.8 63.5 94s58.8 48.6 94 63.5c36.5 15.5 75.2 23.4 115 23.4 22.1 0 40-17.9 40-40s-17.9-40-40-40zM938.2 396.9c-15-35.2-36.3-66.8-63.5-94s-58.8-48.6-94-63.5c-36.5-15.5-75.2-23.4-115-23.4-22.1 0-40 17.9-40 40s17.9 40 40 40c119.1 0 215.9 96.9 215.9 215.9 0 119.1-96.9 215.9-215.9 215.9-4.1 0-8.1 0.6-11.8 1.8v-60.8c0-12.3-14-19.4-23.9-12.1l-132.6 97.6c-8.1 6-8.1 18.2 0 24.2L629.9 876c9.9 7.3 23.9 0.2 23.9-12.1V806c3.7 1.2 7.7 1.8 11.8 1.8 39.8 0 78.5-7.9 115-23.4 35.2-15 66.8-36.3 94-63.5s48.6-58.8 63.5-94c15.5-36.5 23.4-75.2 23.4-115s-7.8-78.5-23.3-115z"
+										p-id="7058"
+										fill="#ffffff"
+									></path>
+								</svg>
+								<svg
+									t="1691598177672"
+									v-else
+									class="icon"
+									viewBox="0 0 1024 1024"
+									version="1.1"
+									xmlns="http://www.w3.org/2000/svg"
+									p-id="7323"
+									width="24"
+									height="24"
+								>
+									<path
+										d="M361.5 727.8c-119.1 0-215.9-96.9-215.9-215.9 0-119.1 96.9-215.9 215.9-215.9 2.3 0 4.6-0.2 6.8-0.6v58.3c0 12.3 14 19.4 23.9 12.1l132.6-97.6c8.1-6 8.1-18.2 0-24.2l-132.6-97.6c-9.9-7.3-23.9-0.2-23.9 12.1v58.1c-2.2-0.4-4.5-0.6-6.8-0.6-39.8 0-78.5 7.9-115 23.4-35.2 15-66.8 36.3-94 63.5s-48.6 58.8-63.5 94c-15.5 36.5-23.4 75.2-23.4 115s7.9 78.5 23.4 115c15 35.2 36.3 66.8 63.5 94s58.8 48.6 94 63.5c36.5 15.5 75.2 23.4 115 23.4 22.1 0 40-17.9 40-40s-17.9-40-40-40zM938.2 396.9c-15-35.2-36.3-66.8-63.5-94s-58.8-48.6-94-63.5c-36.5-15.5-75.2-23.4-115-23.4-22.1 0-40 17.9-40 40s17.9 40 40 40c119.1 0 215.9 96.9 215.9 215.9 0 119.1-96.9 215.9-215.9 215.9-4.1 0-8.1 0.6-11.8 1.8v-60.8c0-12.3-14-19.4-23.9-12.1l-132.6 97.6c-8.1 6-8.1 18.2 0 24.2L629.9 876c9.9 7.3 23.9 0.2 23.9-12.1V806c3.7 1.2 7.7 1.8 11.8 1.8 39.8 0 78.5-7.9 115-23.4 35.2-15 66.8-36.3 94-63.5s48.6-58.8 63.5-94c15.5-36.5 23.4-75.2 23.4-115s-7.8-78.5-23.3-115z"
+										p-id="7324"
+										fill="#ffffff"
+									></path>
+									<path
+										d="M512.8 660.6c22.1-0.1 39.9-18.1 39.8-40.2l-1.2-214.1c-0.1-22-18-39.8-40-39.8h-0.2c-22.1 0.1-39.9 18.1-39.8 40.2l1.2 214.1c0.1 22 18 39.8 40 39.8h0.2z"
+										p-id="7325"
+										fill="#ffffff"
+									></path>
+								</svg>
 							</Button>
-							<Button variant="ghost" size="icon" class="h-12 w-12" @click="togglePlay">
-								<Play v-if="!isPlaying" class="h-8 w-8" />
-								<Pause v-else class="h-8 w-8" />
+							<!-- 上一首 -->
+							<Button variant="link" size="icon" @click="prev">
+								<svg
+									t="1691598810697"
+									class="icon"
+									viewBox="0 0 1024 1024"
+									version="1.1"
+									xmlns="http://www.w3.org/2000/svg"
+									p-id="2975"
+									width="24"
+									height="24"
+								>
+									<path
+										d="M364.302083 465.602819L687.954365 218.588294c38.416414-29.327534 93.791393-1.929039 93.791392 46.396277v494.029051c0 48.325316-55.374979 75.725617-93.791392 46.398084L364.302083 558.397181c-30.600916-23.357989-30.600916-69.436372 0-92.794362zM238.945254 780.798397V451.684117v-164.562559c0-19.628152-5.904521-60.475733 17.057907-75.841215 25.523642-17.068744 59.747828 1.210165 59.747828 31.919454v493.676839c0 19.628152 5.915358 60.473927-17.047069 75.841215-25.53448 17.068744-59.758666-1.211971-59.758666-31.919454z"
+										fill="#ffffff"
+										p-id="2976"
+									></path>
+								</svg>
 							</Button>
-							<Button variant="ghost" size="icon" @click="next">
-								<SkipForward class="h-6 w-6" />
+							<!-- 暂停/播放 -->
+							<Button variant="link" size="icon" class="h-12 w-12" @click="togglePlay">
+								<svg
+									t="1691599025349"
+									v-if="!isPlaying"
+									class="icon"
+									viewBox="0 0 1024 1024"
+									version="1.1"
+									xmlns="http://www.w3.org/2000/svg"
+									p-id="3841"
+									width="24"
+									height="24"
+								>
+									<path
+										d="M732.502883 465.602819c-107.883492-82.3454-215.772403-164.681769-323.652282-247.014525-38.414608-29.327534-93.780555-1.929039-93.780555 46.396277v494.029051c0 48.325316 55.365948 75.725617 93.780555 46.398084 107.87988-82.332757 215.76879-164.669126 323.652282-247.014525 30.61356-23.357989 30.61356-69.436372 0-92.794362z"
+										fill="#ffffff"
+										p-id="3842"
+									></path>
+								</svg>
+								<svg
+									t="1691599172430"
+									v-else
+									class="icon"
+									viewBox="0 0 1024 1024"
+									version="1.1"
+									xmlns="http://www.w3.org/2000/svg"
+									p-id="6673"
+									width="24"
+									height="24"
+								>
+									<path
+										d="M320 128A64 64 0 0 0 256 192v640a64 64 0 0 0 128 0v-640A64 64 0 0 0 320 128z m384 0A64 64 0 0 0 640 192v640a64 64 0 0 0 128 0v-640A64 64 0 0 0 704 128z"
+										fill="#ffffff"
+										p-id="6674"
+									></path>
+								</svg>
+							</Button>
+							<!-- 下一首 -->
+							<Button variant="link" size="icon" @click="next">
+								<svg
+									t="1691598713799"
+									class="icon"
+									viewBox="0 0 1024 1024"
+									version="1.1"
+									xmlns="http://www.w3.org/2000/svg"
+									p-id="14070"
+									id="mx_n_1691598713799"
+									width="24"
+									height="24"
+								>
+									<path
+										d="M655.706179 465.602819L332.053897 218.588294c-38.414608-29.327534-93.791393-1.929039-93.791392 46.396277v494.029051c0 48.325316 55.376785 75.725617 93.791392 46.398084l323.652282-247.014525c30.602722-23.357989 30.602722-69.436372 0-92.794362zM781.064814 780.798397V451.684117v-164.562559c0-19.628152 5.904521-60.475733-17.057907-75.841215-25.523642-17.068744-59.747828 1.210165-59.747828 31.919454v493.676839c0 19.628152-5.915358 60.473927 17.047069 75.841215 25.532673 17.068744 59.758666-1.211971 59.758666-31.919454z"
+										fill="#ffffff"
+										p-id="14071"
+									></path>
+								</svg>
+							</Button>
+							<!-- 随机 -->
+							<Button variant="link" size="icon" @click="shuffle">
+								<svg
+									class="w-5 h-5"
+									aria-hidden="true"
+									xmlns="http://www.w3.org/2000/svg"
+									fill="none"
+									viewBox="0 0 20 18"
+								>
+									<path
+										:stroke="playMode.playMode === 2 ? '#da5597' : '#ffffff'"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M11.484 6.166 13 4h6m0 0-3-3m3 3-3 3M1 14h5l1.577-2.253M1 4h5l7 10h6m0 0-3 3m3-3-3-3"
+									/>
+								</svg>
 							</Button>
 						</div>
 					</div>
@@ -139,6 +267,7 @@ import { useLyricsStore } from '@/store/modules/lyrics'
 import { emitter } from '@/utils/mitt'
 import { ref, computed, onMounted, watch } from 'vue'
 import { useCurrentTrackStore } from '@/store/modules/currenttrack'
+import { PlayMode, usePlayModeStore } from '@/store/modules/playMode'
 
 defineEmits(['close'])
 const currentTrack = useCurrentTrackStore()
@@ -149,29 +278,9 @@ const currentTime = computed(() => {
 })
 const lyricsStore = useLyricsStore()
 const currentProgress = useCurrentProgressStore()
+const playMode = usePlayModeStore()
 
-// 更新进度条显示
-const handleSliderChange = (value: number) => {
-	if (!currentTrack.duration) return
-	const newTime = (value / 100) * currentTrack.duration
-	currentTimeStore.setCurrentTime(newTime)
-	emitter.emit('showLyrics', newTime)
-}
-
-const togglePlay = () => {
-	useIsPlayingStore().setIsPlaying(!isPlaying)
-}
-
-const prev = () => {
-	// 实现上一首逻辑
-	emitter.emit('prev')
-}
-
-const next = () => {
-	// 实现下一首逻辑
-	emitter.emit('next')
-}
-
+const value = ref(0)
 const lyricsContainer = ref<HTMLElement | null>(null)
 const lyricRefs = ref<HTMLElement[]>([])
 
@@ -223,16 +332,16 @@ const scrollToCurrentLyric = (time: number) => {
 		(item, index) => time >= item.time && time < (parsedLyrics.value[index + 1]?.time || Infinity)
 	)
 
-	if (currentIndex > -1 && lyricRefs.value[currentIndex] && lyricsContainer.value) {
+	if (currentIndex === -1) return
+
+	if (lyricRefs.value[currentIndex] && lyricsContainer.value) {
 		const lyricEl = lyricRefs.value[currentIndex]
 		const containerHeight = lyricsContainer.value.clientHeight
-
-		// 计算滚动位置，使当前歌词位于容器中央
 		const scrollTop = lyricEl.offsetTop - containerHeight / 2 + lyricEl.clientHeight / 2
 
 		lyricsContainer.value.scrollTo({
 			top: scrollTop,
-			behavior: currentIndex === 0 ? 'auto' : 'smooth', // 第一行直接跳转，避免开始时的滚动动画
+			behavior: 'smooth',
 		})
 	}
 }
@@ -245,22 +354,79 @@ const debouncedScroll = (time: number) => {
 	}
 	scrollTimeout = window.setTimeout(() => {
 		scrollToCurrentLyric(time)
-	}, 50)
+	}, 100)
 }
 
-// 更新监听器
-watch(currentTime, newTime => {
-	debouncedScroll(newTime)
-})
+// 进度条拖动结束
+const dragEnd = () => {
+	if (!currentTrack.duration) return
+	const newTime = (value.value / 100) * currentTrack.duration
+	emitter.emit('showLyrics', newTime)
+}
+
+// 监听播放进度变化来更新进度条
+watch(
+	() => currentProgress.currentProgress,
+	newValue => {
+		if (isNaN(newValue)) return
+		value.value = newValue
+	},
+	{ immediate: true }
+)
+
+// 监听播放时间变化来更新歌词滚动
+watch(
+	currentTime,
+	newTime => {
+		if (!currentTrack.duration) return
+		debouncedScroll(newTime)
+	},
+	{ immediate: true }
+)
+
+const togglePlay = () => {
+	useIsPlayingStore().setIsPlaying(!isPlaying)
+}
+
+const prev = () => {
+	// 实现上一首逻辑
+	emitter.emit('prev')
+}
+
+const next = () => {
+	// 实现下一首逻辑
+	emitter.emit('next')
+}
 
 // 组件挂载后初始化歌词位置
 onMounted(() => {
-	scrollToCurrentLyric(currentTime.value)
+	if (currentTime.value > 0) {
+		scrollToCurrentLyric(currentTime.value)
+	}
 })
 
 // 判断是否是当前播放的歌词
 const isCurrentLyric = (item: any, index: number) => {
-	return currentTime.value >= item.time && currentTime.value < (parsedLyrics.value[index + 1]?.time || Infinity)
+	const time = currentTime.value
+	return time >= item.time && time < (parsedLyrics.value[index + 1]?.time || Infinity)
+}
+
+// 添加循环模式切换方法
+const repeatMode = () => {
+	if (playMode.playMode == PlayMode.Sequence) {
+		playMode.setPlayMode(PlayMode.Repeat)
+		return
+	}
+	playMode.setPlayMode(PlayMode.Sequence)
+}
+
+// 添加随机播放方法
+const shuffle = () => {
+	if (playMode.playMode == PlayMode.Shuffle) {
+		usePlayModeStore().setPlayMode(PlayMode.Sequence)
+		return
+	}
+	usePlayModeStore().setPlayMode(PlayMode.Shuffle)
 }
 </script>
 
