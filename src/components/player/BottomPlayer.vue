@@ -473,6 +473,14 @@ const repeatMode = () => {
 // 上一首
 const prev = () => {
 	if (currentTrack.url === '') return
+
+	// 如果当前播放时间超过3秒，重新播放当前歌曲
+	if (audio.value && audio.value.currentTime > 3) {
+		audio.value.currentTime = 0
+		return
+	}
+
+	// 否则播放上一首
 	currentIndex.setCurrentIndex(currentIndex.currentIndex - 1)
 }
 // 播放/暂停
@@ -601,6 +609,9 @@ onMounted(() => {
 
 	// 监听下一首事件
 	emitter.on('next', next)
+
+	// 监听上一首事件
+	emitter.on('prev', prev)
 
 	// 如果当前应该播放，尝试恢复播放
 	if (isPlaying.isPlaying && audio.value && currentTrack.url) {

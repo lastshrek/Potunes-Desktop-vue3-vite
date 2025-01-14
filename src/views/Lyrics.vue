@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2025-01-04 12:48:57
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-14 12:52:34
+ * @LastEditTime : 2025-01-14 13:07:02
  * @FilePath     : /src/views/Lyrics.vue
  * @Description  : Lyrics
  * Copyright 2025 lastshrek, All Rights Reserved.
@@ -213,7 +213,8 @@
 							<div v-else-if="lyricsStore.error" class="text-center text-red-500 py-4">
 								{{ lyricsStore.error }}
 							</div>
-							<ul v-else class="space-y-6 pt-[50vh]">
+							<ul v-else class="space-y-6 pb-[50vh]">
+								<li class="h-[50vh]"></li>
 								<li
 									v-for="(item, index) in parsedLyrics"
 									:key="index"
@@ -283,6 +284,7 @@ const playMode = usePlayModeStore()
 const value = ref(0)
 const lyricsContainer = ref<HTMLElement | null>(null)
 const lyricRefs = ref<HTMLElement[]>([])
+const audio = ref<HTMLAudioElement | null>(null)
 
 // 解析歌词
 const parsedLyrics = computed(() => {
@@ -327,7 +329,7 @@ const parsedLyrics = computed(() => {
 })
 
 // 滚动到当前歌词
-const scrollToCurrentLyric = (time: number) => {
+const scrollToCurrentLyric = (time: number, immediate = false) => {
 	const currentIndex = parsedLyrics.value.findIndex(
 		(item, index) => time >= item.time && time < (parsedLyrics.value[index + 1]?.time || Infinity)
 	)
@@ -341,19 +343,19 @@ const scrollToCurrentLyric = (time: number) => {
 
 		lyricsContainer.value.scrollTo({
 			top: scrollTop,
-			behavior: 'smooth',
+			behavior: immediate ? 'auto' : 'smooth',
 		})
 	}
 }
 
 // 添加防抖的滚动处理
 let scrollTimeout: number | null = null
-const debouncedScroll = (time: number) => {
+const debouncedScroll = (time: number, immediate = false) => {
 	if (scrollTimeout) {
 		window.clearTimeout(scrollTimeout)
 	}
 	scrollTimeout = window.setTimeout(() => {
-		scrollToCurrentLyric(time)
+		scrollToCurrentLyric(time, immediate)
 	}, 100)
 }
 
@@ -401,7 +403,16 @@ const togglePlay = () => {
 }
 
 const prev = () => {
-	// 实现上一首逻辑
+	if (currentTrack.url === '') return
+
+	// 如果当前播放时间超过3秒，重新播放当前歌曲
+	if (audio.value && audio.value.currentTime > 3) {
+		currentTimeStore.setCurrentTime(0)
+		audio.value.currentTime = 0
+		return
+	}
+
+	// 否则播放上一首
 	emitter.emit('prev')
 }
 
@@ -413,8 +424,10 @@ const next = () => {
 // 组件挂载后初始化歌词位置
 onMounted(() => {
 	if (currentTime.value > 0) {
-		scrollToCurrentLyric(currentTime.value)
+		// 初始化时使用即时滚动
+		debouncedScroll(currentTime.value, true)
 	}
+	audio.value = document.querySelector('audio')
 })
 
 // 判断是否是当前播放的歌词
