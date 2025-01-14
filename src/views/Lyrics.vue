@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2025-01-04 12:48:57
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-14 12:50:38
+ * @LastEditTime : 2025-01-14 12:52:34
  * @FilePath     : /src/views/Lyrics.vue
  * @Description  : Lyrics
  * Copyright 2025 lastshrek, All Rights Reserved.
@@ -360,8 +360,18 @@ const debouncedScroll = (time: number) => {
 // 进度条拖动结束
 const dragEnd = () => {
 	if (!currentTrack.duration) return
-	const newTime = (value.value / 100) * currentTrack.duration
-	emitter.emit('showLyrics', newTime)
+
+	// 确保值在 0-100 之间
+	const clampedValue = Math.max(0, Math.min(100, value.value))
+
+	// 将毫秒转换为秒
+	const durationInSeconds = currentTrack.duration / 1000
+	const newTime = (clampedValue / 100) * durationInSeconds
+
+	// 确保时间不超过总时长
+	const clampedTime = Math.min(newTime, durationInSeconds)
+
+	emitter.emit('showLyrics', clampedTime)
 }
 
 // 监听播放进度变化来更新进度条
@@ -369,7 +379,9 @@ watch(
 	() => currentProgress.currentProgress,
 	newValue => {
 		if (isNaN(newValue)) return
-		value.value = newValue
+		// 确保进度值在 0-100 之间
+		const clampedValue = Math.max(0, Math.min(100, newValue))
+		value.value = clampedValue
 	},
 	{ immediate: true }
 )
