@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-05 16:30:59
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-14 10:17:08
+ * @LastEditTime : 2025-01-14 22:01:19
  * @FilePath     : /src/views/Suggestion.vue
  * @Description  : Suggestions
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -16,11 +16,16 @@
 				<div class="flex items-center gap-6">
 					<div class="w-2/3 flex items-center gap-6 justify-between">
 						<h2 class="text-lg font-semibold text-white">New Collections</h2>
-						<Button variant="link" class="text-[#da5597] text-xs">See all</Button>
+						<!-- path: '/albums/:type', -->
+						<Button variant="link" class="text-[#da5597] text-xs" @click="router.push('/albums/collections')">
+							See all
+						</Button>
 					</div>
 					<div class="w-1/3 flex items-center gap-6 justify-between">
 						<h2 class="text-lg font-semibold text-white">New Final</h2>
-						<Button variant="link" class="text-[#da5597] text-xs">See all</Button>
+						<Button variant="link" class="text-[#da5597] text-xs" @click="router.push('/albums/finals')">
+							See all
+						</Button>
 					</div>
 				</div>
 				<div class="flex gap-6 h-[calc(100%-2rem)]">
@@ -122,7 +127,7 @@
 		<div class="container mx-auto px-6 mt-8">
 			<div class="flex items-center gap-6 justify-between">
 				<h2 class="text-lg font-semibold text-white">New Albums</h2>
-				<Button variant="link" class="text-[#da5597] text-xs" @click="pushToPlaylists('albums')">See all</Button>
+				<Button variant="link" class="text-[#da5597] text-xs" @click="router.push('/albums/albums')">See all</Button>
 			</div>
 			<div class="mt-4 flex gap-4">
 				<template v-if="latestInnerAlbums?.length">
@@ -386,9 +391,25 @@ const toPlaylist = (id: number, type: string) => {
 
 // 添加跳转到专辑列表页面的方法
 const pushToPlaylists = (type: string) => {
-	router.push({
-		path: `albums/${type}`,
-	})
+	switch (type) {
+		case 'collections':
+			router.push('/collections')
+			break
+		case 'final':
+			router.push('/final')
+			break
+		case 'albums':
+			router.push('/albums')
+			break
+		case 'netease-charts':
+			router.push('/netease-charts')
+			break
+		case 'netease-albums':
+			router.push('/netease-albums')
+			break
+		default:
+			router.push(`/albums/${type}`)
+	}
 }
 
 // 添加网易云登录状态
