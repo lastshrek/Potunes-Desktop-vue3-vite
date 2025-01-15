@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-05 16:30:59
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-14 22:01:19
+ * @LastEditTime : 2025-01-15 09:33:31
  * @FilePath     : /src/views/Suggestion.vue
  * @Description  : Suggestions
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -230,19 +230,17 @@ onMounted(() => {
 	nextTick(async () => {
 		try {
 			isLoading.value = true
-
+			await getLatestCollection()
+			await getLatestFinal()
+			await getLatestInnerAlbum()
+			await getNeteaseTopCharts()
+			await getNeteaseTopAlbum()
 			// 检查网易云登录状态
 			const neteaseCookie = localStorage.getItem('netease-cookie')
 			if (neteaseCookie) {
 				isNeteaseLogin.value = true
 				await getNeteaseRecommendDaily()
 			}
-
-			await getLatestCollection()
-			await getLatestFinal()
-			await getLatestInnerAlbum()
-			await getNeteaseTopCharts()
-			await getNeteaseTopAlbum()
 		} finally {
 			isLoading.value = false
 		}
@@ -334,13 +332,6 @@ const getNextCollectionIndex = (thumbnailIndex: number) => {
 	return nextIndex
 }
 
-// 切换到指定合集
-const switchToCollection = (index: number) => {
-	console.log('Switching to collection:', index, lastestCollections.value[index]) // 添加日志查看数据
-	currentIndex.value = index
-	resetAutoplay()
-}
-
 // 获取下一个索引（循环）
 const getNextIndex = (index: number) => {
 	if (!lastestCollections.value?.length) return 0
@@ -386,29 +377,6 @@ const toPlaylist = (id: number, type: string) => {
 			params: { id: id.toString() },
 		})
 		return
-	}
-}
-
-// 添加跳转到专辑列表页面的方法
-const pushToPlaylists = (type: string) => {
-	switch (type) {
-		case 'collections':
-			router.push('/collections')
-			break
-		case 'final':
-			router.push('/final')
-			break
-		case 'albums':
-			router.push('/albums')
-			break
-		case 'netease-charts':
-			router.push('/netease-charts')
-			break
-		case 'netease-albums':
-			router.push('/netease-albums')
-			break
-		default:
-			router.push(`/albums/${type}`)
 	}
 }
 

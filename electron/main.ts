@@ -9,6 +9,14 @@
 import { app, BrowserWindow, ipcMain, Tray, nativeImage, globalShortcut, Menu } from 'electron'
 import path from 'node:path'
 
+// 扩展 app 对象
+interface ExtendedApp extends Electron.App {
+	isQuitting?: boolean
+}
+
+// 将 app 转换为扩展类型
+const extendedApp = app as ExtendedApp
+
 let win: BrowserWindow | null = null
 let previousTray: Tray | null = null
 let playTray: Tray | null = null
@@ -160,7 +168,7 @@ function createWindow() {
 	// 监听窗口关闭事件
 	win.on('close', event => {
 		// 如果是通过 Command+Q 触发的关闭，让它直接关闭
-		if (app.isQuitting) {
+		if (extendedApp.isQuitting) {
 			return
 		}
 
@@ -241,7 +249,7 @@ app.on('ready', () => {
 	globalShortcut.register('Command+Q', () => {
 		console.log('Command+Q 快捷键被触发')
 		// Command+Q 时直接退出应用
-		app.isQuitting = true // 标记应用正在退出
+		extendedApp.isQuitting = true // 标记应用正在退出
 		cleanupTrayIcons()
 		app.quit()
 	})
@@ -277,7 +285,7 @@ app.on('activate', () => {
 
 app.on('before-quit', () => {
 	// 标记应用正在退出
-	app.isQuitting = true
+	extendedApp.isQuitting = true
 	// 注销所有快捷键
 	globalShortcut.unregisterAll()
 	// 清理托盘图标
