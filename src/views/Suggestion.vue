@@ -31,7 +31,7 @@
 				<div class="flex gap-6 h-[calc(100%-2rem)]">
 					<div class="w-2/3 rounded-lg overflow-hidden">
 						<div class="relative w-full h-full">
-							<template v-if="lastestCollections?.length">
+							<template v-if="!isLoading && lastestCollections?.length">
 								<div
 									v-for="(collection, index) in lastestCollections"
 									:key="collection.id"
@@ -67,13 +67,13 @@
 									</div>
 								</div>
 							</template>
-							<template v-else>
+							<template v-if="isLoading">
 								<AlbumCardSkeleton :imageRatio="'wide'" />
 							</template>
 						</div>
 					</div>
 					<div class="w-1/3 rounded-lg overflow-hidden">
-						<template v-if="finalLatest">
+						<template v-if="!isLoading && finalLatest">
 							<AlbumCard
 								:cover_url="finalLatest?.cover"
 								:name="finalLatest?.title"
@@ -86,7 +86,7 @@
 								:useColorThief="false"
 							/>
 						</template>
-						<template v-else>
+						<template v-if="isLoading">
 							<AlbumCardSkeleton :imageRatio="'square'" />
 						</template>
 					</div>
@@ -224,7 +224,7 @@ import AlbumCard from '@/components/albumcard/AlbumCard.vue'
 import AlbumCardSkeleton from '@/components/albumcard/AlbumCardSkeleton.vue'
 
 // 是否在加载中
-const isLoading = ref(false)
+const isLoading = ref(true)
 // 初始化时也触发动画
 onMounted(() => {
 	nextTick(async () => {
@@ -251,34 +251,42 @@ onMounted(() => {
  */
 const lastestCollections: Ref<Playlist[]> = ref([])
 const getLatestCollection = async () => {
-	const [res] = await handlePromise(latestCollection())
-	if (!res) return
-	console.log('Latest collections:', res) // 添加日志查看数据
-	// 确保数据的一致性
-	lastestCollections.value = Array.isArray(res)
-		? res.map(item => ({
-				...item,
-				id: item.id,
-				cover: item.cover,
-				title: item.title,
-		  }))
-		: [res].map(item => ({
-				...item,
-				id: item.id,
-				cover: item.cover,
-				title: item.title,
-		  }))
+	try {
+		const [res] = await handlePromise(latestCollection())
+		if (!res) return
+		console.log('Latest collections:', res) // 添加日志查看数据
+		// 确保数据的一致性
+		lastestCollections.value = Array.isArray(res)
+			? res.map(item => ({
+					...item,
+					id: item.id,
+					cover: item.cover,
+					title: item.title,
+			  }))
+			: [res].map(item => ({
+					...item,
+					id: item.id,
+					cover: item.cover,
+					title: item.title,
+			  }))
+	} finally {
+		isLoading.value = false
+	}
 }
 /**
  * @description: 获取最新的年度精选集
  */
 const finalLatest: Ref<Playlist | null> = ref(null)
 const getLatestFinal = async () => {
-	const [res] = await handlePromise(latestFinal())
-	if (!res) return
+	try {
+		const [res] = await handlePromise(latestFinal())
+		if (!res) return
 
-	finalLatest.value = res
-	console.log(res)
+		finalLatest.value = res
+		console.log(res)
+	} finally {
+		isLoading.value = false
+	}
 }
 
 /**
@@ -356,8 +364,15 @@ const resetAutoplay = () => {
 
 // 组件挂载时启动自动播放
 onMounted(async () => {
-	await getLatestCollection() // 先获取数据
-	resetAutoplay() // 再启动自动播放
+	isLoading.value = true
+	await Promise.all([
+		getLatestCollection(),
+		getLatestFinal(),
+		getLatestInnerAlbum(),
+		getNeteaseTopCharts(),
+		getNeteaseTopAlbum(),
+	])
+	resetAutoplay()
 })
 
 // 组件卸载时清理定时器

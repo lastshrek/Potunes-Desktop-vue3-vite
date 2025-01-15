@@ -26,9 +26,12 @@
 							</div>
 							<!-- 右侧信息 -->
 							<div class="flex flex-col flex-grow w-full">
-								<h1 class="text-3xl font-bold mb-2">{{ playlist.title }}</h1>
+								<h1 class="text-3xl font-bold mb-2 album-title">{{ playlist.title }}</h1>
 								<!-- 专辑时展示歌手 -->
-								<div class="text-sm font-medium mb-4 flex items-center" v-if="playlistType == 'netease-album'">
+								<div
+									class="text-sm font-medium mb-4 flex items-center player-text"
+									v-if="playlistType == 'netease-album'"
+								>
 									<div
 										v-for="(artist, index) in playlist.artists"
 										:key="artist.id"
@@ -43,19 +46,19 @@
 									</div>
 								</div>
 								<!-- 专辑时改成发行时间 -->
-								<p class="text-sm text-gray-400 mb-4">
+								<p class="text-sm text-gray-400 mb-4 player-text">
 									{{ playlistType == 'netease-album' ? '发行时间：' : '最后更新于' }}{{ updateTime }}·
 									{{ playlist.count || playlist.tracks.length }}首歌
 								</p>
 								<!-- 描述 -->
-								<p class="text-sm text-gray-400 mb-4 line-clamp-3" v-html="playlist.content"></p>
+								<p class="text-sm text-gray-400 mb-4 line-clamp-3 player-text" v-html="playlist.content"></p>
 								<div v-if="description.length > 80" class="mb-4">
-									<button @click="toggleShowMore" class="text-blue-500 text-sm">查看更多</button>
+									<button @click="toggleShowMore" class="text-blue-500 text-sm player-text">查看更多</button>
 								</div>
 								<!-- 操作按钮 -->
 								<div class="flex items-center space-x-4">
 									<button
-										class="bg-[#da5597] text-white px-8 py-2 rounded-full hover:bg-[#da5597]/90 flex items-center justify-center space-x-2"
+										class="bg-[#da5597] text-white px-8 py-2 rounded-full hover:bg-[#da5597]/90 flex items-center justify-center space-x-2 player-text"
 										@click="playAll"
 									>
 										<svg
@@ -71,10 +74,10 @@
 												fill="currentColor"
 											></path>
 										</svg>
-										<span>播放</span>
+										<span class="player-text">播放</span>
 									</button>
 									<button
-										class="bg-[#da5597] text-white px-8 py-2 rounded-full hover:bg-[#da5597]/90 flex items-center justify-center space-x-2"
+										class="bg-[#da5597] text-white px-8 py-2 rounded-full hover:bg-[#da5597]/90 flex items-center justify-center space-x-2 player-text"
 										@click="playRandom"
 									>
 										<svg
@@ -90,13 +93,13 @@
 												fill="currentColor"
 											></path>
 										</svg>
-										<span>随机播放</span>
+										<span class="player-text">随机播放</span>
 									</button>
-									<button class="text-white hover:text-[#da5597]">
+									<button class="text-white hover:text-[#da5597] player-text">
 										<span class="text-2xl">+</span>
 										添加
 									</button>
-									<button class="text-white hover:text-[#da5597]">
+									<button class="text-white hover:text-[#da5597] player-text">
 										<span class="text-2xl">...</span>
 									</button>
 								</div>
@@ -106,7 +109,7 @@
 						<!-- 歌曲列表 -->
 						<div class="mt-8">
 							<!-- 列表头部 -->
-							<div class="grid grid-cols-12 text-gray-400 text-sm py-2 px-4 border-b border-gray-800">
+							<div class="grid grid-cols-12 text-gray-400 text-sm py-2 px-4 border-b border-gray-800 player-text">
 								<div class="col-span-1">#</div>
 								<div class="col-span-5">标题</div>
 								<div class="col-span-4">专辑</div>
@@ -116,7 +119,7 @@
 							<div
 								v-for="(item, index) in playlist.tracks"
 								:key="'index' + index"
-								class="grid grid-cols-12 items-center py-3 px-4 rounded-lg group"
+								class="grid grid-cols-12 items-center py-3 px-4 rounded-lg group player-text"
 								:class="{
 									'bg-[#da5597] text-white':
 										currentTrack.type == 'netease' ? currentTrack.nId == item.nId : currentTrack.id == item.id,
@@ -139,7 +142,7 @@
 								<div class="col-span-5 flex items-center space-x-3">
 									<img v-lazy="item.cover_url" class="w-10 h-10 rounded" />
 									<div>
-										<p class="text-sm font-medium">{{ item.name }}</p>
+										<p class="text-sm font-medium album-title">{{ item.name }}</p>
 										<div
 											class="flex text-xs mt-1"
 											:class="{
@@ -193,17 +196,17 @@
 							<div class="w-64 h-64 flex-shrink-0 relative">
 								<img :src="dailyImageSrc" class="w-full h-full object-cover rounded-lg" />
 								<div class="absolute inset-0 flex items-center justify-center">
-									<p class="text-gray-800 text-4xl font-bold">{{ today }}</p>
+									<p class="text-gray-800 text-4xl font-bold album-title">{{ today }}</p>
 								</div>
 							</div>
 							<!-- 右侧信息 -->
 							<div class="flex flex-col flex-grow">
-								<h1 class="text-3xl font-bold mb-2">每日歌曲推荐</h1>
-								<p class="text-sm text-gray-400 mb-4">根据你的口味生成，每天6:00更新</p>
+								<h1 class="text-3xl font-bold mb-2 album-title">每日歌曲推荐</h1>
+								<p class="text-sm text-gray-400 mb-4 player-text">根据你的口味生成，每天6:00更新</p>
 								<!-- 操作按钮 -->
 								<div class="flex items-center space-x-4 mt-4">
 									<button
-										class="bg-[#da5597] text-white px-8 py-2 rounded-full hover:bg-[#da5597]/90 flex items-center justify-center space-x-2"
+										class="bg-[#da5597] text-white px-8 py-2 rounded-full hover:bg-[#da5597]/90 flex items-center justify-center space-x-2 player-text"
 										@click="playAll"
 									>
 										<svg
@@ -219,10 +222,10 @@
 												fill="currentColor"
 											></path>
 										</svg>
-										<span>播放</span>
+										<span class="player-text">播放</span>
 									</button>
 									<button
-										class="bg-[#da5597] text-white px-8 py-2 rounded-full hover:bg-[#da5597]/90 flex items-center justify-center space-x-2"
+										class="bg-[#da5597] text-white px-8 py-2 rounded-full hover:bg-[#da5597]/90 flex items-center justify-center space-x-2 player-text"
 										@click="playRandom"
 									>
 										<svg
@@ -238,7 +241,7 @@
 												fill="currentColor"
 											></path>
 										</svg>
-										<span>随机播放</span>
+										<span class="player-text">随机播放</span>
 									</button>
 								</div>
 							</div>
@@ -247,7 +250,7 @@
 						<!-- 歌曲列表部分与上面相同 -->
 						<div class="mt-8">
 							<!-- 列表头部 -->
-							<div class="grid grid-cols-12 text-gray-400 text-sm py-2 px-4 border-b border-gray-800">
+							<div class="grid grid-cols-12 text-gray-400 text-sm py-2 px-4 border-b border-gray-800 player-text">
 								<div class="col-span-1">#</div>
 								<div class="col-span-5">标题</div>
 								<div class="col-span-4">专辑</div>
@@ -257,7 +260,7 @@
 							<div
 								v-for="(item, index) in playlist.tracks"
 								:key="'index' + index"
-								class="grid grid-cols-12 items-center py-3 px-4 rounded-lg group"
+								class="grid grid-cols-12 items-center py-3 px-4 rounded-lg group player-text"
 								:class="{
 									'bg-[#da5597] text-white':
 										currentTrack.type == 'netease' ? currentTrack.nId == item.nId : currentTrack.id == item.id,
@@ -280,7 +283,7 @@
 								<div class="col-span-5 flex items-center space-x-3">
 									<img v-lazy="item.cover_url" class="w-10 h-10 rounded" />
 									<div>
-										<p class="text-sm font-medium">{{ item.name }}</p>
+										<p class="text-sm font-medium album-title">{{ item.name }}</p>
 										<div
 											class="flex text-xs mt-1"
 											:class="{
@@ -380,11 +383,14 @@
 						<div class="absolute inset-0 bg-black/50 backdrop-blur-md" @click="toggleShowMore"></div>
 						<div class="bg-white/90 rounded-lg p-4 w-full h-full z-10 overflow-scroll" @click="toggleShowMore">
 							<div class="flex justify-end items-center w-full">
-								<button class="text-black text-center px-4 py-2 rounded hover:bg-blue-600" @click.stop="toggleShowMore">
+								<button
+									class="text-black text-center px-4 py-2 rounded hover:bg-blue-600 player-text"
+									@click.stop="toggleShowMore"
+								>
 									x
 								</button>
 							</div>
-							<p class="my-2 text-black">{{ description }}</p>
+							<p class="my-2 text-black player-text">{{ description }}</p>
 						</div>
 					</div>
 				</transition>

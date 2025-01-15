@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-01 21:16:34
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-13 14:50:39
+ * @LastEditTime : 2025-01-15 18:39:59
  * @FilePath     : /src/components/navbar/NavBar.vue
  * @Description  : 
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -44,7 +44,7 @@
 									class="flex items-center gap-1 bg-white/10 px-2 py-0.5 rounded-full shrink-0"
 								>
 									<component :is="tag.icon" class="h-3 w-3 text-gray-400" />
-									<span class="text-xs text-gray-300">{{ tag.label }}</span>
+									<span class="text-xs text-gray-300 player-text">{{ tag.label }}</span>
 									<button @click.stop="removeTag(index)" class="hover:text-white ml-1">
 										<X class="h-3 w-3" />
 									</button>
@@ -57,7 +57,8 @@
 									v-model="searchQuery"
 									@click="handleInputClick"
 									@keydown.backspace="handleBackspace"
-									class="flex-1 min-w-[100px] bg-transparent border-none text-sm text-white placeholder:text-gray-500 focus:outline-none focus:ring-0"
+									@keydown.esc="handleEsc"
+									class="flex-1 min-w-[100px] bg-transparent border-none text-sm text-white placeholder:text-gray-500 focus:outline-none focus:ring-0 player-text"
 								/>
 							</div>
 						</div>
@@ -67,7 +68,7 @@
 							v-if="showDropdown"
 							class="absolute w-full mt-2 py-2 bg-[#1A1A1A] rounded-lg shadow-lg border border-gray-800"
 						>
-							<div class="px-3 py-1.5 text-xs font-medium text-gray-400">Suggestions</div>
+							<div class="px-3 py-1.5 text-xs font-medium text-gray-400 player-text">Suggestions</div>
 							<div class="mt-1">
 								<button
 									v-for="(item, index) in availableSuggestions"
@@ -76,7 +77,7 @@
 									class="w-full px-3 py-1.5 flex items-center gap-2 hover:bg-white/5 text-left"
 								>
 									<component :is="item.icon" class="h-4 w-4 text-gray-400" />
-									<span class="text-sm text-gray-300">{{ item.label }}</span>
+									<span class="text-sm text-gray-300 player-text">{{ item.label }}</span>
 								</button>
 							</div>
 						</div>
@@ -87,7 +88,7 @@
 			<!-- user profile -->
 			<div class="relative z-10" style="-webkit-app-region: no-drag">
 				<button
-					class="hover:bg-albumcardhover text-white py-2 px-4 rounded text-sm"
+					class="hover:bg-albumcardhover text-white py-2 px-4 rounded text-sm player-text"
 					@click="go('login')"
 					v-if="!isUserExist"
 				>
@@ -117,7 +118,7 @@
 						</div>
 
 						<div class="flex flex-col items-end">
-							<p class="text-xs font-semibold text-right text-white">
+							<p class="text-xs font-semibold text-right text-white album-title">
 								{{
 									userData.nickname
 										? userData.nickname
@@ -128,7 +129,7 @@
 							</p>
 							<p
 								v-if="userData.intro || (isNeteaseLogin && !userData.intro)"
-								class="text-xs text-gray-400 text-right truncate max-w-[150px]"
+								class="text-xs text-gray-400 text-right truncate max-w-[150px] player-text"
 							>
 								{{ userData.intro || (isNeteaseLogin ? neteaseUser.signature : '') }}
 							</p>
@@ -158,7 +159,7 @@
 							<button
 								v-if="!isNeteaseLogin"
 								type="button"
-								class="w-full px-4 py-2 text-sm text-left text-gray-300 hover:bg-white/5 flex items-center gap-2"
+								class="w-full px-4 py-2 text-sm text-left text-gray-300 hover:bg-white/5 flex items-center gap-2 player-text"
 								@click.prevent="handleNeteaseClick"
 								@mousedown.stop="handleNeteaseMouseDown"
 							>
@@ -167,7 +168,7 @@
 							</button>
 							<button
 								type="button"
-								class="w-full px-4 py-2 text-sm text-left text-gray-300 hover:bg-white/5 flex items-center gap-2"
+								class="w-full px-4 py-2 text-sm text-left text-gray-300 hover:bg-white/5 flex items-center gap-2 player-text"
 								@click.prevent="handleEditProfile"
 								@mousedown.stop="handleNeteaseMouseDown"
 							>
@@ -176,7 +177,7 @@
 							</button>
 							<button
 								type="button"
-								class="w-full px-4 py-2 text-sm text-left text-gray-300 hover:bg-white/5 flex items-center gap-2"
+								class="w-full px-4 py-2 text-sm text-left text-gray-300 hover:bg-white/5 flex items-center gap-2 player-text"
 								@click.prevent="handleLogout"
 								@mousedown.stop="handleNeteaseMouseDown"
 							>
@@ -215,7 +216,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import {
@@ -249,7 +250,6 @@ const route = useRoute()
 const neteaseUser = ref({}) as any
 const isUserExist = ref(false)
 const isNeteaseLogin = ref(false)
-const currentTab = ref('home')
 const searchQuery = ref('')
 const showDropdown = ref(false)
 const selectedTags = ref<Array<{ label: string; icon: any }>>([])
@@ -268,50 +268,6 @@ const suggestions = [
 const availableSuggestions = computed(() => {
 	return suggestions.filter(suggestion => !selectedTags.value.some(tag => tag.label === suggestion.label))
 })
-
-// 监听 currentTab 的变化
-watch(currentTab, newValue => {
-	if (
-		newValue === 'playlist' ||
-		newValue === 'albums' ||
-		newValue === 'collections' ||
-		newValue === 'finals' ||
-		newValue === 'album-details' ||
-		newValue === 'netease-playlist' ||
-		newValue === 'netease-album' ||
-		newValue === 'netease-daily'
-	) {
-		return
-	}
-	console.log('Tab changed to:', newValue)
-	router.push({ name: newValue }).catch(err => {
-		console.error('Navigation failed:', err)
-	})
-})
-
-// 监听路由变化
-watch(
-	() => route.name,
-	newName => {
-		if (typeof newName === 'string') {
-			if (
-				newName === 'playlist' ||
-				newName === 'albums' ||
-				newName === 'collections' ||
-				newName === 'finals' ||
-				newName === 'album-details' ||
-				newName === 'netease-playlist' ||
-				newName === 'netease-album' ||
-				newName === 'netease-daily'
-			) {
-				currentTab.value = 'home'
-				return
-			}
-			currentTab.value = newName.toLowerCase()
-		}
-	},
-	{ immediate: true }
-)
 
 // 返回前进按钮
 const go = (where: string) => {
@@ -338,30 +294,11 @@ const go = (where: string) => {
 	}
 }
 
-// 修改点击处理函数
-const handleInputClick = (event: MouseEvent) => {
-	event.stopPropagation() // 阻止事件冒泡
-	showDropdown.value = !showDropdown.value
-}
-
-// 修改点击外部处理函数
+// 添加点击外部关闭下拉菜单的处理
 const handleClickOutside = (event: MouseEvent) => {
 	const target = event.target as HTMLElement
-	const userMenu = document.querySelector('.user-menu')
-
-	// 如果点击的是菜单按钮，不处理
-	if (target.closest('button')) {
-		return
-	}
-
-	// 处理搜索框点击
 	if (searchContainer.value && !searchContainer.value.contains(target)) {
 		showDropdown.value = false
-	}
-
-	// 如果点击在菜单外部，关闭所有菜单
-	if (userMenu && !userMenu.contains(target)) {
-		showUserMenu.value = false
 	}
 }
 
@@ -405,8 +342,6 @@ onMounted(() => {
 		neteaseUser.value = user
 	}) as EventListener)
 
-	console.log('Current route:', route.fullPath)
-
 	// 添加存储变化监听
 	window.addEventListener('storage', updateUserData)
 
@@ -423,20 +358,26 @@ onUnmounted(() => {
 	window.removeEventListener('user-updated', updateUserData)
 })
 
-// 恢复标签相关的处理函数
-const handleSelect = (item: { label: string; icon: any }) => {
-	selectedTags.value.push(item)
-	showDropdown.value = false
-	searchQuery.value = ''
+// 修改输入框点击处理函数
+const handleInputClick = () => {
+	showDropdown.value = true
 }
 
+// 修改选择建议项的处理函数
+const handleSelect = (item: any) => {
+	selectedTags.value.push(item)
+	searchQuery.value = ''
+	showDropdown.value = false
+}
+
+// 修改删除标签的处理函数
 const removeTag = (index: number) => {
 	selectedTags.value.splice(index, 1)
 }
 
+// 修改退格键处理函数
 const handleBackspace = (event: KeyboardEvent) => {
-	if (searchQuery.value === '' && selectedTags.value.length > 0) {
-		event.preventDefault()
+	if (searchQuery.value === '' && selectedTags.value.length > 0 && event.key === 'Backspace') {
 		selectedTags.value.pop()
 	}
 }
@@ -554,6 +495,11 @@ const handleAvatarError = (e: any) => {
 	console.error('Avatar load error:', e)
 	const target = e.target as HTMLImageElement
 	target.src = '' // 清空源，显示默认头像
+}
+
+// 添加 ESC 键处理函数
+const handleEsc = () => {
+	showDropdown.value = false
 }
 </script>
 

@@ -68,4 +68,20 @@ import LeftNav from '@/components/navbar/LeftNav.vue'
 	height: 100vh;
 	overflow-y: auto;
 }
+
+.fade-enter-active,
+.fade-leave-active {
+	transition: opacity 0.15s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+	opacity: 0;
+}
+
+/* 防止过渡期间出现滚动条闪烁 */
+.fade-leave-active {
+	position: absolute;
+	width: 100%;
+}
 </style>
