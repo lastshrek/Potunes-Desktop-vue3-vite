@@ -22,4 +22,9 @@ createApp(App)
 	.use(VueLazyLoad, {})
 	.component('Toaster', Toaster)
 	.mount('#app')
-	.$nextTick(() => postMessage({ payload: 'removeLoading' }, '*'))
+	.$nextTick(() => {
+		// 延迟发送移除加载动画的消息
+		setTimeout(() => {
+			postMessage({ payload: 'removeLoading' }, '*')
+		}, 3000) // 从 5000 改为 3000
+	})

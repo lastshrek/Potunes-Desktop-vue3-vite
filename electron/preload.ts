@@ -56,19 +56,36 @@ const safeDOM = {
 function useLoading() {
 	const className = `loaders-css__square-spin`
 	const styleContent = `
-@keyframes square-spin {
-  25% { transform: perspective(100px) rotateX(180deg) rotateY(0); }
-  50% { transform: perspective(100px) rotateX(180deg) rotateY(180deg); }
-  75% { transform: perspective(100px) rotateX(0) rotateY(180deg); }
-  100% { transform: perspective(100px) rotateX(0) rotateY(0); }
-}
 .${className} > div {
-  animation-fill-mode: both;
-  width: 50px;
-  height: 50px;
-  background: #fff;
-  animation: square-spin 3s 0s cubic-bezier(0.09, 0.57, 0.49, 0.9) infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
+
+.${className} img {
+  width: 300px;
+  height: auto;
+  animation: logo-animation 2s cubic-bezier(0.215, 0.61, 0.355, 1);
+  animation-fill-mode: forwards;
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+@keyframes logo-animation {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  40% {
+    opacity: 0.6;
+    transform: scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 .app-loading-wrap {
   position: fixed;
   top: 0;
@@ -78,8 +95,8 @@ function useLoading() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #282c34;
-  z-index: 9;
+  background: #000;
+  z-index: 999999;
 }
     `
 	const oStyle = document.createElement('style')
@@ -88,7 +105,7 @@ function useLoading() {
 	oStyle.id = 'app-loading-style'
 	oStyle.innerHTML = styleContent
 	oDiv.className = 'app-loading-wrap'
-	oDiv.innerHTML = `<div class="${className}"><div></div></div>`
+	oDiv.innerHTML = `<div class="${className}"><div><img src="../src/assets/images/LoginLogoNoBg@3x.png" alt="loading" /></div></div>`
 
 	return {
 		appendLoading() {
@@ -111,4 +128,4 @@ window.onmessage = ev => {
 	ev.data.payload === 'removeLoading' && removeLoading()
 }
 
-setTimeout(removeLoading, 4999)
+setTimeout(removeLoading, 3000)
