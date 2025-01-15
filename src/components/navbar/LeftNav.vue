@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2025-01-05 20:09:28
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-15 19:21:17
+ * @LastEditTime : 2025-01-15 19:26:11
  * @FilePath     : /src/components/navbar/LeftNav.vue
  * @Description  : LeftNav
  * Copyright 2025 lastshrek, All Rights Reserved.
@@ -10,7 +10,7 @@
 -->
 <template>
 	<div class="sticky top-16 h-[calc(100vh-4rem)] left-0 w-44 bg-black pl-2">
-		<div class="space-y-8">
+		<div class="space-y-4">
 			<!-- 主导航 -->
 			<div class="space-y-1">
 				<!-- 导航按钮 -->
