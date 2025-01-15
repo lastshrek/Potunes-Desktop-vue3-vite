@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-05 16:30:59
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-15 09:33:31
+ * @LastEditTime : 2025-01-15 18:48:28
  * @FilePath     : /src/views/Suggestion.vue
  * @Description  : Suggestions
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -332,13 +332,6 @@ const nextCollections = computed(() => {
 	console.log('Next collections:', collections) // 添加日志查看数据
 	return collections
 })
-
-// 获取点击缩略图对应的索引
-const getNextCollectionIndex = (thumbnailIndex: number) => {
-	const nextIndex = getNextIndex(currentIndex.value + thumbnailIndex + 1)
-	console.log('Next index:', nextIndex, 'Collection:', lastestCollections.value[nextIndex]) // 添加日志查看数据
-	return nextIndex
-}
 
 // 获取下一个索引（循环）
 const getNextIndex = (index: number) => {

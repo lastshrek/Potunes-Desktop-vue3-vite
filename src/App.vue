@@ -4,35 +4,15 @@
 		<NavBar />
 		<div class="flex">
 			<LeftNav />
-			<!-- 内容区域不可拖拽 -->
+			<!-- 移除所有过渡动画，直接渲染组件 -->
 			<router-view v-slot="{ Component, route }">
 				<template v-if="$route.meta.keepAlive">
 					<keep-alive>
-						<transition
-							enter-from-class="translate-x-full opacity-0"
-							enter-active-class="transition-all duration-300 ease-out"
-							enter-to-class="translate-x-0 opacity-100"
-							leave-from-class="translate-x-0 opacity-100"
-							leave-active-class="transition-all duration-300 ease-in"
-							leave-to-class="translate-x-full opacity-0"
-							mode="out-in"
-						>
-							<component :is="Component" :key="route.path" />
-						</transition>
+						<component :is="Component" :key="route.path" />
 					</keep-alive>
 				</template>
 				<template v-else>
-					<transition
-						enter-from-class="translate-x-full opacity-0"
-						enter-active-class="transition-all duration-300 ease-out"
-						enter-to-class="translate-x-0 opacity-100"
-						leave-from-class="translate-x-0 opacity-100"
-						leave-active-class="transition-all duration-300 ease-in"
-						leave-to-class="translate-x-full opacity-0"
-						mode="out-in"
-					>
-						<component :is="Component" :key="route.path" />
-					</transition>
+					<component :is="Component" :key="route.path" />
 				</template>
 			</router-view>
 		</div>
@@ -67,21 +47,5 @@ import LeftNav from '@/components/navbar/LeftNav.vue'
 #app {
 	height: 100vh;
 	overflow-y: auto;
-}
-
-.fade-enter-active,
-.fade-leave-active {
-	transition: opacity 0.15s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-	opacity: 0;
-}
-
-/* 防止过渡期间出现滚动条闪烁 */
-.fade-leave-active {
-	position: absolute;
-	width: 100%;
 }
 </style>
