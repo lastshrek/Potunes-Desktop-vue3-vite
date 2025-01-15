@@ -5,15 +5,11 @@
 		<div class="flex">
 			<LeftNav />
 			<!-- 移除所有过渡动画，直接渲染组件 -->
-			<router-view v-slot="{ Component, route }">
-				<template v-if="$route.meta.keepAlive">
-					<keep-alive>
-						<component :is="Component" :key="route.path" />
-					</keep-alive>
-				</template>
-				<template v-else>
-					<component :is="Component" :key="route.path" />
-				</template>
+			<router-view v-slot="{ Component }">
+				<keep-alive>
+					<component :is="Component" v-if="$route.meta.keepAlive" />
+				</keep-alive>
+				<component :is="Component" v-if="!$route.meta.keepAlive" />
 			</router-view>
 		</div>
 		<BottomPlayer />

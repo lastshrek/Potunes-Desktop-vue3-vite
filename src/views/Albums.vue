@@ -53,7 +53,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { playlists, finals, innerAlbums } from '@/api/index'
 import { handlePromise, showError } from '@/utils/index'
@@ -83,29 +83,49 @@ const typeTitle = computed(() => {
 const selectItem = (id: string) => {
 	router.push({ name: 'playlist', params: { id } })
 }
+
+// 获取数据的函数
+const fetchData = async (albumType: string) => {
+	isLoading.value = true
+	try {
+		switch (albumType) {
+			case 'collections':
+				const [pRes, pErr] = await handlePromise(playlists())
+				if (pErr) return showError(pErr)
+				albums.value = pRes
+				break
+			case 'finals':
+				const [fRes, fErr] = await handlePromise(finals())
+				if (fErr) return showError(fErr)
+				albums.value = fRes
+				break
+			case 'albums':
+				const [aRes, aErr] = await handlePromise(innerAlbums())
+				if (aErr) return showError(aErr)
+				albums.value = aRes
+				break
+			default:
+				break
+		}
+	} finally {
+		isLoading.value = false
+	}
+}
+
+// 监听路由参数变化
+watch(
+	() => route.params.type,
+	newType => {
+		if (newType) {
+			type.value = newType as string
+			fetchData(type.value)
+		}
+	}
+)
+
 onMounted(async () => {
 	type.value = route.params.type as string
-	console.log('type', type)
-	switch (type.value) {
-		case 'collections':
-			const [pRes, pErr] = await handlePromise(playlists())
-			if (pErr) return showError(pErr)
-			albums.value = pRes
-			break
-		case 'finals':
-			const [fRes, fErr] = await handlePromise(finals())
-			if (fErr) return showError(fErr)
-			albums.value = fRes
-			break
-		case 'albums':
-			const [aRes, aErr] = await handlePromise(innerAlbums())
-			if (aErr) return showError(aErr)
-			albums.value = aRes
-			break
-		default:
-			break
-	}
-	isLoading.value = false
+	await fetchData(type.value)
 })
 </script>
 

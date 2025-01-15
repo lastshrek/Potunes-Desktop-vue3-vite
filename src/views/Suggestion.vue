@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-05 16:30:59
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-15 18:48:28
+ * @LastEditTime : 2025-01-15 19:23:06
  * @FilePath     : /src/views/Suggestion.vue
  * @Description  : Suggestions
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -16,7 +16,6 @@
 				<div class="flex items-center gap-6">
 					<div class="w-2/3 flex items-center gap-6 justify-between">
 						<h2 class="text-lg font-semibold text-white">New Collections</h2>
-						<!-- path: '/albums/:type', -->
 						<Button variant="link" class="text-[#da5597] text-xs" @click="router.push('/albums/collections')">
 							See all
 						</Button>
@@ -204,7 +203,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick, Ref, computed, onUnmounted } from 'vue'
+import { ref, onMounted, nextTick, Ref, computed, onUnmounted, onActivated } from 'vue'
 import { Button } from '@/components/ui/button'
 import {
 	latestCollection,
@@ -254,7 +253,6 @@ const getLatestCollection = async () => {
 	try {
 		const [res] = await handlePromise(latestCollection())
 		if (!res) return
-		console.log('Latest collections:', res) // 添加日志查看数据
 		// 确保数据的一致性
 		lastestCollections.value = Array.isArray(res)
 			? res.map(item => ({
@@ -281,9 +279,7 @@ const getLatestFinal = async () => {
 	try {
 		const [res] = await handlePromise(latestFinal())
 		if (!res) return
-
 		finalLatest.value = res
-		console.log(res)
 	} finally {
 		isLoading.value = false
 	}
@@ -329,7 +325,6 @@ const nextCollections = computed(() => {
 	const next1 = getNextIndex(currentIndex.value + 1)
 	const next2 = getNextIndex(currentIndex.value + 2)
 	const collections = [lastestCollections.value[next1], lastestCollections.value[next2]]
-	console.log('Next collections:', collections) // 添加日志查看数据
 	return collections
 })
 
@@ -404,9 +399,7 @@ const getNeteaseRecommendDaily = async () => {
 		})
 	)
 	if (!res) return
-	console.log({ res })
 	neteaseDailyRecommendArr.value = res
-	console.log({ neteaseDailyRecommendArr: neteaseDailyRecommendArr.value?.length })
 }
 
 // 添加网易云登录事件监听
@@ -424,5 +417,49 @@ window.addEventListener('netease-logout', () => {
 onUnmounted(() => {
 	window.removeEventListener('netease-login', () => {})
 	window.removeEventListener('netease-logout', () => {})
+})
+
+// 数据获取逻辑
+const hasCache = ref(false)
+
+// 修改数据加载逻辑
+const loadData = async () => {
+	if (hasCache.value) return
+
+	try {
+		isLoading.value = true
+		await Promise.all([
+			getLatestCollection(),
+			getLatestFinal(),
+			getLatestInnerAlbum(),
+			getNeteaseTopCharts(),
+			getNeteaseTopAlbum(),
+		])
+
+		// 如果登录了网易云，也加载推荐数据
+		if (localStorage.getItem('netease-cookie')) {
+			isNeteaseLogin.value = true
+			await getNeteaseRecommendDaily()
+		}
+
+		hasCache.value = true
+	} finally {
+		isLoading.value = false
+	}
+}
+
+// 移除原有的 onMounted 数据加载逻辑
+onMounted(() => {
+	loadData()
+})
+
+// 当组件被重新激活时，可以选择性地刷新某些数据
+onActivated(() => {
+	// 例如，只更新网易云相关的数据
+	if (isNeteaseLogin.value) {
+		getNeteaseRecommendDaily()
+	}
+	// 重置自动播放
+	resetAutoplay()
 })
 </script>

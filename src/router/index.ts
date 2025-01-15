@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-02 15:51:57
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-14 12:38:32
+ * @LastEditTime : 2025-01-15 19:06:26
  * @FilePath     : /src/router/index.ts
  * @Description  : router
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -64,6 +64,7 @@ const routes: Array<RouteRecordRaw> = [
 		path: '/albums/:type',
 		name: 'albums',
 		component: Albums,
+		props: true,
 	},
 	{
 		path: '/trends',

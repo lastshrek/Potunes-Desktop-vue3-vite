@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2025-01-05 20:09:28
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-15 17:05:38
+ * @LastEditTime : 2025-01-15 19:21:17
  * @FilePath     : /src/components/navbar/LeftNav.vue
  * @Description  : LeftNav
  * Copyright 2025 lastshrek, All Rights Reserved.
@@ -10,106 +10,44 @@
 -->
 <template>
 	<div class="sticky top-16 h-[calc(100vh-4rem)] left-0 w-44 bg-black pl-2">
-		<div class="space-y-4">
+		<div class="space-y-8">
 			<!-- 主导航 -->
-			<div class="space-y-2">
-				<!-- Home 展开菜单 -->
+			<div class="space-y-1">
+				<!-- 导航按钮 -->
 				<Button
+					v-for="item in navItems"
+					:key="item.path"
 					variant="ghost"
 					:class="[
 						'w-full justify-start pl-4',
-						route.path === '/'
+						isActive(item.path)
 							? 'text-[#da5597] hover:text-[#da5597] hover:bg-transparent'
 							: 'text-gray-400 hover:text-white hover:bg-gray-800/50',
 					]"
-					@click="router.push('/')"
+					@click="handleNavigation(item)"
 				>
-					<ListMusic class="mr-2 h-4 w-4" />
-					Home
-				</Button>
-
-				<!-- 子菜单 -->
-				<div class="space-y-1">
-					<Button
-						variant="ghost"
-						:class="[
-							'w-full justify-start pl-4',
-							route.path === '/albums/collections'
-								? 'text-[#da5597] hover:text-[#da5597] hover:bg-transparent'
-								: 'text-gray-400 hover:text-white hover:bg-gray-800/50',
-						]"
-						@click="router.push('/albums/collections')"
-					>
-						<ListMusic class="mr-2 h-4 w-4" />
-						Collections
-					</Button>
-					<Button
-						variant="ghost"
-						:class="[
-							'w-full justify-start pl-4',
-							route.path === '/albums/finals'
-								? 'text-[#da5597] hover:text-[#da5597] hover:bg-transparent'
-								: 'text-gray-400 hover:text-white hover:bg-gray-800/50',
-						]"
-						@click="router.push('/albums/finals')"
-					>
-						<ListMusic class="mr-2 h-4 w-4" />
-						Finals
-					</Button>
-					<Button
-						variant="ghost"
-						:class="[
-							'w-full justify-start pl-4',
-							route.path === '/albums/albums'
-								? 'text-[#da5597] hover:text-[#da5597] hover:bg-transparent'
-								: 'text-gray-400 hover:text-white hover:bg-gray-800/50',
-						]"
-						@click="router.push('/albums/albums')"
-					>
-						<ListMusic class="mr-2 h-4 w-4" />
-						Albums
-					</Button>
-				</div>
-
-				<!-- 其他菜单项 -->
-				<Button
-					variant="ghost"
-					:class="[
-						'w-full justify-start pl-4',
-						route.path === '/trends'
-							? 'text-[#da5597] hover:text-[#da5597] hover:bg-transparent'
-							: 'text-gray-400 hover:text-white hover:bg-gray-800/50',
-					]"
-					@click="router.push('/trends')"
-				>
-					<BarChart3 class="mr-2 h-4 w-4" />
-					Trends
-				</Button>
-				<Button
-					variant="ghost"
-					class="w-full justify-start pl-4 text-gray-400 hover:text-white hover:bg-gray-800/50"
-					@click="router.push('/feature')"
-				>
-					<MessageSquare class="mr-2 h-4 w-4" />
-					Suggestions
+					<component :is="item.icon" class="mr-2 h-4 w-4" />
+					{{ item.name }}
 				</Button>
 			</div>
 
 			<!-- 个人收藏区 -->
-			<div class="space-y-1">
+			<div class="space-y-4">
 				<h2 class="px-4 text-lg font-semibold tracking-tight text-white">My Music</h2>
-				<Button variant="ghost" class="w-full justify-start pl-4 text-gray-400 hover:text-white hover:bg-gray-800/50">
-					<Heart class="mr-2 h-4 w-4" />
-					Favourites
-				</Button>
-				<Button variant="ghost" class="w-full justify-start pl-4 text-gray-400 hover:text-white hover:bg-gray-800/50">
-					<History class="mr-2 h-4 w-4" />
-					History
-				</Button>
+				<div class="space-y-1">
+					<Button variant="ghost" class="w-full justify-start pl-4 text-gray-400 hover:text-white hover:bg-gray-800/50">
+						<Heart class="mr-2 h-4 w-4" />
+						Favourites
+					</Button>
+					<Button variant="ghost" class="w-full justify-start pl-4 text-gray-400 hover:text-white hover:bg-gray-800/50">
+						<History class="mr-2 h-4 w-4" />
+						History
+					</Button>
+				</div>
 			</div>
 
 			<!-- 播放列表 -->
-			<div class="space-y-1">
+			<div class="space-y-4">
 				<h2 class="px-4 text-lg font-semibold tracking-tight text-white">My Playlists</h2>
 				<ScrollArea class="h-[300px] px-1">
 					<div class="space-y-1">
@@ -139,6 +77,57 @@ import { ListMusic, BarChart3, Heart, History, MessageSquare } from 'lucide-vue-
 const router = useRouter()
 const route = useRoute()
 
+// 判断路由是否激活
+const isActive = (path: string) => {
+	if (path === '/') {
+		return route.path === '/'
+	}
+	return route.path === path || route.path.startsWith(path)
+}
+
+// 导航配置
+const navItems = [
+	{
+		name: 'Home',
+		path: '/',
+		routeName: 'home',
+		icon: ListMusic,
+	},
+	{
+		name: 'Collections',
+		path: '/albums/collections',
+		routeName: 'albums',
+		params: { type: 'collections' },
+		icon: ListMusic,
+	},
+	{
+		name: 'Finals',
+		path: '/albums/finals',
+		routeName: 'albums',
+		params: { type: 'finals' },
+		icon: ListMusic,
+	},
+	{
+		name: 'Albums',
+		path: '/albums/albums',
+		routeName: 'albums',
+		params: { type: 'albums' },
+		icon: ListMusic,
+	},
+	{
+		name: 'Trends',
+		path: '/trends',
+		routeName: 'trends',
+		icon: BarChart3,
+	},
+	{
+		name: 'Suggestions',
+		path: '/feature',
+		routeName: 'feature',
+		icon: MessageSquare,
+	},
+]
+
 // 模拟数据
 const playlists = ref([
 	{ id: 1, name: 'Metalcore', color: 'bg-red-500' },
@@ -146,6 +135,33 @@ const playlists = ref([
 	{ id: 3, name: 'Funk', color: 'bg-yellow-500' },
 	{ id: 4, name: 'Disco', color: 'bg-purple-500' },
 ])
+
+// 修改导航处理方法
+const handleNavigation = (item: (typeof navItems)[0]) => {
+	console.log('Navigating to:', item.path)
+	if (item.routeName === 'albums') {
+		router
+			.push({
+				name: item.routeName,
+				params: item.params,
+			})
+			.catch(err => {
+				if (err.name !== 'NavigationDuplicated') {
+					console.error('Navigation error:', err)
+				}
+			})
+	} else {
+		router
+			.push({
+				name: item.routeName,
+			})
+			.catch(err => {
+				if (err.name !== 'NavigationDuplicated') {
+					console.error('Navigation error:', err)
+				}
+			})
+	}
+}
 </script>
 
 <style scoped>
