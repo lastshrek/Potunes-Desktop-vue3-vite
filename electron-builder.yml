@@ -10,9 +10,9 @@ directories:
     - from: "src/assets"
       to: "dist/assets"
       filter:
-        - "**/*.png"
-        - "**/*.jpg"
-        - "**/*.svg"
+        - "**/*"
+    - from: "src/assets/images/menubar"
+      to: "dist/assets/menubar"
     - from: "dist"
       to: "."
 asar: true

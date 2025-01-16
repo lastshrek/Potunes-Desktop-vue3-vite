@@ -65,12 +65,11 @@ const createMenuBarControls = () => {
 
 	try {
 		const createTemplateImage = (imageName: string) => {
-			const icon = nativeImage.createFromPath(
-				path.join(__dirname, `../src/assets/images/menubar/${imageName}-template.png`)
-			)
-			// 确保图标是模板图像
+			const iconPath = app.isPackaged
+				? path.join(process.resourcesPath, 'dist/assets/menubar', `${imageName}-template.png`)
+				: path.join(__dirname, '../src/assets/images/menubar', `${imageName}-template.png`)
+			const icon = nativeImage.createFromPath(iconPath)
 			icon.setTemplateImage(true)
-			// 调整图标大小并保持图标清晰
 			return icon.resize({
 				width: 18,
 				height: 18,
@@ -79,8 +78,10 @@ const createMenuBarControls = () => {
 		}
 
 		// 创建应用图标（放在最右边，最先创建）
-		const appIcon = nativeImage.createFromPath(path.join(__dirname, '../src/assets/images/menubar/app-template.png'))
-		appIcon.setTemplateImage(true)
+		const appIconPath = app.isPackaged
+			? path.join(process.resourcesPath, 'dist/assets/menubar/app-template.png')
+			: path.join(__dirname, '../src/assets/images/menubar/app-template.png')
+		const appIcon = nativeImage.createFromPath(appIconPath)
 		appTray = new Tray(appIcon.resize({ width: 18, height: 18, quality: 'best' }))
 		appTray.setToolTip('PoTunes')
 		appTray.setTitle('') // 应用图标不显示文字

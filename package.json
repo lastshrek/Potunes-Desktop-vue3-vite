@@ -61,8 +61,15 @@
 		],
 		"extraResources": [
 			{
-				"from": "dist",
-				"to": "."
+				"from": "src/assets",
+				"to": "dist/assets",
+				"filter": [
+					"**/*"
+				]
+			},
+			{
+				"from": "src/assets/images/menubar",
+				"to": "dist/assets/menubar"
 			}
 		],
 		"compression": "maximum",
