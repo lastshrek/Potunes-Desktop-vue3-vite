@@ -4,8 +4,7 @@ import renderer from 'vite-plugin-electron-renderer'
 import vue from '@vitejs/plugin-vue'
 import { fileURLToPath, URL } from 'node:url'
 
-// 创建配置对象
-const config = {
+export default defineConfig({
 	mode: process.env.NODE_ENV,
 	plugins: [
 		vue(),
@@ -15,7 +14,7 @@ const config = {
 			},
 			{
 				entry: 'electron/preload.ts',
-				onstart(options: any) {
+				onstart(options) {
 					options.reload()
 				},
 			},
@@ -25,10 +24,8 @@ const config = {
 	resolve: {
 		alias: {
 			'@': fileURLToPath(new URL('./src', import.meta.url)),
+			'~@': fileURLToPath(new URL('./src', import.meta.url)),
 		},
-	},
-	server: {
-		port: 5151,
 	},
 	build: {
 		rollupOptions: {
@@ -47,6 +44,8 @@ const config = {
 							extType = 'images'
 						} else if (/\.(woff2?|eot|ttf|otf)(\?.*)?$/i.test(assetInfo.name)) {
 							extType = 'fonts'
+						} else if (/\.(css|scss)(\?.*)?$/i.test(assetInfo.name)) {
+							extType = 'css'
 						}
 						return `assets/${extType}/[name]-[hash][extname]`
 					}
@@ -54,6 +53,7 @@ const config = {
 				},
 			},
 		},
+		assetsDir: 'assets',
 		assetsInlineLimit: 4096,
 		chunkSizeWarningLimit: 1000,
 		minify: 'terser',
@@ -63,14 +63,15 @@ const config = {
 				drop_debugger: true,
 			},
 		},
-		assetsInclude: ['**/*.png', '**/*.jpg', '**/*.svg', '**/*.gif', '**/*.woff2'],
-		copyPublicDir: true,
 	},
-	publicDir: 'src/assets',
-	define: {
-		__DEV__: process.env.NODE_ENV === 'development',
+	css: {
+		preprocessorOptions: {
+			scss: {
+				additionalData: `
+					@use "sass:math";
+					@import "@/assets/css/variables.scss";
+				`,
+			},
+		},
 	},
-} as UserConfig
-
-// 导出配置
-export default defineConfig(config)
+})

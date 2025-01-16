@@ -5,7 +5,7 @@ import { join } from 'path'
 const isDev = process.env.NODE_ENV === 'development'
 const getAssetPath = (path: string) => {
 	if (isDev) {
-		return `/src/assets/${path}`
+		return new URL(`../src/assets/${path}`, import.meta.url).href
 	}
 	return `file://${join(process.resourcesPath, 'dist/assets', path)}`
 }

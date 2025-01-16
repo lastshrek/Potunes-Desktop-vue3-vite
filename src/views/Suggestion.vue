@@ -478,16 +478,13 @@ onMounted(() => {
 
 // 当组件被重新激活时，可以选择性地刷新某些数据
 onActivated(() => {
-	// 例如，只更新网易云相关的数据
-	if (isNeteaseLogin.value) {
-		getNeteaseRecommendDaily()
-	}
+	console.log('Suggestion component activated')
 	// 重置自动播放
 	resetAutoplay()
-	console.log('Suggestion component activated')
 })
 
 onDeactivated(() => {
 	console.log('Suggestion component deactivated')
+	// 在这里添加需要的清理代码
 })
 </script>

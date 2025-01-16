@@ -115,13 +115,6 @@ const router = createRouter({
 // 修改导航守卫
 router.beforeEach((to, from, next) => {
 	console.log('Navigation started:', { from: from.path, to: to.path })
-	// 确保组件正确卸载
-	if (from.meta.keepAlive) {
-		const instance = from.matched[0]?.instances?.default
-		if (instance && typeof instance.deactivate === 'function') {
-			instance.deactivate()
-		}
-	}
 	next()
 })
 
