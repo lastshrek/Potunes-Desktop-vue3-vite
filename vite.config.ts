@@ -6,6 +6,7 @@ import { fileURLToPath, URL } from 'node:url'
 
 // 创建配置对象
 const config = {
+	mode: process.env.NODE_ENV,
 	plugins: [
 		vue(),
 		electron([
@@ -66,6 +67,9 @@ const config = {
 		copyPublicDir: true,
 	},
 	publicDir: 'src/assets',
+	define: {
+		__DEV__: process.env.NODE_ENV === 'development',
+	},
 } as UserConfig
 
 // 导出配置

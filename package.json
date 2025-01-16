@@ -3,8 +3,8 @@
 	"private": true,
 	"version": "2.1.0",
 	"scripts": {
-		"dev": "vite",
-		"build": "vite build && electron-builder --mac",
+		"dev": "vite --mode development",
+		"build": "vite build --mode production && electron-builder --mac",
 		"build:all": "vite build && electron-builder -mw",
 		"build:win": "vite build && electron-builder --win",
 		"preview": "vite preview"

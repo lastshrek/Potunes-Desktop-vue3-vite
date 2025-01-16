@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-02 17:08:49
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-13 14:45:10
+ * @LastEditTime : 2025-01-16 20:34:51
  * @FilePath     : /src/api/network.ts
  * @Description  : network
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -10,7 +10,7 @@
  */
 import axios from 'axios'
 // axios.defaults.baseURL = 'https://api.poche.pink'
-axios.defaults.baseURL = 'http://localhost:3000'
+axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL
 
 // 添加请求拦截器
 axios.interceptors.request.use(
