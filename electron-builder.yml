@@ -1,0 +1,43 @@
+appId: com.potunes.desktop
+productName: 破破
+directories:
+  buildResources: build/icons
+  files:
+    - "dist/**/*"
+    - "dist-electron/**/*"
+  extraResources:
+    - from: "src/assets"
+      to: "assets"
+      filter:
+        - "**/*"
+win:
+  icon: build/icons/icon.ico
+  target:
+    - target: nsis
+      arch:
+        - x64
+    - target: zip
+      arch:
+        - x64
+  artifactName: "${productName}-${version}-${arch}.${ext}"
+mac:
+  icon: build/icons/icon.icns
+  electronDist: dist-electron
+  artifactName: "${productName}-${version}-${arch}.${ext}"
+  target:
+    - target: dmg
+      arch:
+        - arm64
+        - x64
+    - target: zip
+      arch:
+        - arm64
+        - x64
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: "破破"
+  installerIcon: build/icons/icon.ico
+  uninstallerIcon: build/icons/icon.ico 

@@ -1,4 +1,14 @@
 import { contextBridge, ipcRenderer } from 'electron'
+import { join } from 'path'
+
+// 添加资源路径处理
+const isDev = process.env.NODE_ENV === 'development'
+const getAssetPath = (path: string) => {
+	if (isDev) {
+		return `/src/assets/${path}`
+	}
+	return `file://${join(__dirname, '../../assets', path)}`
+}
 
 // 暴露 API 到渲染进程
 contextBridge.exposeInMainWorld('electron', {
@@ -18,6 +28,7 @@ contextBridge.exposeInMainWorld('electron', {
 	updateSongInfo: (info: { title: string; artist: string }) => {
 		ipcRenderer.send('update-song-info', info)
 	},
+	getAssetPath,
 })
 
 function domReady(condition: DocumentReadyState[] = ['complete', 'interactive']) {
@@ -105,7 +116,9 @@ function useLoading() {
 	oStyle.id = 'app-loading-style'
 	oStyle.innerHTML = styleContent
 	oDiv.className = 'app-loading-wrap'
-	oDiv.innerHTML = `<div class="${className}"><div><img src="../src/assets/images/LoginLogoNoBg@3x.png" alt="loading" /></div></div>`
+	oDiv.innerHTML = `<div class="${className}"><div><img src="${getAssetPath(
+		'images/LoginLogoNoBg@3x.png'
+	)}" alt="loading" /></div></div>`
 
 	return {
 		appendLoading() {

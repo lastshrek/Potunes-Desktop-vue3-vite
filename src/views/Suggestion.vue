@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-05 16:30:59
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-15 19:23:06
+ * @LastEditTime : 2025-01-15 20:29:41
  * @FilePath     : /src/views/Suggestion.vue
  * @Description  : Suggestions
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -12,23 +12,24 @@
 	<div class="min-h-screen pt-16 pb-24 w-full bg-black">
 		<!-- 头部 -->
 		<div class="container mx-auto px-6">
-			<div class="h-96 w-full">
+			<div class="h-76 w-full">
 				<div class="flex items-center gap-6">
-					<div class="w-2/3 flex items-center gap-6 justify-between">
+					<div class="w-1/2 flex items-center gap-6 justify-between">
 						<h2 class="text-lg font-semibold text-white">New Collections</h2>
 						<Button variant="link" class="text-[#da5597] text-xs" @click="router.push('/albums/collections')">
 							See all
 						</Button>
 					</div>
-					<div class="w-1/3 flex items-center gap-6 justify-between">
+					<div class="w-1/4 flex items-center gap-6 justify-between">
 						<h2 class="text-lg font-semibold text-white">New Final</h2>
 						<Button variant="link" class="text-[#da5597] text-xs" @click="router.push('/albums/finals')">
 							See all
 						</Button>
 					</div>
+					<div class="w-1/4 flex items-center gap-6 justify-between"></div>
 				</div>
 				<div class="flex gap-6 h-[calc(100%-2rem)]">
-					<div class="w-2/3 rounded-lg overflow-hidden">
+					<div class="w-1/2 rounded-lg overflow-hidden">
 						<div class="relative w-full h-full">
 							<template v-if="!isLoading && lastestCollections?.length">
 								<div
@@ -57,7 +58,7 @@
 								<!-- 右下角缩略图 -->
 								<div class="absolute bottom-6 right-6 flex gap-2 z-10">
 									<div
-										v-for="(collection, index) in nextCollections"
+										v-for="collection in nextCollections"
 										:key="collection.id"
 										class="w-32 aspect-[32/15] rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-[#da5597]/90 transition-all"
 										@click="toPlaylist(collection.id, '')"
@@ -71,7 +72,7 @@
 							</template>
 						</div>
 					</div>
-					<div class="w-1/3 rounded-lg overflow-hidden">
+					<div class="w-1/4 rounded-lg overflow-hidden">
 						<template v-if="!isLoading && finalLatest">
 							<AlbumCard
 								:cover_url="finalLatest?.cover"
@@ -80,8 +81,27 @@
 								max_width="w-full"
 								:showPlayButton="true"
 								:centerText="true"
-								:titleSize="'text-xl'"
+								:titleSize="'text-lg'"
 								imageRatio="square"
+								:useColorThief="false"
+							/>
+						</template>
+						<template v-if="isLoading">
+							<AlbumCardSkeleton :imageRatio="'square'" />
+						</template>
+					</div>
+					<div class="w-1/4 rounded-lg overflow-hidden">
+						<template v-if="!isLoading && finalLatest">
+							<AlbumCard
+								name="电台"
+								:cover_url="radioIcon"
+								:showPlayButton="true"
+								:showControls="false"
+								:showInfo="false"
+								:imagePadding="true"
+								:image-ratio="'square'"
+								:titleSize="'text-lg'"
+								type="fm"
 								:useColorThief="false"
 							/>
 						</template>
@@ -106,6 +126,8 @@
 					:showInfo="false"
 					:image-ratio="'square'"
 					:centerNumber="getCurrentDate()"
+					:useColorThief="false"
+					:imagePadding="true"
 					type="netease-daily-tracks"
 				/>
 				<AlbumCard
@@ -165,7 +187,7 @@
 						:showControls="false"
 						:showInfo="false"
 						:image-ratio="'square'"
-						type="netease"
+						type="netease-playlist"
 					></AlbumCard>
 				</template>
 				<template v-else>
@@ -218,9 +240,10 @@ import { useRouter } from 'vue-router'
 import { handlePromise, getCurrentDate } from '@/utils'
 import { Playlist } from '@/interfaces/collection'
 import { NeteaseAlbum } from '@/interfaces/netease_album'
-import dailyIcon from '@/assets/images/daily.png'
 import AlbumCard from '@/components/albumcard/AlbumCard.vue'
 import AlbumCardSkeleton from '@/components/albumcard/AlbumCardSkeleton.vue'
+import dailyIcon from '@/assets/images/daily.png'
+import radioIcon from '@/assets/images/radio.png'
 
 // 是否在加载中
 const isLoading = ref(true)

@@ -19,19 +19,15 @@ export const useLyricsStore = defineStore('lyrics', {
 
 	actions: {
 		async fetchLyrics(id: number, nId?: number, userId?: number) {
-			console.log('开始获取歌词')
 			if (id === -1) return
 			this.loading = true
 			this.error = null
 			try {
 				const [res] = await handlePromise(getLyrics(id, nId, userId))
-				console.log(res)
 				if (!res) return
-				console.log('lrc', res)
 				this.lrc = res.lrc
 				this.lrc_cn = res.lrc_cn
 			} catch (err: any) {
-				console.log(err)
 				this.error = err.message
 			} finally {
 				this.loading = false

@@ -25,3 +25,5 @@ new_home.png
 *.njsproj
 *.sln
 *.sw?
+
+# !src/assets/**/*

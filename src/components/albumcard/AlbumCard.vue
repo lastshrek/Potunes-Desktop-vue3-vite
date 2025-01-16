@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-02 18:27:16
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-14 21:46:36
+ * @LastEditTime : 2025-01-15 20:34:07
  * @FilePath     : /src/components/albumcard/AlbumCard.vue
  * @Description  : album card
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -20,7 +20,10 @@
 		}"
 		@click="handleClick"
 	>
-		<div class="relative w-full mb-2" :class="imageRatio === 'square' ? 'aspect-square' : 'aspect-[32/15]'">
+		<div
+			class="relative w-full mb-2"
+			:class="[imageRatio === 'square' ? 'aspect-square' : 'aspect-[32/15]', imagePadding ? 'p-4' : '']"
+		>
 			<img
 				:src="getImageSrc(cover_url)"
 				class="w-full h-full object-cover rounded-lg"
@@ -29,7 +32,7 @@
 			/>
 			<div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent rounded-lg"></div>
 			<div v-if="centerNumber" class="absolute inset-0 flex items-center justify-center">
-				<span class="text-gray-800 text-3xl font-semibold mt-2">{{ centerNumber }}</span>
+				<span class="text-[#72271b]/70 text-2xl font-bold tracking-wider mt-5 opacity-90">{{ centerNumber }}</span>
 			</div>
 			<div
 				v-if="showPlayButton"
@@ -101,9 +104,13 @@ import { Heart, MoreHorizontal } from 'lucide-vue-next'
 import { PropType, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import ColorThief from 'colorthief'
+import { tracks as getTracks, neteaseAlbum, neteaseDailyTracks, neteasePlaylist, neteasePlaylistDetail } from '@/api'
+import { handlePromise } from '@/utils'
+import { useGlobalQueueStore } from '@/store/modules/globalQueue'
 
 const router = useRouter()
-const emit = defineEmits(['play'])
+// 播放队列
+const globalQueue = useGlobalQueueStore()
 const dominantColor = ref<string>('#121212')
 const dominantColorWithOpacity = computed(() => {
 	if (dominantColor.value === '#121212') {
@@ -169,6 +176,10 @@ const props = defineProps({
 		type: Boolean,
 		default: true,
 	},
+	imagePadding: {
+		type: Boolean,
+		default: false,
+	},
 })
 
 const getImageSrc = (url: string | ImportMetaImage): string => {
@@ -179,18 +190,56 @@ const getImageSrc = (url: string | ImportMetaImage): string => {
 const handleClick = () => {
 	const id = props.id
 	const type = props.type
-	console.log('type', type)
-
-	if (type === 'netease') return router.push(`/netease-playlist/${id}`)
+	if (type === 'fm') return
+	if (type === 'netease-playlist') return router.push(`/netease-playlist/${id}`)
 	if (type === 'netease-album') return router.push(`/netease-album/${id}`)
 	if (type === 'netease-daily-tracks') return router.push(`/netease-daily-tracks`)
 	if (type === 'netease-daily') return router.push(`/netease-daily/${id}`)
 	router.push(`/playlist/${id}`)
 }
 
-const handlePlay = (e: Event) => {
+const handlePlay = async (e: Event) => {
+	console.log('点击了id:', props.id, props.type)
+	const type = props.type
+	const id = props.id + ''
 	e.stopPropagation()
-	emit('play')
+	// emit('play', { id: props.id, type: props.type })
+	let tracks: any = []
+	if (type === 'potunes') {
+		const [res] = await handlePromise(getTracks(id))
+		tracks = res.tracks
+	}
+	if (type.startsWith('netease')) {
+		const cookie = localStorage.getItem('netease-cookie')
+		if (!cookie) return
+		// 网易日推
+		if (type === 'netease-daily-tracks') {
+			const [res] = await handlePromise(
+				neteaseDailyTracks({
+					cookie,
+				})
+			)
+			if (!res) return
+			tracks = res
+		}
+		if (type === 'netease-daily') {
+			const [res] = await handlePromise(neteasePlaylistDetail(id))
+			if (!res) return
+			tracks = res.tracks
+		}
+		if (type === 'netease-playlist') {
+			const [res] = await handlePromise(neteasePlaylist(id))
+			if (!res) return
+			tracks = res.tracks
+		}
+		if (type === 'netease-album') {
+			const [res] = await handlePromise(neteaseAlbum(id))
+			if (!res) return
+			tracks = res.tracks
+		}
+	}
+	if (!tracks.length) return
+	globalQueue.setGlobalQueue(tracks, 0)
 }
 
 // 获取图片主色调
