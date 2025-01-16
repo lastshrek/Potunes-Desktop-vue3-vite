@@ -32,6 +32,13 @@
 				contain
 				ref="progress"
 				class="h-3 mx-8 mt-1 bar"
+				:process-style="{
+					backgroundColor: `rgb(${secondaryColor.join(',')})`,
+				}"
+				:rail-style="{ backgroundColor: 'rgba(255, 255, 255, 0.2)' }"
+				:dot-style="{
+					backgroundColor: `rgb(${secondaryColor.join(',')})`,
+				}"
 			></vue-slider>
 
 			<div class="flex justify-center items-center space-x-4">
@@ -222,6 +229,13 @@
 					@drag-end="volumeChanged"
 					:dot-size="10"
 					class="bar"
+					:process-style="{
+						backgroundColor: `rgb(${secondaryColor.join(',')})`,
+					}"
+					:rail-style="{ backgroundColor: 'rgba(255, 255, 255, 0.2)' }"
+					:dot-style="{
+						backgroundColor: `rgb(${secondaryColor.join(',')})`,
+					}"
 				></vue-slider>
 			</div>
 			<div class="flex flex-col items-center justify-center">
@@ -279,6 +293,7 @@ import '@/assets/css/slider.css'
 import Lyrics from '@/views/Lyrics.vue'
 import { useLyricsStore } from '@/store/modules/lyrics'
 import { emitter } from '@/utils/mitt'
+import ColorThief from 'colorthief'
 
 const { electron } = window as Window & typeof globalThis & { electron: ElectronAPI }
 
@@ -303,6 +318,49 @@ let lyricUpdateHandler: number | null = null
 
 // 添加控制歌词面板的状态
 const showLyricsPanel = ref(false)
+
+// 添加颜色状态
+const dominantColor = ref<number[]>([0, 0, 0])
+const secondaryColor = ref<number[]>([218, 85, 151]) // 默认粉色
+
+// 获取图片主色调
+const getImageColor = async (imageUrl: string) => {
+	try {
+		const img = new Image()
+		img.crossOrigin = 'Anonymous'
+		img.src = imageUrl
+
+		await new Promise((resolve, reject) => {
+			img.onload = resolve
+			img.onerror = reject
+		})
+
+		const colorThief = new ColorThief()
+		const color = colorThief.getColor(img)
+		dominantColor.value = color.map(c => Math.max(0, Math.floor(c * 0.7)))
+
+		const palette = colorThief.getPalette(img, 3)
+		secondaryColor.value = palette[1].map(c => Math.min(255, Math.floor(c * 1.5)))
+	} catch (error) {
+		console.error('获取图片颜色失败:', error)
+		dominantColor.value = [18, 18, 18]
+		secondaryColor.value = [218, 85, 151]
+	}
+}
+
+// 监听封面变化
+watch(
+	() => currentTrack.cover_url,
+	async newUrl => {
+		if (newUrl) {
+			await getImageColor(newUrl)
+		} else {
+			dominantColor.value = [18, 18, 18]
+			secondaryColor.value = [218, 85, 151]
+		}
+	},
+	{ immediate: true }
+)
 
 // 修改 showLyrics 方法
 const showLyrics = () => {
@@ -636,5 +694,6 @@ onUnmounted(() => {
 <style lang="scss" scoped>
 .bar {
 	-webkit-app-region: no-drag;
+	transition: all 0.3s ease;
 }
 </style>

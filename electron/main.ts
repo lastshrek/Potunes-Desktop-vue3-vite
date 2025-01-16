@@ -310,7 +310,6 @@ ipcMain.on('update-play-state', (_, isPlaying: boolean) => {
 			? path.join(process.resourcesPath, 'dist/assets/menubar', `${isPlaying ? 'pause' : 'play'}-template.png`)
 			: path.join(__dirname, '../src/assets/images/menubar', `${isPlaying ? 'pause' : 'play'}-template.png`)
 
-		console.log('Loading play/pause icon from:', iconPath)
 		const icon = nativeImage.createFromPath(iconPath)
 		icon.setTemplateImage(true)
 		playTray.setImage(
