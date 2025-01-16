@@ -322,8 +322,6 @@ ipcMain.on('update-play-state', (_, isPlaying: boolean) => {
 		)
 	} catch (error) {
 		console.error('更新播放状态图标失败:', error)
-		console.error('Icon path:', iconPath)
-		console.error('Error details:', error)
 	}
 })
 

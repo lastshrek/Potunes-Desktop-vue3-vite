@@ -1,11 +1,19 @@
 import { app, BrowserWindow, globalShortcut } from 'electron'
 import { join } from 'path'
+import type {} from '../types/global'
 
 let mainWindow: BrowserWindow | null = null
 let lastQuitTime = 0
 const QUIT_INTERVAL = 500 // 双击间隔时间（毫秒）
 let isAppActive = false
 const isDev = process.env.NODE_ENV === 'development'
+
+const version = '2.1.0'
+Object.defineProperty(globalThis, '__APP_VERSION__', {
+	value: version,
+	writable: false,
+	configurable: false,
+})
 
 function createWindow(): void {
 	mainWindow = new BrowserWindow({
