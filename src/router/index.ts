@@ -8,7 +8,7 @@
  * Copyright 2023 lastshrek, All Rights Reserved.
  * 2023-09-02 15:51:57
  */
-import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
+import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router'
 import Home from '@/views/Home.vue'
 import Playlist from '@/views/Playlist.vue'
 import Favourites from '@/views/Favourites.vue'
@@ -24,7 +24,11 @@ const routes: Array<RouteRecordRaw> = [
 		path: '/',
 		name: 'home',
 		component: Suggestion,
-		meta: { keepAlive: true },
+		meta: {
+			keepAlive: true,
+			title: '首页',
+			requiresAuth: false,
+		},
 	},
 	{
 		path: '/playlist/:id',
@@ -104,13 +108,20 @@ const routes: Array<RouteRecordRaw> = [
 ]
 
 const router = createRouter({
-	history: createWebHistory(),
+	history: createWebHashHistory(),
 	routes,
 })
 
-// 添加全局导航守卫
+// 修改导航守卫
 router.beforeEach((to, from, next) => {
 	console.log('Navigation started:', { from: from.path, to: to.path })
+	// 确保组件正确卸载
+	if (from.meta.keepAlive) {
+		const instance = from.matched[0]?.instances?.default
+		if (instance && typeof instance.deactivate === 'function') {
+			instance.deactivate()
+		}
+	}
 	next()
 })
 

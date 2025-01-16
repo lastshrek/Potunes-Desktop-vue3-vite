@@ -6,7 +6,7 @@
 			<LeftNav />
 			<!-- 移除所有过渡动画，直接渲染组件 -->
 			<router-view v-slot="{ Component }">
-				<keep-alive>
+				<keep-alive :include="['Suggestion']">
 					<component :is="Component" v-if="$route.meta.keepAlive" />
 				</keep-alive>
 				<component :is="Component" v-if="!$route.meta.keepAlive" />
@@ -22,6 +22,18 @@ import NavBar from '@/components/navbar/NavBar.vue'
 import BottomPlayer from './components/player/BottomPlayer.vue'
 import { Toaster } from '@/components/ui/toast'
 import LeftNav from '@/components/navbar/LeftNav.vue'
+import { onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+onMounted(() => {
+	console.log('App mounted')
+})
+
+onUnmounted(() => {
+	console.log('App unmounted')
+})
 </script>
 
 <style lang="scss">

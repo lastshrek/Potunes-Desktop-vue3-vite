@@ -159,11 +159,12 @@ function createWindow() {
 
 	if (VITE_DEV_SERVER_URL) {
 		win.loadURL(VITE_DEV_SERVER_URL)
-		// 在开发环境下打开开发者工具
-		win.webContents.openDevTools()
 	} else {
-		win.loadFile(path.join(__dirname, '../../dist/index.html'))
+		win.loadURL(`file://${path.join(app.getAppPath(), 'dist/index.html')}#/`)
 	}
+
+	// 始终打开开发者工具
+	win.webContents.openDevTools()
 
 	// 监听窗口关闭事件
 	win.on('close', event => {

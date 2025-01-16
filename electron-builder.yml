@@ -13,6 +13,8 @@ directories:
         - "**/*.png"
         - "**/*.jpg"
         - "**/*.svg"
+    - from: "dist"
+      to: "."
 asar: true
 compression: maximum
 removePackageScripts: true

@@ -41,8 +41,8 @@
 		"postcss": "^8.4.29",
 		"sass": "^1.66.1",
 		"sass-loader": "^13.3.2",
+		"terser": "^5.27.0",
 		"tailwindcss": "^3.3.3",
-		"terser": "^5.37.0",
 		"typescript": "^5.2.2",
 		"vite": "^4.4.9",
 		"vite-plugin-electron": "^0.14.1",
@@ -58,6 +58,12 @@
 		"files": [
 			"dist/**/*",
 			"dist-electron/**/*"
+		],
+		"extraResources": [
+			{
+				"from": "dist",
+				"to": "."
+			}
 		],
 		"compression": "maximum",
 		"directories": {

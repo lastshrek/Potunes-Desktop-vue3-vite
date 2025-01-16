@@ -225,7 +225,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick, Ref, computed, onUnmounted, onActivated } from 'vue'
+import { ref, onMounted, nextTick, Ref, computed, onUnmounted, onActivated, onDeactivated } from 'vue'
 import { Button } from '@/components/ui/button'
 import {
 	latestCollection,
@@ -484,5 +484,10 @@ onActivated(() => {
 	}
 	// 重置自动播放
 	resetAutoplay()
+	console.log('Suggestion component activated')
+})
+
+onDeactivated(() => {
+	console.log('Suggestion component deactivated')
 })
 </script>
