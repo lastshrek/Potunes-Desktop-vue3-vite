@@ -117,9 +117,10 @@ const createMenuBarControls = () => {
 		})
 
 		// 创建歌词显示托盘（放在最左侧，最后创建）
-		const emptyIcon = nativeImage.createFromPath(
-			path.join(__dirname, '../src/assets/images/menubar/empty-template.png')
-		)
+		const emptyIconPath = app.isPackaged
+			? path.join(process.resourcesPath, 'dist/assets/menubar', 'empty-template.png')
+			: path.join(__dirname, '../src/assets/images/menubar', 'empty-template.png')
+		const emptyIcon = nativeImage.createFromPath(emptyIconPath)
 		emptyIcon.setTemplateImage(true)
 		lyricsTray = new Tray(emptyIcon.resize({ width: 18, height: 18, quality: 'best' }))
 		lyricsTray.setToolTip('歌词')
@@ -305,9 +306,12 @@ ipcMain.on('update-play-state', (_, isPlaying: boolean) => {
 	if (!playTray) return
 
 	try {
-		const icon = nativeImage.createFromPath(
-			path.join(__dirname, `../src/assets/images/menubar/${isPlaying ? 'pause' : 'play'}-template.png`)
-		)
+		const iconPath = app.isPackaged
+			? path.join(process.resourcesPath, 'dist/assets/menubar', `${isPlaying ? 'pause' : 'play'}-template.png`)
+			: path.join(__dirname, '../src/assets/images/menubar', `${isPlaying ? 'pause' : 'play'}-template.png`)
+
+		console.log('Loading play/pause icon from:', iconPath)
+		const icon = nativeImage.createFromPath(iconPath)
 		icon.setTemplateImage(true)
 		playTray.setImage(
 			icon.resize({
@@ -318,6 +322,8 @@ ipcMain.on('update-play-state', (_, isPlaying: boolean) => {
 		)
 	} catch (error) {
 		console.error('更新播放状态图标失败:', error)
+		console.error('Icon path:', iconPath)
+		console.error('Error details:', error)
 	}
 })
 
