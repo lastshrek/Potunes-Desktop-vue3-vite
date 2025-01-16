@@ -7,7 +7,7 @@ const getAssetPath = (path: string) => {
 	if (isDev) {
 		return `/src/assets/${path}`
 	}
-	return `file://${join(__dirname, '../../assets', path)}`
+	return `file://${join(process.resourcesPath, 'dist/assets', path)}`
 }
 
 // 暴露 API 到渲染进程
