@@ -30,6 +30,24 @@ const config = {
 		port: 5151,
 	},
 	assetsInclude: ['**/*.woff2'],
+	build: {
+		rollupOptions: {
+			output: {
+				manualChunks: {
+					vendor: ['vue', 'vue-router', 'pinia'],
+					ui: ['@headlessui/vue', 'radix-vue'],
+				},
+			},
+		},
+		chunkSizeWarningLimit: 1000,
+		minify: 'terser',
+		terserOptions: {
+			compress: {
+				drop_console: true,
+				drop_debugger: true,
+			},
+		},
+	},
 } as UserConfig
 
 // 导出配置

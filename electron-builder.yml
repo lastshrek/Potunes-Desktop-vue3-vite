@@ -1,15 +1,22 @@
 appId: com.potunes.desktop
 productName: 破破
 directories:
+  output: release
   buildResources: build/icons
   files:
     - "dist/**/*"
     - "dist-electron/**/*"
   extraResources:
     - from: "src/assets"
-      to: "assets"
+      to: "dist/assets"
       filter:
-        - "**/*"
+        - "**/*.png"
+        - "**/*.jpg"
+        - "**/*.svg"
+asar: true
+compression: maximum
+removePackageScripts: true
+removePackageKeywords: true
 win:
   icon: build/icons/icon.ico
   target:
