@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-06 12:46:29
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-04 13:34:49
+ * @LastEditTime : 2025-01-18 22:19:23
  * @FilePath     : /src/store/modules/globalQueue.ts
  * @Description  : Global Queue
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -24,7 +24,6 @@ export const useGlobalQueueStore = defineStore({
 	actions: {
 		setGlobalQueue(tracks: Track[], index: number) {
 			this.globalQueue = tracks
-			console.log(tracks[index], index)
 			useCurrentTrackStore().setCurrentTrack(tracks[index])
 			useCurrentIndexStore().setCurrentIndex(index)
 		},

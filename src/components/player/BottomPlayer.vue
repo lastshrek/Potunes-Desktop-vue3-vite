@@ -301,7 +301,6 @@ const { electron } = window as Window & typeof globalThis & { electron: Electron
 const currentTrack = useCurrentTrackStore()
 const isShowMiniPlayer = useIsShowMiniPlayerStore()
 const volume = ref(JSON.parse(localStorage.getItem('volumeBeforeMuted') || '1'))
-const isMac = ref(false)
 const value = ref(0)
 const audio = ref<HTMLAudioElement | null>(null)
 const isPlaying = useIsPlayingStore()
@@ -311,7 +310,7 @@ const globalQueue = useGlobalQueueStore()
 const currentTime = useCurrentTimeStore()
 const currentProgress = useCurrentProgressStore()
 const lyricsStore = useLyricsStore()
-
+let initial = true
 // 歌词相关状态
 const currentLyricIndex = ref(-1)
 const currentLyricLines = ref<string[]>([])
@@ -502,6 +501,11 @@ watch(
 		// 等待一小段时间确保音频源已经加载
 		await new Promise(resolve => setTimeout(resolve, 100))
 
+		// 如果初始化，则不播放
+		if (initial) {
+			initial = false
+			return
+		}
 		try {
 			// 尝试播放
 			await player.play()
@@ -653,14 +657,45 @@ watch(
 	{ deep: true }
 )
 
-onMounted(() => {
-	const version = navigator.userAgent.toLowerCase()
-	const mac = version.indexOf('mac')
-	const os = version.indexOf('os')
-	if (mac > 0 && os > 0) {
-		isMac.value = true
-	}
+// 从 localStorage 恢复播放状态
+const restorePlayState = () => {
+	try {
+		const savedQueue = localStorage.getItem('playQueue')
+		const savedIndex = localStorage.getItem('playIndex')
 
+		if (savedQueue && savedIndex) {
+			const queue = JSON.parse(savedQueue)
+			const index = parseInt(savedIndex)
+
+			if (queue.length > 0 && index >= 0 && index < queue.length) {
+				globalQueue.setGlobalQueue(queue, index)
+			}
+		}
+	} catch (error) {
+		console.error('恢复播放状态失败:', error)
+	}
+}
+
+// 保存播放状态到 localStorage
+const savePlayState = () => {
+	try {
+		localStorage.setItem('playQueue', JSON.stringify(globalQueue.queue))
+		localStorage.setItem('playIndex', currentIndex.currentIndex.toString())
+	} catch (error) {
+		console.error('保存播放状态失败:', error)
+	}
+}
+
+// 监听播放队列和索引变化
+watch(
+	[() => globalQueue.queue, () => currentIndex.currentIndex],
+	() => {
+		savePlayState()
+	},
+	{ deep: true }
+)
+
+onMounted(() => {
 	// 监听进度跳转事件
 	emitter.on('showLyrics', async value => {
 		if (!audio.value) return
@@ -684,6 +719,9 @@ onMounted(() => {
 			isPlaying.setIsPlaying(false)
 		})
 	}
+
+	// 组件加载时恢复播放状态
+	restorePlayState()
 })
 
 // 在组件卸载时清除歌词
