@@ -282,7 +282,7 @@ import { useIsPlayingStore } from '@/store/modules/isPlaying'
 import { PlayMode, usePlayModeStore } from '@/store/modules/playMode'
 import { useCurrentIndexStore } from '@/store/modules/currentIndex'
 import { useCurrentTimeStore } from '@/store/modules/currentTime'
-import { getRandomIntInclusive } from '@/utils'
+import { getRandomIntInclusive, handlePromise } from '@/utils'
 import { useCurrentProgressStore } from '@/store/modules/currentProgress'
 import { Button } from '@/components/ui/button'
 import { ListMusic, Volume1, Volume2, VolumeOff } from 'lucide-vue-next'
@@ -294,6 +294,7 @@ import Lyrics from '@/views/Lyrics.vue'
 import { useLyricsStore } from '@/store/modules/lyrics'
 import { emitter } from '@/utils/mitt'
 import ColorThief from 'colorthief'
+import { fm } from '@/api'
 
 const { electron } = window as Window & typeof globalThis & { electron: ElectronAPI }
 
@@ -607,7 +608,12 @@ const showNowPlayingList = () => {
 	emitter.emit('showNowPlayingList')
 }
 // 设置下一首播放歌曲的索引
-const setIndex = () => {
+const setIndex = async () => {
+	if (currentTrack.type === 'fm') {
+		const [res] = await handlePromise(fm())
+		if (!res) return
+		globalQueue.setGlobalQueue([res], 0)
+	}
 	if (playMode.playMode == PlayMode.Sequence) {
 		// 顺序循环
 		currentIndex.setCurrentIndex(currentIndex.currentIndex + 1)

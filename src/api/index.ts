@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-02 17:09:39
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-13 14:26:49
+ * @LastEditTime : 2025-01-18 20:21:25
  * @FilePath     : /src/api/index.ts
  * @Description  : api
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -70,19 +70,39 @@ export const neteaseLoginStatus = (cookie: string) => post('/netease/login_statu
  * @description: v1 版本
  */
 const playlistsPrefix = '/v1/playlists'
-// 获取最新三个月的精选集
+/**
+ * @description: 获取最新三个月的精选集
+ */
 export const latestCollection = () => get(`${playlistsPrefix}/collection/latest`)
-// 获取最新年终精选集
+/**
+ * @description: 获取最新年终精选集
+ */
 export const latestFinal = () => get(`${playlistsPrefix}/final/latest`)
-// 获取最新站内专辑
+/**
+ * @description: 获取最新站内专辑
+ */
 export const latestInnerAlbum = () => get(`${playlistsPrefix}/album/latest`)
-// 获取所有月度精选集
+/**
+ * @description: 获取所有月度精选集
+ */
 export const allCollections = () => get(`${playlistsPrefix}/collection/all`)
-// 获取所有年终精选集
+/**
+ * @description: 获取所有年终精选集
+ */
 export const allFinals = () => get(`${playlistsPrefix}/finals`)
-// 获取所有站内专辑
+/**
+ * @description: 获取所有站内专辑
+ */
 export const allInnerAlbums = () => get(`${playlistsPrefix}/albums`)
-// 更新用户头像
+/**
+ * @description: 更新用户头像
+ */
 export const updateUserAvatar = (avatar: string) => patch('/v1/users/avatar', { avatar })
-// 更新用户信息
+/**
+ * @description: 更新用户信息
+ */
 export const updateUserInfo = (data: any) => patch('/v1/users/profile', data)
+/**
+ * @description: 获取FM歌曲
+ */
+export const fm = () => get('v1/tracks/fm')

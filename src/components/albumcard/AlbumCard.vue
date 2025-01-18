@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-02 18:27:16
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-15 20:34:07
+ * @LastEditTime : 2025-01-18 20:25:04
  * @FilePath     : /src/components/albumcard/AlbumCard.vue
  * @Description  : album card
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -104,7 +104,14 @@ import { Heart, MoreHorizontal } from 'lucide-vue-next'
 import { PropType, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import ColorThief from 'colorthief'
-import { tracks as getTracks, neteaseAlbum, neteaseDailyTracks, neteasePlaylist, neteasePlaylistDetail } from '@/api'
+import {
+	fm,
+	tracks as getTracks,
+	neteaseAlbum,
+	neteaseDailyTracks,
+	neteasePlaylist,
+	neteasePlaylistDetail,
+} from '@/api'
 import { handlePromise } from '@/utils'
 import { useGlobalQueueStore } from '@/store/modules/globalQueue'
 
@@ -237,6 +244,11 @@ const handlePlay = async (e: Event) => {
 			if (!res) return
 			tracks = res.tracks
 		}
+	}
+	if (type === 'fm') {
+		const [res] = await handlePromise(fm())
+		if (!res) return
+		tracks = [res]
 	}
 	if (!tracks.length) return
 	globalQueue.setGlobalQueue(tracks, 0)
