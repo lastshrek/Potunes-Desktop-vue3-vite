@@ -323,6 +323,34 @@ const showLyricsPanel = ref(false)
 const dominantColor = ref<number[]>([0, 0, 0])
 const secondaryColor = ref<number[]>([218, 85, 151]) // 默认粉色
 
+const HISTORY_MAX_LENGTH = 30
+const HISTORY_STORAGE_KEY = 'playHistory'
+
+// 添加歌曲到播放历史
+const addToHistory = (track: Track) => {
+	try {
+		// 获取现有历史记录
+		const historyJson = localStorage.getItem(HISTORY_STORAGE_KEY)
+		let history: Track[] = historyJson ? JSON.parse(historyJson) : []
+
+		// 移除已存在的相同歌曲
+		history = history.filter(item => item.id !== track.id)
+
+		// 将新歌曲添加到开头
+		history.unshift(track)
+
+		// 限制历史记录长度
+		if (history.length > HISTORY_MAX_LENGTH) {
+			history = history.slice(0, HISTORY_MAX_LENGTH)
+		}
+
+		// 保存更新后的历史记录
+		localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(history))
+	} catch (error) {
+		console.error('保存播放历史失败:', error)
+	}
+}
+
 // 获取图片主色调
 const getImageColor = async (imageUrl: string) => {
 	try {
@@ -478,6 +506,11 @@ watch(
 	() => currentTrack.$state,
 	async newValue => {
 		if (!audio.value || !newValue.url) return
+
+		// 添加到播放历史
+		if (newValue.id) {
+			addToHistory(newValue)
+		}
 
 		const player = audio.value
 

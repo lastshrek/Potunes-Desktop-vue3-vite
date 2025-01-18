@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2025-01-05 20:09:28
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-15 19:26:11
+ * @LastEditTime : 2025-01-18 22:39:23
  * @FilePath     : /src/components/navbar/LeftNav.vue
  * @Description  : LeftNav
  * Copyright 2025 lastshrek, All Rights Reserved.
@@ -39,7 +39,11 @@
 						<Heart class="mr-2 h-4 w-4" />
 						Favourites
 					</Button>
-					<Button variant="ghost" class="w-full justify-start pl-4 text-gray-400 hover:text-white hover:bg-gray-800/50">
+					<Button
+						variant="ghost"
+						class="w-full justify-start pl-4 text-gray-400 hover:text-white hover:bg-gray-800/50"
+						@click="router.push('/history')"
+					>
 						<History class="mr-2 h-4 w-4" />
 						History
 					</Button>

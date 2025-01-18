@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-02 15:51:57
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-15 19:06:26
+ * @LastEditTime : 2025-01-18 22:37:48
  * @FilePath     : /src/router/index.ts
  * @Description  : router
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -19,6 +19,7 @@ import Artist from '@/views/Artist.vue'
 import Login from '@/views/Login.vue'
 import NeteaseLink from '@/views/NeteaseLink.vue'
 import EditProfile from '@/views/EditProfile.vue'
+import History from '@/views/History.vue'
 const routes: Array<RouteRecordRaw> = [
 	{
 		path: '/',
@@ -103,6 +104,12 @@ const routes: Array<RouteRecordRaw> = [
 		path: '/edit-profile',
 		name: 'edit-profile',
 		component: EditProfile,
+		meta: { keepAlive: false },
+	},
+	{
+		path: '/history',
+		name: 'history',
+		component: History,
 		meta: { keepAlive: false },
 	},
 ]
