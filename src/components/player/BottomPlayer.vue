@@ -295,7 +295,7 @@ import { useLyricsStore } from '@/store/modules/lyrics'
 import { emitter } from '@/utils/mitt'
 import ColorThief from 'colorthief'
 import { fm } from '@/api'
-
+// @ts-ignore
 const { electron } = window as Window & typeof globalThis & { electron: ElectronAPI }
 
 const currentTrack = useCurrentTrackStore()

@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-05 16:30:59
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-18 20:55:28
+ * @LastEditTime : 2025-01-18 21:07:06
  * @FilePath     : /src/views/Suggestion.vue
  * @Description  : Suggestions
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -546,6 +546,7 @@ const checkForUpdates = async () => {
 
 // 处理更新
 const handleUpdate = () => {
+	// @ts-ignore
 	window.electron.openInBrowser(updateUrl.value)
 	showUpdateDialog.value = false
 }
