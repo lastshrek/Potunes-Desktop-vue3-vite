@@ -165,8 +165,10 @@ function createWindow() {
 		win.loadURL(`file://${path.join(app.getAppPath(), 'dist/index.html')}#/`)
 	}
 
-	// 始终打开开发者工具
-	win.webContents.openDevTools()
+	// 开发环境打开开发者工具
+	if (process.env.NODE_ENV === 'development') {
+		win.webContents.openDevTools()
+	}
 
 	// 监听窗口关闭事件
 	win.on('close', event => {
