@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-02 18:30:22
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-05 15:44:40
+ * @LastEditTime : 2025-01-18 21:01:00
  * @FilePath     : /src/utils/index.ts
  * @Description  : utils
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -74,4 +74,19 @@ export const formatPlaylistDurationToHourStr = (millisecond: number) => {
 	if (hour > 0) return `${hour}h ${min}m`
 	if (min > 0) return `${min}m`
 	return ''
+}
+
+export function compareVersions(v1: string, v2: string): number {
+	const v1Parts = v1.split('.').map(Number)
+	const v2Parts = v2.split('.').map(Number)
+
+	for (let i = 0; i < Math.max(v1Parts.length, v2Parts.length); i++) {
+		const v1Part = v1Parts[i] || 0
+		const v2Part = v2Parts[i] || 0
+
+		if (v1Part > v2Part) return 1
+		if (v1Part < v2Part) return -1
+	}
+
+	return 0
 }

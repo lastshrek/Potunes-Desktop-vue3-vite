@@ -267,7 +267,7 @@ import {
 } from '@/api'
 import { formatPlaylistUpdateTime, formatPlaylistDurationToHourStr } from '@/utils'
 import { useRouter } from 'vue-router'
-import { handlePromise, getCurrentDate } from '@/utils'
+import { handlePromise, getCurrentDate, compareVersions } from '@/utils'
 import { Playlist } from '@/interfaces/collection'
 import { NeteaseAlbum } from '@/interfaces/netease_album'
 import AlbumCard from '@/components/albumcard/AlbumCard.vue'
@@ -533,7 +533,7 @@ const checkForUpdates = async () => {
 		const [res] = await handlePromise(checkNewVersion(platform))
 		if (!res) return
 		console.log('res', res)
-		if (res.a_version > currentVersion.value) {
+		if (compareVersions(res.a_version, currentVersion.value) > 0) {
 			newVersion.value = res.a_version
 			updateUrl.value = res.a_url
 			updateText.value = res.updateText || '是否前往下载？'
