@@ -17,6 +17,8 @@ interface ElectronAPI {
 	updatePlayState: (isPlaying: boolean) => void
 	updateLyric: (lyric: string) => void
 	updateSongInfo: (info: { title: string; artist: string }) => void
+	showUpdateDialog: (version: string, currentVersion: string, url: string) => Promise<void>
+	openInBrowser: (url: string) => Promise<void>
 }
 
 interface Window {

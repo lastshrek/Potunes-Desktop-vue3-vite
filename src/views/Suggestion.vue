@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-05 16:30:59
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-15 20:29:41
+ * @LastEditTime : 2025-01-18 20:55:28
  * @FilePath     : /src/views/Suggestion.vue
  * @Description  : Suggestions
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -10,6 +10,27 @@
 -->
 <template>
 	<div class="min-h-screen pt-16 pb-24 w-full bg-black">
+		<!-- 更新提示对话框 -->
+		<Dialog :open="showUpdateDialog" @update:open="showUpdateDialog = $event">
+			<DialogContent class="bg-[#111111] border border-gray-800">
+				<DialogHeader>
+					<DialogTitle class="text-white">发现新版本 {{ newVersion }}</DialogTitle>
+					<DialogDescription>
+						<div class="text-gray-300 whitespace-pre-line">{{ updateText }}</div>
+					</DialogDescription>
+				</DialogHeader>
+				<DialogFooter>
+					<Button
+						variant="outline"
+						class="bg-[#1a1a1a] border-gray-700 text-gray-300 hover:bg-transparent hover:text-white"
+						@click="showUpdateDialog = false"
+					>
+						取消
+					</Button>
+					<Button class="bg-[#da5597] hover:bg-[#c94884] text-white" @click="handleUpdate">前往下载</Button>
+				</DialogFooter>
+			</DialogContent>
+		</Dialog>
 		<!-- 头部 -->
 		<div class="container mx-auto px-6">
 			<div class="h-76 w-full">
@@ -228,12 +249,21 @@
 import { ref, onMounted, nextTick, Ref, computed, onUnmounted, onActivated, onDeactivated } from 'vue'
 import { Button } from '@/components/ui/button'
 import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from '@/components/ui/dialog'
+import {
 	latestCollection,
 	latestFinal,
 	neteaseToplist,
 	latestInnerAlbum,
 	neteaseTopAlbum,
 	neteaseRecommendDaily,
+	newVersion as checkNewVersion,
 } from '@/api'
 import { formatPlaylistUpdateTime, formatPlaylistDurationToHourStr } from '@/utils'
 import { useRouter } from 'vue-router'
@@ -457,6 +487,7 @@ const loadData = async () => {
 			getLatestInnerAlbum(),
 			getNeteaseTopCharts(),
 			getNeteaseTopAlbum(),
+			checkForUpdates(),
 		])
 
 		// 如果登录了网易云，也加载推荐数据
@@ -487,4 +518,35 @@ onDeactivated(() => {
 	console.log('Suggestion component deactivated')
 	// 在这里添加需要的清理代码
 })
+
+// 版本更新相关
+const showUpdateDialog = ref(false)
+const newVersion = ref('')
+const currentVersion = ref(__APP_VERSION__)
+const updateUrl = ref('')
+const updateText = ref('')
+
+// 检查新版本
+const checkForUpdates = async () => {
+	try {
+		const platform = window.electron.platform === 'darwin' ? 'MacOS' : 'Windows'
+		const [res] = await handlePromise(checkNewVersion(platform))
+		if (!res) return
+		console.log('res', res)
+		if (res.a_version > currentVersion.value) {
+			newVersion.value = res.a_version
+			updateUrl.value = res.a_url
+			updateText.value = res.updateText || '是否前往下载？'
+			showUpdateDialog.value = true
+		}
+	} catch (error) {
+		console.error('检查更新失败:', error)
+	}
+}
+
+// 处理更新
+const handleUpdate = () => {
+	window.electron.openInBrowser(updateUrl.value)
+	showUpdateDialog.value = false
+}
 </script>

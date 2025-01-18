@@ -3,6 +3,11 @@ import electron from 'vite-plugin-electron'
 import renderer from 'vite-plugin-electron-renderer'
 import vue from '@vitejs/plugin-vue'
 import { fileURLToPath, URL } from 'node:url'
+import { join } from 'path'
+import { readFileSync } from 'fs'
+
+// 读取 package.json
+const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url)).toString())
 
 export default defineConfig({
 	mode: process.env.NODE_ENV,
@@ -73,5 +78,8 @@ export default defineConfig({
 				`,
 			},
 		},
+	},
+	define: {
+		__APP_VERSION__: JSON.stringify(pkg.version),
 	},
 })

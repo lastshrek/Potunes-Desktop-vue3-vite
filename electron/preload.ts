@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from 'electron'
+import { contextBridge, ipcRenderer, shell } from 'electron'
 import { join } from 'path'
 
 // 添加资源路径处理
@@ -28,6 +28,7 @@ contextBridge.exposeInMainWorld('electron', {
 	updateSongInfo: (info: { title: string; artist: string }) => {
 		ipcRenderer.send('update-song-info', info)
 	},
+	openInBrowser: (url: string) => shell.openExternal(url),
 	getAssetPath,
 })
 

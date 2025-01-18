@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-02 17:09:39
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-18 20:21:25
+ * @LastEditTime : 2025-01-18 20:33:30
  * @FilePath     : /src/api/index.ts
  * @Description  : api
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -106,3 +106,7 @@ export const updateUserInfo = (data: any) => patch('/v1/users/profile', data)
  * @description: 获取FM歌曲
  */
 export const fm = () => get('v1/tracks/fm')
+/**
+ * @description: 获取新版本
+ */
+export const newVersion = (platform: string) => get(`v1/versions`, { platform })
