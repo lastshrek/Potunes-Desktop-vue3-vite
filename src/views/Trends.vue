@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-05 16:28:54
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-05 20:50:17
+ * @LastEditTime : 2025-01-19 09:38:55
  * @FilePath     : /src/views/Trends.vue
  * @Description  : Trends
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -85,6 +85,18 @@
 								</div>
 							</div>
 						</div>
+						<!-- album -->
+						<div class="hidden md:flex items-center w-48">
+							<p
+								class="text-xs font-semibold text-gray-400 truncate hover:underline cursor-pointer"
+								:class="{
+									'text-white':
+										currentTrack.type == 'netease' ? currentTrack.nId == item.nId : currentTrack.id == item.id,
+								}"
+							>
+								{{ item.album }}
+							</p>
+						</div>
 						<div class="flex justify-center items-center space-x-4 px-4">
 							<!-- duration -->
 							<p class="text-xs font-semibold text-gray-50">
@@ -105,6 +117,9 @@
 						<div class="flex-1 space-y-2">
 							<div class="h-3 bg-gray-800 rounded w-1/4"></div>
 							<div class="h-2 bg-gray-800 rounded w-1/3"></div>
+						</div>
+						<div class="hidden md:flex items-center w-48">
+							<div class="h-2 bg-gray-800 rounded w-2/3"></div>
 						</div>
 						<div class="w-12 h-3 bg-gray-800 rounded mx-4"></div>
 					</div>
@@ -175,6 +190,13 @@ const selectTrack = (index: number) => {
 const handleArtistClick = (artistId: number) => {
 	router.push({
 		path: `/artist/${artistId}`,
+	})
+}
+
+const handleAlbumClick = (albumId?: number) => {
+	if (!albumId) return
+	router.push({
+		path: `/album/${albumId}`,
 	})
 }
 </script>
