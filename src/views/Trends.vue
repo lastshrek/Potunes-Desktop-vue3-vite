@@ -12,7 +12,7 @@
 	<div class="bg-black w-full h-screen pt-16 pb-20">
 		<div class="container mx-auto h-full overflow-y-scroll flex flex-col text-white">
 			<!-- 周榜card -->
-			<div class="rounded-lg shadow-md flex p-4">
+			<div v-if="!isLoading" class="rounded-lg shadow-md flex p-4">
 				<!-- 左侧图片 -->
 				<div class="w-full md:w-40 relative text-center">
 					<img :src="hotImageSrc" class="w-full h-auto rounded-lg mr-4 border border-gray-800" />
@@ -26,71 +26,91 @@
 					<p class="mb-4 custom-truncate text-gray-400 max-h-16">一周歌曲收听排行『{{ weekago }} - {{ todayFull }}』</p>
 				</div>
 			</div>
+			<div v-else class="rounded-lg shadow-md flex p-4 animate-pulse">
+				<div class="w-full md:w-40 relative">
+					<div class="w-full h-40 bg-gray-800 rounded-lg"></div>
+				</div>
+				<div class="w-full md:flex-1 md:flex md:flex-col justify-end px-4">
+					<div class="h-6 bg-gray-800 rounded w-1/4 mb-2"></div>
+					<div class="h-4 bg-gray-800 rounded w-3/4"></div>
+				</div>
+			</div>
+
 			<!-- tracklist -->
 			<div class="w-full">
-				<div
-					v-for="(item, index) in playlist.tracks"
-					:key="'index' + index"
-					class="h-14 w-full flex justify-around items-center space-x-4 rounded-lg shadow-md mb-4"
-					:class="{
-						active: currentTrack.type == 'netease' ? currentTrack.nId == item.nId : currentTrack.id == item.id,
-					}"
-					@click="selectTrack(index)"
-				>
-					<!-- index -->
+				<template v-if="!isLoading">
 					<div
-						class="mx-4 w-4"
+						v-for="(item, index) in playlist.tracks"
+						:key="'index' + index"
+						class="h-14 w-full flex justify-around items-center space-x-4 rounded-lg shadow-md mb-4"
 						:class="{
 							active: currentTrack.type == 'netease' ? currentTrack.nId == item.nId : currentTrack.id == item.id,
 						}"
+						@click="selectTrack(index)"
 					>
-						{{ index + 1 }}
-					</div>
-					<!-- cover -->
-					<img v-lazy="item.cover_url" class="w-10 h-10 rounded" />
-					<!-- meta -->
-					<div class="flex-1 flex-col justify-end">
-						<p class="text-xs font-semibold">{{ item.name }}</p>
+						<!-- index -->
 						<div
-							class="flex text-xs font-semibold text-gray-400 mt-0.5"
+							class="mx-4 w-4"
 							:class="{
-								active:
-									currentTrack.type == 'netease'
-										? currentTrack.nId == item.nId
-										: !currentTrack.type
-										? false
-										: currentTrack.id == item.id,
+								active: currentTrack.type == 'netease' ? currentTrack.nId == item.nId : currentTrack.id == item.id,
 							}"
 						>
+							{{ index + 1 }}
+						</div>
+						<!-- cover -->
+						<img v-lazy="item.cover_url" class="w-10 h-10 rounded" />
+						<!-- meta -->
+						<div class="flex-1 flex-col justify-end">
+							<p class="text-xs font-semibold">{{ item.name }}</p>
 							<div
-								v-for="(artist, index) in item.ar"
-								:key="'artist' + artist.id + index"
-								@click.stop="handleArtistClick(artist.id)"
+								class="flex text-xs font-semibold text-gray-400 mt-0.5"
+								:class="{
+									active:
+										currentTrack.type == 'netease'
+											? currentTrack.nId == item.nId
+											: !currentTrack.type
+											? false
+											: currentTrack.id == item.id,
+								}"
 							>
-								<span class="cursor-pointer hover:underline">
-									{{ artist.name }}
-								</span>
-								<span v-if="index < item.ar.length - 1 && item.ar.length > 1" class="mx-1">/</span>
+								<div
+									v-for="(artist, index) in item.ar"
+									:key="'artist' + artist.id + index"
+									@click.stop="handleArtistClick(artist.id)"
+								>
+									<span class="cursor-pointer hover:underline">
+										{{ artist.name }}
+									</span>
+									<span v-if="index < item.ar.length - 1 && item.ar.length > 1" class="mx-1">/</span>
+								</div>
 							</div>
 						</div>
+						<div class="flex justify-center items-center space-x-4 px-4">
+							<!-- duration -->
+							<p class="text-xs font-semibold text-gray-50">
+								{{ formatTime(item.duration) }}
+							</p>
+							<!-- <button class="px-4 py-2 bg-blue-500 text-white rounded">按钮</button> -->
+						</div>
 					</div>
-					<div class="flex justify-center items-center space-x-4 px-4">
-						<!-- duration -->
-						<p class="text-xs font-semibold text-gray-50">
-							{{ formatTime(item.duration) }}
-						</p>
-						<!-- <button class="px-4 py-2 bg-blue-500 text-white rounded">按钮</button> -->
+				</template>
+				<template v-else>
+					<div
+						v-for="i in 10"
+						:key="i"
+						class="h-14 w-full flex items-center space-x-4 rounded-lg shadow-md mb-4 animate-pulse"
+					>
+						<div class="mx-4 w-4 h-4 bg-gray-800 rounded"></div>
+						<div class="w-10 h-10 bg-gray-800 rounded"></div>
+						<div class="flex-1 space-y-2">
+							<div class="h-3 bg-gray-800 rounded w-1/4"></div>
+							<div class="h-2 bg-gray-800 rounded w-1/3"></div>
+						</div>
+						<div class="w-12 h-3 bg-gray-800 rounded mx-4"></div>
 					</div>
-				</div>
+				</template>
 			</div>
 		</div>
-		<loading
-			:active.sync="isLoading"
-			:can-cancel="true"
-			background-color="rgba(0, 0, 0, 0.5)"
-			color="#ec4899"
-			:is-full-page="true"
-		></loading>
 	</div>
 </template>
 
@@ -103,7 +123,7 @@ import { useRouter } from 'vue-router'
 import { formatTime, handlePromise, showError } from '@/utils/index'
 import { weeklyTrends } from '@/api/index'
 import hotImageSrc from '@/assets/images/hot.png'
-import Loading from 'vue-loading-overlay'
+
 const currentTrack = useCurrentTrackStore()
 const todayFull = ref('')
 const weekago = ref('')
