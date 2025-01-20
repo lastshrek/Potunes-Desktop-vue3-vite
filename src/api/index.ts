@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-02 17:09:39
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-20 15:03:58
+ * @LastEditTime : 2025-01-20 19:40:57
  * @FilePath     : /src/api/index.ts
  * @Description  : api
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -42,8 +42,7 @@ export const playlists = () => get('/playlists')
 export const finals = () => get('/playlists/finals')
 // 获取所有站内专辑
 export const innerAlbums = () => get('/playlists/albums')
-export const getLyrics = (id: number, nId?: number, userId: number = 0) =>
-	get(`/tracks/lyrics/v2/${id}/${nId}/${userId}`)
+
 /**
  * @description: 获取短信验证码
  * @param {object} data
@@ -114,3 +113,7 @@ export const newVersion = (platform: string) => get(`v1/versions`, { platform })
  * @description: 获取用户喜欢歌曲列表
  */
 export const getFavouriteTracks = () => get('v1/users/favs')
+/**
+ * @description: 获取歌词
+ */
+export const getLyrics = (id: number, nId?: number) => get(`/v1/lyrics/${id}/${nId}`)

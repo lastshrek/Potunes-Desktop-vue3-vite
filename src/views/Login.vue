@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-05 16:33:34
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-12 17:17:08
+ * @LastEditTime : 2025-01-20 20:19:36
  * @FilePath     : /src/views/Login.vue
  * @Description  : Login Page
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -170,15 +170,14 @@ const handleSubmit = async () => {
 		console.log(res)
 
 		// 保存用户信息
-		localStorage.setItem('userId', res.id)
-		localStorage.setItem('user', JSON.stringify(res))
+		localStorage.setItem('user', JSON.stringify(res.user))
 		localStorage.setItem('token', res.token)
 
 		// 触发登录成功事件
 		window.dispatchEvent(
 			new CustomEvent('user-login', {
 				detail: {
-					user: res,
+					user: res.user,
 				},
 			})
 		)

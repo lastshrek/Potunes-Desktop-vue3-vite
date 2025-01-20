@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-05 16:24:18
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-20 15:09:26
+ * @LastEditTime : 2025-01-20 19:46:13
  * @FilePath     : /src/views/Favourites.vue
  * @Description  : Favrourites
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -67,7 +67,7 @@
 								'bg-[#da5597] text-white':
 									currentTrack.type == 'netease' ? currentTrack.nId == item.nId : currentTrack.id == item.id,
 							}"
-							@click="selectTrack(item.id, index)"
+							@click="selectTrack(index)"
 						>
 							<!-- index -->
 							<div class="col-span-1 text-sm">{{ index + 1 }}</div>
@@ -184,7 +184,9 @@ onMounted(async () => {
 	}
 })
 
-const selectTrack = (id: number, index: number) => {}
+const selectTrack = (index: number) => {
+	globalQueue.setGlobalQueue(fav_tracks.value, index)
+}
 </script>
 
 <style scoped>

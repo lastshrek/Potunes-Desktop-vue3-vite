@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-01 21:16:34
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-15 18:39:59
+ * @LastEditTime : 2025-01-20 20:21:44
  * @FilePath     : /src/components/navbar/NavBar.vue
  * @Description  : 
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -254,7 +254,8 @@ const searchQuery = ref('')
 const showDropdown = ref(false)
 const selectedTags = ref<Array<{ label: string; icon: any }>>([])
 const searchContainer = ref<HTMLElement | null>(null)
-const userPhone = ref(localStorage.getItem('phone') || '')
+const userPhone = ref('')
+const userNickname = ref('')
 const showUserMenu = ref(false)
 const showQRCode = ref(false)
 
@@ -317,10 +318,10 @@ onMounted(() => {
 	// 检查用户登录状态
 	const user = JSON.parse(localStorage.getItem('user') || '{}')
 	const neteaseCookie = localStorage.getItem('netease-cookie')
-
-	if (user.phone) {
+	if (user) {
 		isUserExist.value = true
 		userPhone.value = user.phone
+		userData.value = user
 	}
 
 	if (neteaseCookie) {
@@ -331,8 +332,10 @@ onMounted(() => {
 	// 添加用户登录事件监听
 	window.addEventListener('user-login', ((event: CustomEvent) => {
 		const { user } = event.detail
+		console.log(user)
 		isUserExist.value = true
 		userPhone.value = user.phone
+		userData.value = user
 	}) as EventListener)
 
 	// 添加网易云登录事件监听
@@ -407,6 +410,7 @@ const confirmLogout = () => {
 	// 清除所有存储的用户信息
 	localStorage.removeItem('user')
 	localStorage.removeItem('userId')
+	localStorage.removeItem('token')
 	if (isNeteaseLogin.value) {
 		localStorage.removeItem('netease-cookie')
 		localStorage.removeItem('netease-user')
@@ -464,7 +468,6 @@ const handleEditProfile = () => {
 // 添加鼠标按下处理函数
 const handleNeteaseMouseDown = (event: MouseEvent) => {
 	event.stopPropagation()
-	console.log('Mouse down on netease link')
 }
 
 // 修改导航函数
@@ -481,7 +484,7 @@ const handleNeteaseClick = (event: MouseEvent) => {
 }
 
 // 添加用户数据响应式引用
-const userData = ref(JSON.parse(localStorage.getItem('user') || '{}'))
+const userData: any = ref({})
 
 // 添加监听器以更新用户数据
 const updateUserData = () => {
