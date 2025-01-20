@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-03 00:14:23
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-14 21:16:46
+ * @LastEditTime : 2025-01-20 16:06:21
  * @FilePath     : /src/views/Playlist.vue
  * @Description  : Playlist
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -94,13 +94,6 @@
 											></path>
 										</svg>
 										<span class="player-text">随机播放</span>
-									</button>
-									<button class="text-white hover:text-[#da5597] player-text">
-										<span class="text-2xl">+</span>
-										添加
-									</button>
-									<button class="text-white hover:text-[#da5597] player-text">
-										<span class="text-2xl">...</span>
 									</button>
 								</div>
 							</div>

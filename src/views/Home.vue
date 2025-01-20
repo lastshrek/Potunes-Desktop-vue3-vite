@@ -2,255 +2,540 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-01 21:16:34
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-13 15:00:43
+ * @LastEditTime : 2025-01-20 16:09:22
  * @FilePath     : /src/views/Home.vue
  * @Description  : Home
  * Copyright 2023 lastshrek, All Rights Reserved.
  * 2023-09-01 21:16:34
 -->
 <template>
-	<div class="md:flex flex-col md:flex-row min-h-screen container mx-auto shadow bg-black pt-16 pb-20">
-		<div class="w-full px-4 pt-2">
-			<!-- Mine -->
-			<div v-show="isUser">
-				<HeaderTitle title="我的" :showmore="false"></HeaderTitle>
-				<div class="mt-4 md:grid md:grid-cols-5 md:gap-4 flex flex-wrap">
-					<AlbumCard
-						name="我的收藏"
-						:cover_url="heartSrc"
-						max_width="md:max-w-md"
-						@click.native="toPlaylist(0, 'favourites')"
-					></AlbumCard>
-				</div>
-			</div>
-			<!-- collections -->
-			<HeaderTitle title="月度精选" @click.native="pushToPlaylists('collections')"></HeaderTitle>
-			<div class="mt-4 md:flex">
-				<AlbumCard
-					v-for="collection in collections"
-					:key="collection.id"
-					:name="collection.title"
-					:cover_url="collection.cover"
-					max_width="md:max-w-md"
-					@click.native="toPlaylist(collection.id, '')"
-				></AlbumCard>
-			</div>
-			<!-- finals -->
-			<HeaderTitle title="年终精选" @click.native="pushToPlaylists('finals')"></HeaderTitle>
-			<div class="mt-4 md:grid md:grid-cols-5 md:gap-4 flex flex-wrap">
-				<AlbumCard
-					v-for="final in finals"
-					:key="final.id"
-					:name="final.title"
-					:cover_url="final.cover"
-					@click.native="toPlaylist(final.id, '')"
-				></AlbumCard>
-			</div>
-			<!-- netease daily -->
-			<div v-show="netease_daily.length !== 0">
-				<HeaderTitle title="网易日推" :showmore="false"></HeaderTitle>
-				<div class="mt-4 md:grid md:grid-cols-5 md:gap-4 flex flex-wrap">
-					<div
-						class="text-start relative w-full md:mr-2 mb-2 bg-albumcard rounded-lg p-4 shadow-lg hover:bg-albumcardhover text-gray-50 cursor-pointer"
-						@click="toPlaylist(0, 'netease-daily-tracks')"
+	<div class="min-h-screen pt-16 pb-24 w-full bg-black">
+		<!-- 更新提示对话框 -->
+		<Dialog :open="showUpdateDialog" @update:open="showUpdateDialog = $event">
+			<DialogContent class="bg-[#111111] border border-gray-800">
+				<DialogHeader>
+					<DialogTitle class="text-white">发现新版本 {{ newVersion }}</DialogTitle>
+					<DialogDescription>
+						<div class="text-gray-300 whitespace-pre-line">{{ updateText }}</div>
+					</DialogDescription>
+				</DialogHeader>
+				<DialogFooter>
+					<Button
+						variant="outline"
+						class="bg-[#1a1a1a] border-gray-700 text-gray-300 hover:bg-transparent hover:text-white"
+						@click="showUpdateDialog = false"
 					>
-						<div class="mx-auto mb-4 w-full rounded-lg relative text-center">
-							<img :src="dailySrc" class="object-cover w-full" />
-							<div class="absolute inset-0 flex items-center justify-center">
-								<p class="text-gray-800 text-center text-3xl mt-2 font-semibold">
-									{{ today }}
-								</p>
-							</div>
-						</div>
-						<h5 class="mb-2 text-xs font-medium overflow-hidden whitespace-nowrap overflow-ellipsis">每日歌曲推荐</h5>
+						取消
+					</Button>
+					<Button class="bg-[#da5597] hover:bg-[#c94884] text-white" @click="handleUpdate">前往下载</Button>
+				</DialogFooter>
+			</DialogContent>
+		</Dialog>
+		<!-- 头部 -->
+		<div class="container mx-auto px-6">
+			<div class="h-76 w-full">
+				<div class="flex items-center gap-6">
+					<div class="w-1/2 flex items-center gap-6 justify-between">
+						<h2 class="text-lg font-semibold text-white">New Collections</h2>
+						<Button variant="link" class="text-[#da5597] text-xs" @click="router.push('/albums/collections')">
+							See all
+						</Button>
 					</div>
-					<AlbumCard
-						v-for="playlist in netease_daily"
-						:key="playlist.id"
-						:name="playlist.title"
-						:cover_url="playlist.cover"
-						@click.native="toPlaylist(playlist.id, 'netease-daily')"
-					></AlbumCard>
+					<div class="w-1/4 flex items-center gap-6 justify-between">
+						<h2 class="text-lg font-semibold text-white">New Final</h2>
+						<Button variant="link" class="text-[#da5597] text-xs" @click="router.push('/albums/finals')">
+							See all
+						</Button>
+					</div>
+					<div class="w-1/4 flex items-center gap-6 justify-between"></div>
 				</div>
-			</div>
-			<!-- local albums -->
-			<HeaderTitle title="站内专辑" @click.native="pushToPlaylists('albums')"></HeaderTitle>
-			<div class="mt-4 md:grid md:grid-cols-5 md:gap-4 flex flex-wrap">
-				<AlbumCard
-					v-for="album in albums"
-					:key="album.id"
-					:name="album.title"
-					:cover_url="album.cover"
-					@click.native="toPlaylist(album.id, '')"
-				></AlbumCard>
-			</div>
-			<!-- toplist -->
-			<HeaderTitle title="网易榜单" :showmore="false"></HeaderTitle>
-			<div class="mt-4 md:grid md:grid-cols-5 md:gap-4 flex flex-wrap">
-				<AlbumCard
-					v-for="list in netease_toplist"
-					:key="list.id"
-					:name="list.title"
-					:cover_url="list.cover"
-					@click.native="toPlaylist(list.nId, 'netease')"
-				></AlbumCard>
-			</div>
-			<HeaderTitle title="热门新碟" @click.native="pushToPlaylists('albums')" :showmore="false"></HeaderTitle>
-			<div class="mt-4 md:grid md:grid-cols-5 md:gap-4 flex flex-wrap">
-				<AlbumCard
-					v-for="album in netease_topalbums"
-					:key="album.id"
-					:name="album.name"
-					:cover_url="album.picUrl"
-					:artist="album.artist.name"
-					@click.native="toPlaylist(album.id, 'netease-album')"
-				></AlbumCard>
+				<div class="flex gap-6 h-[calc(100%-2rem)]">
+					<div class="w-1/2 rounded-lg overflow-hidden">
+						<div class="relative w-full h-full">
+							<template v-if="!isLoading && lastestCollections?.length">
+								<div
+									v-for="(collection, index) in lastestCollections"
+									:key="collection.id"
+									class="absolute inset-0 transition-opacity duration-500"
+									:class="{ 'opacity-0': currentIndex !== index }"
+								>
+									<AlbumCard
+										:cover_url="collection.cover"
+										:name="collection.title"
+										:id="collection.id"
+										:info="`${formatPlaylistUpdateTime(collection.updated_at || '')} · ${
+											collection.count || 0
+										}首歌 · ${formatPlaylistDurationToHourStr(collection.duration || 0)}`"
+										max_width="w-full"
+										:showPlayButton="false"
+										:showControls="true"
+										:showInfo="true"
+										:titleSize="'text-2xl'"
+										:useColorThief="false"
+										@click="toPlaylist(collection.id, '')"
+									/>
+								</div>
+
+								<!-- 右下角缩略图 -->
+								<div class="absolute bottom-6 right-6 flex gap-2 z-10">
+									<div
+										v-for="collection in nextCollections"
+										:key="collection.id"
+										class="w-32 aspect-[32/15] rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-[#da5597]/90 transition-all"
+										@click="toPlaylist(collection.id, '')"
+									>
+										<img v-lazy="collection.cover" :alt="collection.title" class="w-full h-full object-cover" />
+									</div>
+								</div>
+							</template>
+							<template v-if="isLoading">
+								<AlbumCardSkeleton :imageRatio="'wide'" />
+							</template>
+						</div>
+					</div>
+					<div class="w-1/4 rounded-lg overflow-hidden">
+						<template v-if="!isLoading && finalLatest">
+							<AlbumCard
+								:cover_url="finalLatest?.cover"
+								:name="finalLatest?.title"
+								:id="finalLatest?.id"
+								max_width="w-full"
+								:showPlayButton="true"
+								:centerText="true"
+								:titleSize="'text-lg'"
+								imageRatio="square"
+								:useColorThief="false"
+							/>
+						</template>
+						<template v-if="isLoading">
+							<AlbumCardSkeleton :imageRatio="'square'" />
+						</template>
+					</div>
+					<div class="w-1/4 rounded-lg overflow-hidden">
+						<template v-if="!isLoading && finalLatest">
+							<AlbumCard
+								name="电台"
+								:cover_url="radioIcon"
+								:showPlayButton="true"
+								:showControls="false"
+								:showInfo="false"
+								:imagePadding="true"
+								:image-ratio="'square'"
+								:titleSize="'text-lg'"
+								type="fm"
+								:useColorThief="false"
+							/>
+						</template>
+						<template v-if="isLoading">
+							<AlbumCardSkeleton :imageRatio="'square'" />
+						</template>
+					</div>
+				</div>
 			</div>
 		</div>
-		<loading
-			:active="isLoading"
-			:can-cancel="true"
-			:is-full-page="false"
-			background-color="rgba(0, 0, 0, 0.5)"
-			color="#EC4899"
-		/>
+		<!-- 网易每日推荐歌单 -->
+		<div class="container mx-auto px-6 mt-8" v-if="isNeteaseLogin && neteaseDailyRecommendArr?.length">
+			<div class="flex items-center gap-6 justify-between">
+				<h2 class="text-lg font-semibold text-white">Netease Daily</h2>
+			</div>
+			<div class="mt-4 flex flex-wrap gap-4" v-if="neteaseDailyRecommendArr?.length">
+				<AlbumCard
+					name="每日歌曲推荐"
+					:cover_url="dailyIcon"
+					:showPlayButton="true"
+					:showControls="false"
+					:showInfo="false"
+					:image-ratio="'square'"
+					:centerNumber="getCurrentDate()"
+					:useColorThief="false"
+					:imagePadding="true"
+					type="netease-daily-tracks"
+				/>
+				<AlbumCard
+					v-for="playlist in neteaseDailyRecommendArr"
+					:key="playlist.id"
+					:name="playlist.title"
+					:cover_url="playlist.cover"
+					:id="playlist.id"
+					:showPlayButton="true"
+					:showControls="false"
+					:showInfo="false"
+					:image-ratio="'square'"
+					type="netease-daily"
+				/>
+			</div>
+		</div>
+		<!-- 站内专辑 -->
+		<div class="container mx-auto px-6 mt-8">
+			<div class="flex items-center gap-6 justify-between">
+				<h2 class="text-lg font-semibold text-white">New Albums</h2>
+				<Button variant="link" class="text-[#da5597] text-xs" @click="router.push('/albums/albums')">See all</Button>
+			</div>
+			<div class="mt-4 flex gap-4">
+				<template v-if="latestInnerAlbums?.length">
+					<AlbumCard
+						v-for="album in latestInnerAlbums"
+						:key="album.id"
+						:name="album.title"
+						:cover_url="album.cover"
+						:id="album.id"
+						:showPlayButton="true"
+						:showControls="false"
+						:showInfo="false"
+						max_width="w-1/5"
+						:image-ratio="'square'"
+					></AlbumCard>
+				</template>
+				<template v-else>
+					<AlbumCardSkeleton v-for="n in 5" :key="n" />
+				</template>
+			</div>
+		</div>
+		<!-- 网易榜单 -->
+		<div class="container mx-auto px-6 mt-8">
+			<div class="flex items-center gap-6 justify-between">
+				<h2 class="text-lg font-semibold text-white">Netease TopCharts</h2>
+			</div>
+			<div class="mt-4 flex flex-wrap gap-4">
+				<template v-if="neteaseTopChartsArr?.length">
+					<AlbumCard
+						v-for="album in neteaseTopChartsArr"
+						:key="album.id"
+						:name="album.title"
+						:cover_url="album.cover"
+						:id="album.nId"
+						:showPlayButton="true"
+						:showControls="false"
+						:showInfo="false"
+						:image-ratio="'square'"
+						type="netease-playlist"
+					></AlbumCard>
+				</template>
+				<template v-else>
+					<AlbumCardSkeleton v-for="n in 7" :key="n" />
+				</template>
+			</div>
+		</div>
+		<!-- 网易新碟 -->
+		<div class="container mx-auto px-6 mt-8">
+			<div class="flex items-center gap-6 justify-between">
+				<h2 class="text-lg font-semibold text-white">Netease TopAlbums</h2>
+			</div>
+			<div class="mt-4 flex flex-wrap gap-4">
+				<template v-if="neteaseTopAlbumArr.length">
+					<AlbumCard
+						v-for="album in neteaseTopAlbumArr"
+						:key="album.id"
+						:name="album.name"
+						:cover_url="album.picUrl"
+						:id="album.id"
+						:artist="album.artist?.name"
+						:showPlayButton="true"
+						:showControls="false"
+						:showInfo="false"
+						:image-ratio="'square'"
+						type="netease-album"
+					></AlbumCard>
+				</template>
+				<template v-else>
+					<AlbumCardSkeleton v-for="n in 10" :key="n" :showArtist="true" />
+				</template>
+			</div>
+		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, Ref } from 'vue'
-import { home, neteaseTopAlbum, neteaseRecommendDaily } from '@/api/index'
-import { handlePromise, isUserLogin, getCurrentDate, showError } from '@/utils/index'
+import { ref, onMounted, nextTick, Ref, computed, onUnmounted, onActivated, onDeactivated } from 'vue'
+import { Button } from '@/components/ui/button'
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from '@/components/ui/dialog'
+import {
+	latestCollection,
+	latestFinal,
+	neteaseToplist,
+	latestInnerAlbum,
+	neteaseTopAlbum,
+	neteaseRecommendDaily,
+	newVersion as checkNewVersion,
+} from '@/api'
+import { formatPlaylistUpdateTime, formatPlaylistDurationToHourStr } from '@/utils'
 import { useRouter } from 'vue-router'
-import { Netease_Album } from '@/interfaces/netease_album'
-import Loading from 'vue-loading-overlay'
-import HeaderTitle from '@/components/headertitle/HeaderTitle.vue'
+import { handlePromise, getCurrentDate, compareVersions } from '@/utils'
+import { Playlist } from '@/interfaces/collection'
+import { NeteaseAlbum } from '@/interfaces/netease_album'
 import AlbumCard from '@/components/albumcard/AlbumCard.vue'
-import 'vue-toast-notification/dist/theme-sugar.css'
-// 本地图片
-import dailySrc from '@/assets/images/daily.png'
-import heartSrc from '@/assets/images/heart.png'
-import { emitter } from '@/utils/mitt'
-// eventBus
+import AlbumCardSkeleton from '@/components/albumcard/AlbumCardSkeleton.vue'
+import dailyIcon from '@/assets/images/daily.png'
+import radioIcon from '@/assets/images/radio.png'
 
-// 今天日期
-const today = getCurrentDate()
-// 加载状态
+// 是否在加载中
 const isLoading = ref(true)
-// 用户是否登录
-const collections: Ref<Playlist[]> = ref([])
-const finals: Ref<Playlist[]> = ref([])
-const albums: Ref<Playlist[]> = ref([])
-const netease_toplist: Ref<Playlist[]> = ref([])
-const isUser = ref(false)
-// router
-const router = useRouter()
-// gethome
-const homedata = async () => {
+// 初始化时也触发动画
+onMounted(() => {
+	nextTick(async () => {
+		try {
+			isLoading.value = true
+			await getLatestCollection()
+			await getLatestFinal()
+			await getLatestInnerAlbum()
+			await getNeteaseTopCharts()
+			await getNeteaseTopAlbum()
+			// 检查网易云登录状态
+			const neteaseCookie = localStorage.getItem('netease-cookie')
+			if (neteaseCookie) {
+				isNeteaseLogin.value = true
+				await getNeteaseRecommendDaily()
+			}
+		} finally {
+			isLoading.value = false
+		}
+	})
+})
+/**
+ * @description: 获取最新的一个月度精选集
+ */
+const lastestCollections: Ref<Playlist[]> = ref([])
+const getLatestCollection = async () => {
 	try {
-		const [res, err] = await handlePromise(home())
-		if (err) return showError('获取首页数据失败')
-		const result = res.data
-		collections.value = result.collections
-		finals.value = result.finals
-		albums.value = result.albums
-		netease_toplist.value = result.netease_toplist
-	} catch (error: any) {
-		showError(error.message)
+		const [res] = await handlePromise(latestCollection())
+		if (!res) return
+		// 确保数据的一致性
+		lastestCollections.value = Array.isArray(res)
+			? res.map(item => ({
+					...item,
+					id: item.id,
+					cover: item.cover,
+					title: item.title,
+			  }))
+			: [res].map(item => ({
+					...item,
+					id: item.id,
+					cover: item.cover,
+					title: item.title,
+			  }))
 	} finally {
 		isLoading.value = false
 	}
 }
-const netease_topalbums: Ref<Netease_Album[]> = ref([])
-// get netease top albums
-const getNeteaseTopAlbums = async () => {
+/**
+ * @description: 获取最新的年度精选集
+ */
+const finalLatest: Ref<Playlist | null> = ref(null)
+const getLatestFinal = async () => {
 	try {
-		const [res, err] = await handlePromise(neteaseTopAlbum())
-		if (err) return showError('获取网易热门新碟失败')
-		netease_topalbums.value = res.data
-	} catch (error: any) {
-		showError(error.message)
+		const [res] = await handlePromise(latestFinal())
+		if (!res) return
+		finalLatest.value = res
+	} finally {
+		isLoading.value = false
 	}
 }
-// get netease user recommand playlist
-const netease_daily: Ref<any[]> = ref([])
-const getNeteaseDaily = async () => {
-	// get netease user cookie
+
+/**
+ * @description: 获取最新的站内专辑
+ */
+const latestInnerAlbums: Ref<Playlist[] | null> = ref([])
+const getLatestInnerAlbum = async () => {
+	const [res] = await handlePromise(latestInnerAlbum())
+	if (!res) return
+	latestInnerAlbums.value = Array.isArray(res) ? res : [res]
+}
+
+/**
+ * @description: 获取网易云热门榜单
+ */
+const neteaseTopChartsArr: Ref<Playlist[] | null> = ref([])
+const getNeteaseTopCharts = async () => {
+	const [res] = await handlePromise(neteaseToplist())
+	if (!res) return
+	neteaseTopChartsArr.value = res
+}
+
+/**
+ * @description: 获取网易云音乐热门新碟
+ */
+const neteaseTopAlbumArr: Ref<NeteaseAlbum[]> = ref([])
+const getNeteaseTopAlbum = async () => {
+	const [res] = await handlePromise(neteaseTopAlbum())
+	if (!res) return
+	neteaseTopAlbumArr.value = res
+}
+
+const currentIndex = ref(0)
+const autoplayInterval = ref<number | null>(null)
+
+// 修改获取下一个要显示的合集的计算属性
+const nextCollections = computed(() => {
+	if (!lastestCollections.value?.length) return []
+
+	const next1 = getNextIndex(currentIndex.value + 1)
+	const next2 = getNextIndex(currentIndex.value + 2)
+	const collections = [lastestCollections.value[next1], lastestCollections.value[next2]]
+	return collections
+})
+
+// 获取下一个索引（循环）
+const getNextIndex = (index: number) => {
+	if (!lastestCollections.value?.length) return 0
+	// 确保索引为正数
+	const length = lastestCollections.value.length
+	return ((index % length) + length) % length
+}
+
+// 重置自动播放
+const resetAutoplay = () => {
+	if (autoplayInterval.value) {
+		clearInterval(autoplayInterval.value)
+	}
+
+	// 只有在有数据时才启动自动播放
+	if (lastestCollections.value && lastestCollections.value.length > 0) {
+		autoplayInterval.value = window.setInterval(() => {
+			currentIndex.value = getNextIndex(currentIndex.value + 1)
+		}, 5000)
+	}
+}
+
+// 组件挂载时启动自动播放
+onMounted(async () => {
+	isLoading.value = true
+	await Promise.all([
+		getLatestCollection(),
+		getLatestFinal(),
+		getLatestInnerAlbum(),
+		getNeteaseTopCharts(),
+		getNeteaseTopAlbum(),
+	])
+	resetAutoplay()
+})
+
+// 组件卸载时清理定时器
+onUnmounted(() => {
+	if (autoplayInterval.value) {
+		clearInterval(autoplayInterval.value)
+	}
+})
+
+const router = useRouter()
+
+// 添加跳转方法
+const toPlaylist = (id: number, type: string) => {
+	if (type === '') {
+		router.push({
+			name: 'playlist',
+			params: { id: id.toString() },
+		})
+		return
+	}
+}
+
+// 添加网易云登录状态
+const isNeteaseLogin = ref(false)
+// 添加网易云每日推荐歌单数据
+const neteaseDailyRecommendArr: Ref<Playlist[] | null> = ref([])
+
+// 获取网易云每日推荐歌单
+const getNeteaseRecommendDaily = async () => {
 	const cookie = localStorage.getItem('netease-cookie')
 	if (!cookie) return
-	try {
-		const [res, err] = await handlePromise(
-			neteaseRecommendDaily({
-				cookie,
-			})
-		)
-		if (err) return showError('获取网易日推失败')
-		netease_daily.value = res.data
-	} catch (error: any) {
-		showError(error.message)
-	}
+
+	const [res] = await handlePromise(
+		neteaseRecommendDaily({
+			cookie,
+		})
+	)
+	if (!res) return
+	neteaseDailyRecommendArr.value = res
 }
-// toplaylist
-const toPlaylist = (id: number, type: string) => {
-	console.log('toPlaylist', id, type)
-	if (type == '') {
-		router.push({
-			path: `playlist/${id}`,
-		})
-		return
-	}
-	if (type === 'netease') {
-		router.push({
-			path: `netease-playlist/${id}`,
-		})
-		return
-	}
-	if (type === 'netease-album') {
-		router.push({
-			path: `netease-album/${id}`,
-		})
-		return
-	}
-	if (type === 'netease-daily') {
-		router.push({
-			path: `netease-daily/${id}`,
-		})
-		return
-	}
-	if (type === 'favourites') {
-		router.push({
-			path: 'favourites/',
-		})
-		return
-	}
-	router.push({
-		path: 'netease-daily-tracks/',
-	})
-}
-// to all playlist(collection, final, albums)
-const pushToPlaylists = (type: string) => {
-	router.push({
-		path: `albums/${type}`,
-	})
-}
-onMounted(async () => {
-	await initial()
-	eventBus()
+
+// 添加网易云登录事件监听
+window.addEventListener('netease-login', () => {
+	isNeteaseLogin.value = true
+	getNeteaseRecommendDaily()
 })
-const initial = async () => {
-	await homedata()
-	await getNeteaseTopAlbums()
-	await getNeteaseDaily()
-	isUser.value = isUserLogin()
+
+// 添加网易云退出登录事件监听
+window.addEventListener('netease-logout', () => {
+	isNeteaseLogin.value = false
+	neteaseDailyRecommendArr.value = []
+})
+
+onUnmounted(() => {
+	window.removeEventListener('netease-login', () => {})
+	window.removeEventListener('netease-logout', () => {})
+})
+
+// 数据获取逻辑
+const hasCache = ref(false)
+
+// 修改数据加载逻辑
+const loadData = async () => {
+	if (hasCache.value) return
+
+	try {
+		isLoading.value = true
+		await Promise.all([
+			getLatestCollection(),
+			getLatestFinal(),
+			getLatestInnerAlbum(),
+			getNeteaseTopCharts(),
+			getNeteaseTopAlbum(),
+			checkForUpdates(),
+		])
+
+		// 如果登录了网易云，也加载推荐数据
+		if (localStorage.getItem('netease-cookie')) {
+			isNeteaseLogin.value = true
+			await getNeteaseRecommendDaily()
+		}
+
+		hasCache.value = true
+	} finally {
+		isLoading.value = false
+	}
 }
-const eventBus = () => {
-	emitter.on('userLogin', async () => {
-		await initial()
-	})
-	emitter.on('userLoout', async () => {
-		isUser.value = false
-	})
+
+// 当组件被重新激活时，可以选择性地刷新某些数据
+onActivated(() => {
+	// 重置自动播放
+	resetAutoplay()
+})
+
+// 版本更新相关
+const showUpdateDialog = ref(false)
+const newVersion = ref('')
+const currentVersion = ref(__APP_VERSION__)
+const updateUrl = ref('')
+const updateText = ref('')
+
+// 检查新版本
+const checkForUpdates = async () => {
+	try {
+		const platform = window.electron.platform === 'darwin' ? 'MacOS' : 'Windows'
+		const [res] = await handlePromise(checkNewVersion(platform))
+		if (!res) return
+		if (compareVersions(res.a_version, currentVersion.value) > 0) {
+			newVersion.value = res.a_version
+			updateUrl.value = res.a_url
+			updateText.value = res.updateText || '是否前往下载？'
+			showUpdateDialog.value = true
+		}
+	} catch (error) {
+		console.error('检查更新失败:', error)
+	}
+}
+
+// 处理更新
+const handleUpdate = () => {
+	// @ts-ignore
+	window.electron.openInBrowser(updateUrl.value)
+	showUpdateDialog.value = false
 }
 </script>
-
-<style lang="scss" scoped></style>

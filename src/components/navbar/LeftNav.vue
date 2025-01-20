@@ -33,7 +33,9 @@
 
 			<!-- 个人收藏区 -->
 			<div class="space-y-4">
-				<h2 class="px-4 text-lg font-semibold tracking-tight text-white">My Music</h2>
+				<div class="flex items-center justify-between px-4">
+					<h2 class="text-lg font-semibold tracking-tight text-white whitespace-nowrap">My Music</h2>
+				</div>
 				<div class="space-y-1">
 					<Button
 						variant="ghost"
@@ -56,7 +58,17 @@
 
 			<!-- 播放列表 -->
 			<div class="space-y-4">
-				<h2 class="px-4 text-lg font-semibold tracking-tight text-white">My Playlists</h2>
+				<div class="flex items-center justify-between px-4">
+					<h2 class="text-lg font-semibold tracking-tight text-white whitespace-nowrap">My Playlists</h2>
+					<Button
+						variant="ghost"
+						size="icon"
+						class="h-8 w-8 text-gray-400 hover:text-white hover:bg-gray-800/50 ml-2"
+						@click="handleCreatePlaylist"
+					>
+						<Plus class="h-4 w-4" />
+					</Button>
+				</div>
 				<ScrollArea class="h-[300px] px-1">
 					<div class="space-y-1">
 						<Button
@@ -80,10 +92,23 @@ import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { ListMusic, BarChart3, Heart, History, MessageSquare, HandMetal, House, Car, Disc3 } from 'lucide-vue-next'
+import {
+	ListMusic,
+	BarChart3,
+	Heart,
+	History,
+	MessageSquare,
+	HandMetal,
+	House,
+	Car,
+	Disc3,
+	Plus,
+} from 'lucide-vue-next'
+import { useToast } from '@/composables/useToast'
 
 const router = useRouter()
 const route = useRoute()
+const toast = useToast()
 
 // 判断路由是否激活
 const isActive = (path: string) => {
@@ -169,6 +194,11 @@ const handleNavigation = (item: (typeof navItems)[0]) => {
 				}
 			})
 	}
+}
+
+const handleCreatePlaylist = () => {
+	// TODO: 实现创建播放列表的逻辑
+	toast.info('创建播放列表功能开发中')
 }
 </script>
 
