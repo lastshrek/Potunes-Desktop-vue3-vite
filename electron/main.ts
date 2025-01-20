@@ -8,6 +8,7 @@
  */
 import { app, BrowserWindow, ipcMain, Tray, nativeImage, globalShortcut, Menu } from 'electron'
 import path from 'node:path'
+import type {} from '../types/global'
 
 // 扩展 app 对象
 interface ExtendedApp extends Electron.App {
@@ -26,6 +27,17 @@ let lyricsTray: Tray | null = null
 let animationTimer: NodeJS.Timeout | null = null
 const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL']
 let currentPosition = 0
+let lastQuitTime = 0
+const QUIT_INTERVAL = 500 // 双击间隔时间（毫秒）
+let isAppActive = false
+const isDev = process.env.NODE_ENV === 'development'
+let isWindowFocused = false
+
+const version = '2.1.0'
+Object.defineProperty(globalThis, '__APP_VERSION__', {
+	value: version,
+	writable: false,
+})
 
 // 清理所有托盘图标
 const cleanupTrayIcons = () => {
@@ -182,6 +194,17 @@ function createWindow() {
 			event.preventDefault()
 			handleWindowClose()
 		}
+	})
+
+	// 监听窗口焦点变化
+	win.on('focus', () => {
+		isWindowFocused = true
+		registerShortcuts()
+	})
+
+	win.on('blur', () => {
+		isWindowFocused = false
+		unregisterShortcuts()
 	})
 }
 
@@ -451,4 +474,22 @@ const handleWindowClose = () => {
 		cleanupTrayIcons()
 		app.quit()
 	}
+}
+
+// 注册快捷键
+function registerShortcuts() {
+	// 只在窗口有焦点时注册 Command+Q 快捷键
+	globalShortcut.register('CommandOrControl+Q', () => {
+		const now = Date.now()
+		if (now - lastQuitTime <= QUIT_INTERVAL) {
+			app.quit()
+		} else {
+			lastQuitTime = now
+		}
+	})
+}
+
+// 注销快捷键
+function unregisterShortcuts() {
+	globalShortcut.unregisterAll()
 }
