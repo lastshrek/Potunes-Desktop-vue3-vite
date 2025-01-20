@@ -46,8 +46,6 @@
 
 <script setup lang="ts">
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
-import { Button } from '@/components/ui/button'
-import { X } from 'lucide-vue-next'
 import { useGlobalQueueStore } from '@/store/modules/globalQueue'
 import { useCurrentIndexStore } from '@/store/modules/currentIndex'
 import { onUnmounted, ref } from 'vue'

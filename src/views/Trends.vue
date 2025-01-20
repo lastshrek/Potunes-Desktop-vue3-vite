@@ -38,71 +38,72 @@
 
 			<!-- tracklist -->
 			<div class="w-full">
+				<!-- 列表头部 -->
+				<div class="grid grid-cols-12 text-gray-400 text-sm py-2 px-4 border-b border-gray-800 player-text">
+					<div class="col-span-1">#</div>
+					<div class="col-span-5">标题</div>
+					<div class="col-span-4">专辑</div>
+					<div class="col-span-2 text-right">时长</div>
+				</div>
 				<template v-if="!isLoading">
 					<div
 						v-for="(item, index) in playlist.tracks"
 						:key="'index' + index"
-						class="h-14 w-full flex justify-around items-center space-x-4 rounded-lg shadow-md mb-4"
+						class="grid grid-cols-12 items-center py-3 px-4 rounded-lg group player-text"
 						:class="{
-							active: currentTrack.type == 'netease' ? currentTrack.nId == item.nId : currentTrack.id == item.id,
+							'bg-[#da5597] text-white': isCurrentTrack(item),
+							'hover:bg-gray-800/50': !isCurrentTrack(item),
 						}"
 						@click="selectTrack(index)"
 					>
 						<!-- index -->
-						<div
-							class="mx-4 w-4"
-							:class="{
-								active: currentTrack.type == 'netease' ? currentTrack.nId == item.nId : currentTrack.id == item.id,
-							}"
-						>
+						<div class="col-span-1 text-sm">
 							{{ index + 1 }}
 						</div>
 						<!-- cover -->
-						<img v-lazy="item.cover_url" class="w-10 h-10 rounded" />
-						<!-- meta -->
-						<div class="flex-1 flex-col justify-end">
-							<p class="text-xs font-semibold">{{ item.name }}</p>
-							<div
-								class="flex text-xs font-semibold text-gray-400 mt-0.5"
-								:class="{
-									active:
-										currentTrack.type == 'netease'
-											? currentTrack.nId == item.nId
-											: !currentTrack.type
-											? false
-											: currentTrack.id == item.id,
-								}"
-							>
+						<div class="col-span-5 flex items-center space-x-3">
+							<img v-lazy="item.cover_url" class="w-10 h-10 rounded" />
+							<div>
+								<p class="text-sm font-medium">{{ item.name }}</p>
 								<div
-									v-for="(artist, index) in item.ar"
-									:key="'artist' + artist.id + index"
-									@click.stop="handleArtistClick(artist.id)"
+									class="flex text-xs mt-1"
+									:class="{
+										'text-gray-400': !isCurrentTrack(item),
+									}"
 								>
-									<span class="cursor-pointer hover:underline">
-										{{ artist.name }}
-									</span>
-									<span v-if="index < item.ar.length - 1 && item.ar.length > 1" class="mx-1">/</span>
+									<div
+										v-for="(artist, index) in item.ar"
+										:key="'artist' + artist.id + index"
+										@click.stop="handleArtistClick(artist.id)"
+									>
+										<span class="cursor-pointer hover:underline">
+											{{ artist.name }}
+										</span>
+										<span v-if="index < item.ar.length - 1 && item.ar.length > 1" class="mx-1">/</span>
+									</div>
 								</div>
 							</div>
 						</div>
 						<!-- album -->
-						<div class="hidden md:flex items-center w-48">
-							<p
-								class="text-xs font-semibold text-gray-400 truncate hover:underline cursor-pointer"
+						<div
+							class="col-span-4 text-sm"
+							:class="{
+								'text-gray-400': !isCurrentTrack(item),
+							}"
+						>
+							{{ item.album || '-' }}
+						</div>
+						<!-- duration -->
+						<div class="col-span-2 flex items-center justify-end space-x-4">
+							<!-- duration -->
+							<span
+								class="text-sm"
 								:class="{
-									'text-white':
-										currentTrack.type == 'netease' ? currentTrack.nId == item.nId : currentTrack.id == item.id,
+									'text-gray-400': !isCurrentTrack(item),
 								}"
 							>
-								{{ item.album }}
-							</p>
-						</div>
-						<div class="flex justify-center items-center space-x-4 px-4">
-							<!-- duration -->
-							<p class="text-xs font-semibold text-gray-50">
 								{{ formatTime(item.duration) }}
-							</p>
-							<!-- <button class="px-4 py-2 bg-blue-500 text-white rounded">按钮</button> -->
+							</span>
 						</div>
 					</div>
 				</template>
@@ -110,18 +111,20 @@
 					<div
 						v-for="i in 10"
 						:key="i"
-						class="h-14 w-full flex items-center space-x-4 rounded-lg shadow-md mb-4 animate-pulse"
+						class="grid grid-cols-12 items-center py-3 px-4 rounded-lg group player-text animate-pulse"
 					>
-						<div class="mx-4 w-4 h-4 bg-gray-800 rounded"></div>
-						<div class="w-10 h-10 bg-gray-800 rounded"></div>
-						<div class="flex-1 space-y-2">
-							<div class="h-3 bg-gray-800 rounded w-1/4"></div>
-							<div class="h-2 bg-gray-800 rounded w-1/3"></div>
+						<div class="col-span-1 text-sm">
+							{{ i }}
 						</div>
-						<div class="hidden md:flex items-center w-48">
+						<div class="col-span-5">
+							<div class="h-3 bg-gray-800 rounded w-1/4"></div>
+						</div>
+						<div class="col-span-4">
 							<div class="h-2 bg-gray-800 rounded w-2/3"></div>
 						</div>
-						<div class="w-12 h-3 bg-gray-800 rounded mx-4"></div>
+						<div class="col-span-2 flex items-center justify-end space-x-4">
+							<div class="h-2 bg-gray-800 rounded w-1/3"></div>
+						</div>
 					</div>
 				</template>
 			</div>
@@ -199,15 +202,13 @@ const handleAlbumClick = (albumId?: number) => {
 		path: `/album/${albumId}`,
 	})
 }
+
+const isCurrentTrack = (item: Track) => {
+	return currentTrack.type == 'netease' ? currentTrack.nId == item.nId : currentTrack.id == item.id
+}
 </script>
 
 <style scoped lang="scss">
-.active {
-	border-radius: 5px;
-	background: #ec4899;
-	color: white !important;
-}
-
 .custom-truncate {
 	display: -webkit-box;
 	-webkit-line-clamp: 4;
@@ -225,5 +226,12 @@ const handleAlbumClick = (albumId?: number) => {
 .fade-leave-to {
 	opacity: 0;
 }
+
+.album-title {
+	font-family: 'Outfit', sans-serif;
+}
+
+.player-text {
+	font-family: 'Inter', sans-serif;
+}
 </style>
-@/store/modules/currentTrack
