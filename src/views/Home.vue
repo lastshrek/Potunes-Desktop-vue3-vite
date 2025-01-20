@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-01 21:16:34
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-20 16:09:22
+ * @LastEditTime : 2025-01-20 16:51:35
  * @FilePath     : /src/views/Home.vue
  * @Description  : Home
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -102,7 +102,7 @@
 								max_width="w-full"
 								:showPlayButton="true"
 								:centerText="true"
-								:titleSize="'text-lg'"
+								:titleSize="'text-base'"
 								imageRatio="square"
 								:useColorThief="false"
 							/>
@@ -121,7 +121,7 @@
 								:showInfo="false"
 								:imagePadding="true"
 								:image-ratio="'square'"
-								:titleSize="'text-lg'"
+								:titleSize="'text-base'"
 								type="fm"
 								:useColorThief="false"
 							/>

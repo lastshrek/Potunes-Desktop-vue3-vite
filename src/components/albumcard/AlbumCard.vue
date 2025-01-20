@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-02 18:27:16
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-18 20:25:04
+ * @LastEditTime : 2025-01-20 16:52:29
  * @FilePath     : /src/components/albumcard/AlbumCard.vue
  * @Description  : album card
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -82,9 +82,6 @@
 					</Button>
 					<Button variant="ghost" class="text-white hover:bg-white/10 rounded-full">
 						<Heart class="h-4 w-4" />
-					</Button>
-					<Button variant="ghost" class="text-white hover:bg-white/10 rounded-full">
-						<MoreHorizontal class="h-4 w-4" />
 					</Button>
 				</div>
 			</div>
