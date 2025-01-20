@@ -1,4 +1,4 @@
-<!-- <template>
+<template>
 	<Sheet :open="isOpen" @update:open="closeDrawer">
 		<SheetContent side="right" class="w-[400px] bg-[#111111] border-l border-gray-800">
 			<SheetHeader>
@@ -37,14 +37,6 @@
 							{{ track.artist }}
 						</div>
 					</div>
-					<Button
-						variant="ghost"
-						size="icon"
-						class="opacity-0 group-hover:opacity-100 transition-opacity"
-						@click.stop="removeTrack(index)"
-					>
-						<X class="w-4 h-4 text-gray-400 hover:text-white" />
-					</Button>
 				</div>
 				<div v-if="globalQueue.queue.length === 0" class="text-center text-gray-400 py-8">暂无歌曲</div>
 			</div>
@@ -98,11 +90,4 @@ emitter.on('showNowPlayingList', () => {
 onUnmounted(() => {
 	emitter.off('showNowPlayingList')
 })
-</script> -->
-<template>
-	<div>123</div>
-</template>
-
-<script setup lang="ts"></script>
-
-<style scoped></style>
+</script>
