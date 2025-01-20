@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-02 17:09:39
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-18 20:33:30
+ * @LastEditTime : 2025-01-20 15:03:58
  * @FilePath     : /src/api/index.ts
  * @Description  : api
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -110,3 +110,7 @@ export const fm = () => get('v1/tracks/fm')
  * @description: 获取新版本
  */
 export const newVersion = (platform: string) => get(`v1/versions`, { platform })
+/**
+ * @description: 获取用户喜欢歌曲列表
+ */
+export const getFavouriteTracks = () => get('v1/users/favs')

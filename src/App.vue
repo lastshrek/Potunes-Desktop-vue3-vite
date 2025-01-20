@@ -14,16 +14,18 @@
 		</div>
 		<BottomPlayer />
 		<Toaster />
+		<NowPlayingDrawer />
 	</div>
 </template>
 
 <script setup lang="ts">
 import NavBar from '@/components/navbar/NavBar.vue'
-import BottomPlayer from './components/player/BottomPlayer.vue'
+import BottomPlayer from '@/components/player/BottomPlayer.vue'
 import { Toaster } from '@/components/ui/toast'
 import LeftNav from '@/components/navbar/LeftNav.vue'
 import { onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
+import NowPlayingDrawer from '@/components/player/NowPlayingDrawer.vue'
 
 const router = useRouter()
 

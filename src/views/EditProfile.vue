@@ -469,12 +469,14 @@ const handleCropComplete = async () => {
 onMounted(() => {
 	// 加载用户数据
 	const userData = JSON.parse(localStorage.getItem('user') || '{}')
+	console.log({ userData })
+	const { user } = userData
 	form.value = {
-		phone: userData.phone || '',
-		nickname: userData.nickname || '',
-		intro: userData.intro || '',
-		gender: userData.gender || '',
-		avatar: userData.avatar || '',
+		phone: user.phone || '',
+		nickname: user.nickname || '',
+		intro: user.intro || '',
+		gender: user.gender || '',
+		avatar: user.avatar || '',
 	}
 })
 

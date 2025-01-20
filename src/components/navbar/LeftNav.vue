@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2025-01-05 20:09:28
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-18 22:39:23
+ * @LastEditTime : 2025-01-20 14:45:13
  * @FilePath     : /src/components/navbar/LeftNav.vue
  * @Description  : LeftNav
  * Copyright 2025 lastshrek, All Rights Reserved.
@@ -35,7 +35,11 @@
 			<div class="space-y-4">
 				<h2 class="px-4 text-lg font-semibold tracking-tight text-white">My Music</h2>
 				<div class="space-y-1">
-					<Button variant="ghost" class="w-full justify-start pl-4 text-gray-400 hover:text-white hover:bg-gray-800/50">
+					<Button
+						variant="ghost"
+						class="w-full justify-start pl-4 text-gray-400 hover:text-white hover:bg-gray-800/50"
+						@click="router.push('/favourites')"
+					>
 						<Heart class="mr-2 h-4 w-4" />
 						Favourites
 					</Button>
@@ -76,7 +80,7 @@ import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { ListMusic, BarChart3, Heart, History, MessageSquare } from 'lucide-vue-next'
+import { ListMusic, BarChart3, Heart, History, MessageSquare, HandMetal, House, Car, Disc3 } from 'lucide-vue-next'
 
 const router = useRouter()
 const route = useRoute()
@@ -95,28 +99,28 @@ const navItems = [
 		name: 'Home',
 		path: '/',
 		routeName: 'home',
-		icon: ListMusic,
+		icon: House,
 	},
 	{
 		name: 'Collections',
 		path: '/albums/collections',
 		routeName: 'albums',
 		params: { type: 'collections' },
-		icon: ListMusic,
+		icon: HandMetal,
 	},
 	{
 		name: 'Finals',
 		path: '/albums/finals',
 		routeName: 'albums',
 		params: { type: 'finals' },
-		icon: ListMusic,
+		icon: Car,
 	},
 	{
 		name: 'Albums',
 		path: '/albums/albums',
 		routeName: 'albums',
 		params: { type: 'albums' },
-		icon: ListMusic,
+		icon: Disc3,
 	},
 	{
 		name: 'Trends',
