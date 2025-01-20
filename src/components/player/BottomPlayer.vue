@@ -728,6 +728,29 @@ watch(
 	{ deep: true }
 )
 
+// 处理 tray 控制命令
+const handleTrayControl = (event: Electron.IpcRendererEvent, command: string) => {
+	switch (command) {
+		case 'toggle-play':
+			if (isPlaying.isPlaying) {
+				isPlaying.setIsPlaying(false)
+			} else {
+				isPlaying.setIsPlaying(true)
+			}
+			break
+		case 'prev-track':
+			if (currentIndex.currentIndex > 0) {
+				currentIndex.setCurrentIndex(currentIndex.currentIndex - 1)
+			}
+			break
+		case 'next-track':
+			if (currentIndex.currentIndex < globalQueue.queue.length - 1) {
+				currentIndex.setCurrentIndex(currentIndex.currentIndex + 1)
+			}
+			break
+	}
+}
+
 onMounted(() => {
 	// 监听进度跳转事件
 	emitter.on('showLyrics', async value => {
@@ -755,6 +778,9 @@ onMounted(() => {
 
 	// 组件加载时恢复播放状态
 	restorePlayState()
+
+	// 注册 tray 控制监听
+	window.electron?.onTrayControl(handleTrayControl)
 })
 
 // 在组件卸载时清除歌词
@@ -765,6 +791,10 @@ onUnmounted(() => {
 	}
 	electron.updateLyric('')
 	electron.updateSongInfo({ title: '', artist: '' })
+
+	// 移除事件监听
+	// @ts-ignore
+	window.electron?.ipcRenderer.removeListener('tray-control', handleTrayControl)
 })
 </script>
 

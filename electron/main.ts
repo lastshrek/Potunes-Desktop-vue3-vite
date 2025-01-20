@@ -111,21 +111,21 @@ const createMenuBarControls = () => {
 		nextTray = new Tray(createTemplateImage('next'))
 		nextTray.setToolTip('下一首')
 		nextTray.on('click', () => {
-			win?.webContents.send('tray-control', 'next')
+			win?.webContents.send('tray-control', 'next-track')
 		})
 
 		// 创建播放/暂停按钮
 		playTray = new Tray(createTemplateImage('play'))
 		playTray.setToolTip('播放/暂停')
 		playTray.on('click', () => {
-			win?.webContents.send('tray-control', 'play-pause')
+			win?.webContents.send('tray-control', 'toggle-play')
 		})
 
 		// 创建上一首按钮
 		previousTray = new Tray(createTemplateImage('previous'))
 		previousTray.setToolTip('上一首')
 		previousTray.on('click', () => {
-			win?.webContents.send('tray-control', 'previous')
+			win?.webContents.send('tray-control', 'prev-track')
 		})
 
 		// 创建歌词显示托盘（放在最左侧，最后创建）
