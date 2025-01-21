@@ -787,21 +787,27 @@ const isLiked = computed(() => {
 	return currentTrack.isLike
 })
 
+// 检查登录状态
+const isLoggedIn = ref(false)
+
+// 初始化登录状态
+const initLoginStatus = () => {
+	const token = localStorage.getItem('token')
+	const user = localStorage.getItem('user')
+	try {
+		isLoggedIn.value = !!(token && user && JSON.parse(user))
+	} catch (error) {
+		console.error('Error parsing user info:', error)
+		isLoggedIn.value = false
+	}
+}
+
 // 处理喜欢/取消喜欢
 const toggleLike = () => {
 	if (!currentTrack.id) return
-
-	// if (isLiked.value) {
-	// 	favourites.removeFavourite(currentTrack.id)
-	// } else {
-	// 	favourites.addFavourite(currentTrack)
-	// }
+	if (!isLoggedIn.value) return
+	// TODO: 实现喜欢/取消喜欢的逻辑
 }
-
-// 检查登录状态
-const isLoggedIn = computed(() => {
-	return !!localStorage.getItem('token')
-})
 
 onMounted(() => {
 	// 监听进度跳转事件
@@ -833,6 +839,21 @@ onMounted(() => {
 
 	// 注册 tray 控制监听
 	window.electron?.onTrayControl(handleTrayControl)
+
+	// 监听登出事件
+	emitter.on('logout', () => {
+		// 重置喜欢状态
+		currentTrack.resetLikeStatus()
+		isLoggedIn.value = false
+	})
+
+	// 监听登录成功事件
+	emitter.on('login-success', () => {
+		isLoggedIn.value = true
+	})
+
+	// 初始化登录状态
+	initLoginStatus()
 })
 
 // 在组件卸载时清除歌词
@@ -847,6 +868,8 @@ onUnmounted(() => {
 	// 移除事件监听
 	// @ts-ignore
 	window.electron?.ipcRenderer.removeListener('tray-control', handleTrayControl)
+
+	emitter.off('logout')
 })
 </script>
 

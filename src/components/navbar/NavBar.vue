@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-01 21:16:34
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-20 20:21:44
+ * @LastEditTime : 2025-01-21 16:23:30
  * @FilePath     : /src/components/navbar/NavBar.vue
  * @Description  : 
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -87,105 +87,92 @@
 
 			<!-- user profile -->
 			<div class="relative z-10" style="-webkit-app-region: no-drag">
-				<button
-					class="hover:bg-albumcardhover text-white py-2 px-4 rounded text-sm player-text"
-					@click="go('login')"
-					v-if="!isUserExist"
-				>
-					Log In
-				</button>
-				<div v-if="isUserExist" class="relative user-menu">
-					<div
-						class="flex items-center justify-end cursor-pointer hover:text-white group px-2 py-1 rounded-md hover:bg-white/5"
-						@mouseenter="handleMouseEnter"
-						@mouseleave="handleMouseLeave"
+				<div class="flex items-center space-x-4">
+					<!-- 未登录时显示登录按钮 -->
+					<Button
+						v-if="!isUserExist"
+						variant="link"
+						class="text-white hover:text-[#da5597]"
+						@click="router.push('/login')"
 					>
-						<div class="w-8 h-8 rounded-full overflow-hidden mr-2 border border-gray-800">
-							<template v-if="userData.avatar">
-								<img
-									:src="userData.avatar"
-									:key="Date.now()"
-									alt="Avatar"
-									class="w-full h-full object-cover"
-									@error="handleAvatarError"
-								/>
-							</template>
-							<template v-else>
-								<div class="w-full h-full bg-black/50 flex items-center justify-center">
-									<UserCircle2 class="w-5 h-5 text-gray-500" />
-								</div>
-							</template>
-						</div>
+						Login
+					</Button>
 
-						<div class="flex flex-col items-end">
-							<p class="text-xs font-semibold text-right text-white album-title">
-								{{
-									userData.nickname
-										? userData.nickname
-										: isNeteaseLogin
-										? neteaseUser.nickname
-										: '欢迎你 ' + formatPhone(userPhone)
-								}}
-							</p>
-							<p
-								v-if="userData.intro || (isNeteaseLogin && !userData.intro)"
-								class="text-xs text-gray-400 text-right truncate max-w-[150px] player-text"
-							>
-								{{ userData.intro || (isNeteaseLogin ? neteaseUser.signature : '') }}
-							</p>
-						</div>
-						<ChevronDown
-							class="h-4 w-4 text-gray-400 transition-transform duration-200 ml-2"
-							:class="{ 'rotate-180': showUserMenu }"
-						/>
-					</div>
-
-					<!-- 统一的用户菜单 -->
-					<div
-						v-if="showUserMenu"
-						class="absolute right-0 mt-1 w-48 bg-[#1A1A1A] rounded-lg shadow-lg border border-gray-800 py-1 z-50"
-						@mouseenter="handleMenuEnter"
-						@mouseleave="handleMenuLeave"
-					>
-						<!-- 添加网易云账号信息 -->
-						<div v-if="isNeteaseLogin" class="px-4 py-2 border-b border-gray-800">
-							<div class="flex items-center gap-2 text-gray-400">
-								<img :src="NeteaseIcon" alt="网易云账号" class="h-4 w-4" />
-								<span class="text-sm text-gray-300">{{ neteaseUser.nickname }}</span>
+					<!-- 已登录时显示用户菜单 -->
+					<DropdownMenu v-else>
+						<DropdownMenuTrigger
+							class="flex items-center justify-end cursor-pointer hover:text-white group px-2 py-1 rounded-md hover:bg-white/5"
+						>
+							<div class="w-8 h-8 rounded-full overflow-hidden mr-2 border border-gray-800">
+								<template v-if="userData.avatar">
+									<img
+										:src="userData.avatar"
+										:key="Date.now()"
+										alt="Avatar"
+										class="w-full h-full object-cover"
+										@error="handleAvatarError"
+									/>
+								</template>
+								<template v-else>
+									<div class="w-full h-full bg-black/50 flex items-center justify-center">
+										<UserCircle2 class="w-5 h-5 text-gray-500" />
+									</div>
+								</template>
 							</div>
-						</div>
 
-						<div class="flex flex-col">
-							<button
+							<div class="flex flex-col items-end" v-if="isUserExist">
+								<p class="text-xs font-semibold text-right text-white album-title">
+									{{
+										userData.nickname
+											? userData.nickname
+											: isNeteaseLogin
+											? neteaseUser.nickname
+											: '欢迎你 ' + formatPhone(userPhone)
+									}}
+								</p>
+								<p
+									v-if="userData.intro || (isNeteaseLogin && !userData.intro)"
+									class="text-xs text-gray-400 text-right truncate max-w-[150px] player-text"
+								>
+									{{ userData.intro || (isNeteaseLogin ? neteaseUser.signature : '') }}
+								</p>
+							</div>
+							<ChevronDown
+								class="h-4 w-4 text-gray-400 transition-transform duration-200 ml-2"
+								:class="{ 'rotate-180': showUserMenu }"
+							/>
+						</DropdownMenuTrigger>
+
+						<DropdownMenuContent class="w-48 bg-[#1A1A1A] border-gray-800">
+							<!-- 网易云账号信息 -->
+							<DropdownMenuLabel v-if="isNeteaseLogin" class="border-b border-gray-800">
+								<div class="flex items-center gap-2 text-gray-400">
+									<img :src="NeteaseIcon" alt="网易云账号" class="h-4 w-4" />
+									<span class="text-sm text-gray-300">{{ neteaseUser.nickname }}</span>
+								</div>
+							</DropdownMenuLabel>
+
+							<!-- 菜单项 -->
+							<DropdownMenuItem
 								v-if="!isNeteaseLogin"
-								type="button"
-								class="w-full px-4 py-2 text-sm text-left text-gray-300 hover:bg-white/5 flex items-center gap-2 player-text"
-								@click.prevent="handleNeteaseClick"
-								@mousedown.stop="handleNeteaseMouseDown"
+								class="text-gray-300 hover:bg-white/5 cursor-pointer"
+								@click="handleNeteaseClick"
 							>
-								<Link class="h-4 w-4" />
+								<Link class="h-4 w-4 mr-2" />
 								<span>Link Netease</span>
-							</button>
-							<button
-								type="button"
-								class="w-full px-4 py-2 text-sm text-left text-gray-300 hover:bg-white/5 flex items-center gap-2 player-text"
-								@click.prevent="handleEditProfile"
-								@mousedown.stop="handleNeteaseMouseDown"
-							>
-								<User class="h-4 w-4" />
+							</DropdownMenuItem>
+
+							<DropdownMenuItem class="text-gray-300 hover:bg-white/5 cursor-pointer" @click="handleEditProfile">
+								<User class="h-4 w-4 mr-2" />
 								<span>Edit Profile</span>
-							</button>
-							<button
-								type="button"
-								class="w-full px-4 py-2 text-sm text-left text-gray-300 hover:bg-white/5 flex items-center gap-2 player-text"
-								@click.prevent="handleLogout"
-								@mousedown.stop="handleNeteaseMouseDown"
-							>
-								<LogOut class="h-4 w-4" />
+							</DropdownMenuItem>
+
+							<DropdownMenuItem class="text-gray-300 hover:bg-white/5 cursor-pointer" @click="handleLogout">
+								<LogOut class="h-4 w-4 mr-2" />
 								<span>Log Out</span>
-							</button>
-						</div>
-					</div>
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
 				</div>
 			</div>
 		</div>
@@ -216,7 +203,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import {
@@ -243,7 +230,16 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import NeteaseIcon from '@/assets/images/netease.png'
+import { emitter } from '@/utils/mitt'
 
 const router = useRouter()
 const route = useRoute()
@@ -255,7 +251,6 @@ const showDropdown = ref(false)
 const selectedTags = ref<Array<{ label: string; icon: any }>>([])
 const searchContainer = ref<HTMLElement | null>(null)
 const userPhone = ref('')
-const userNickname = ref('')
 const showUserMenu = ref(false)
 const showQRCode = ref(false)
 
@@ -316,15 +311,15 @@ const handleNavbarDrag = (event: MouseEvent) => {
 onMounted(() => {
 	document.addEventListener('click', handleClickOutside)
 	// 检查用户登录状态
-	const user = JSON.parse(localStorage.getItem('user') || '{}')
-	const neteaseCookie = localStorage.getItem('netease-cookie')
-	if (user) {
+	const token = localStorage.getItem('token')
+	const user = token ? JSON.parse(localStorage.getItem('user') || '{}') : null
+	if (user && token) {
 		isUserExist.value = true
 		userPhone.value = user.phone
 		userData.value = user
 	}
 
-	if (neteaseCookie) {
+	if (localStorage.getItem('netease-cookie')) {
 		isNeteaseLogin.value = true
 		neteaseUser.value = JSON.parse(localStorage.getItem('netease-user') || '{}')
 	}
@@ -350,6 +345,14 @@ onMounted(() => {
 
 	// 添加自定义事件监听
 	window.addEventListener('user-updated', updateUserData)
+
+	// 添加登录成功事件监听
+	emitter.on('login-success', (user: any) => {
+		console.log('login-success', user)
+		userData.value = user
+		isUserExist.value = true
+		userPhone.value = user.phone
+	})
 })
 
 onUnmounted(() => {
@@ -359,6 +362,7 @@ onUnmounted(() => {
 	window.removeEventListener('netease-login', (() => {}) as EventListener)
 	window.removeEventListener('storage', updateUserData)
 	window.removeEventListener('user-updated', updateUserData)
+	emitter.off('login-success')
 })
 
 // 修改输入框点击处理函数
@@ -421,8 +425,12 @@ const confirmLogout = () => {
 	isNeteaseLogin.value = false
 	userPhone.value = ''
 	neteaseUser.value = {}
+	userData.value = {}
 	showUserMenu.value = false
 	showLogoutConfirm.value = false
+
+	// 触发登出事件
+	emitter.emit('logout')
 
 	// 显示提示
 	toast({
@@ -486,11 +494,31 @@ const handleNeteaseClick = (event: MouseEvent) => {
 // 添加用户数据响应式引用
 const userData: any = ref({})
 
-// 添加监听器以更新用户数据
+// 获取用户信息
+const userInfo = computed(() => {
+	const token = localStorage.getItem('token')
+	const user = localStorage.getItem('user')
+	return token && user ? JSON.parse(user) : null
+})
+
+// 修改更新用户数据的函数
 const updateUserData = () => {
-	const newUserData = JSON.parse(localStorage.getItem('user') || '{}')
-	console.log('Updating user data:', newUserData) // 添加日志
-	userData.value = newUserData
+	const token = localStorage.getItem('token')
+	const user = localStorage.getItem('user')
+	try {
+		if (token && user) {
+			const parsedUser = JSON.parse(user)
+			userData.value = parsedUser
+			isUserExist.value = true
+			userPhone.value = parsedUser.phone
+		} else {
+			userData.value = {}
+			isUserExist.value = false
+			userPhone.value = ''
+		}
+	} catch (error) {
+		console.error('Error updating user data:', error)
+	}
 }
 
 // 添加头像加载错误处理
@@ -504,6 +532,15 @@ const handleAvatarError = (e: any) => {
 const handleEsc = () => {
 	showDropdown.value = false
 }
+
+// 监听用户信息变化
+watch(userInfo, newValue => {
+	if (!newValue) {
+		userData.value = {}
+		isUserExist.value = false
+		userPhone.value = ''
+	}
+})
 </script>
 
 <style scoped>

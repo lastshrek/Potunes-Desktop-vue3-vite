@@ -77,7 +77,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -87,6 +87,8 @@ import { Loader2 } from 'lucide-vue-next'
 import { useToast } from '@/components/ui/toast/use-toast'
 import { captcha, verifyCaptcha } from '@/api'
 import { handlePromise } from '@/utils'
+import { emitter } from '@/utils/mitt'
+
 const router = useRouter()
 const { toast } = useToast()
 
@@ -173,21 +175,18 @@ const handleSubmit = async () => {
 		localStorage.setItem('user', JSON.stringify(res.user))
 		localStorage.setItem('token', res.token)
 
-		// 触发登录成功事件
-		window.dispatchEvent(
-			new CustomEvent('user-login', {
-				detail: {
-					user: res.user,
-				},
-			})
-		)
+		// 先触发登录成功事件
+		emitter.emit('login-success', res.user)
 
 		toast({
 			title: '登录成功',
 			description: '欢迎回来！',
 		})
 
-		router.push('/')
+		// 延迟跳转，确保状态更新完成
+		nextTick(() => {
+			router.push('/')
+		})
 	} catch (error) {
 		toast({
 			variant: 'destructive',

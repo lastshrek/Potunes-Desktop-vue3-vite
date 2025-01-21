@@ -51,5 +51,8 @@ export const useCurrentTrackStore = defineStore({
 			this.type = currentTrack.type
 			this.isLike = currentTrack.isLike
 		},
+		resetLikeStatus() {
+			this.isLike = false
+		},
 	},
 })

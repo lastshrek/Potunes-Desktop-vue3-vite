@@ -23,19 +23,7 @@ import NavBar from '@/components/navbar/NavBar.vue'
 import BottomPlayer from '@/components/player/BottomPlayer.vue'
 import { Toaster } from '@/components/ui/toast'
 import LeftNav from '@/components/navbar/LeftNav.vue'
-import { onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
 import NowPlayingDrawer from '@/components/player/NowPlayingDrawer.vue'
-
-const router = useRouter()
-
-onMounted(() => {
-	console.log('App mounted')
-})
-
-onUnmounted(() => {
-	console.log('App unmounted')
-})
 </script>
 
 <style lang="scss">
