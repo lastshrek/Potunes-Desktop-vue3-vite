@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { getLyrics } from '@/api/index'
 import { handlePromise } from '@/utils'
+import { useCurrentTrackStore } from '@/store/modules/currenttrack'
 
 interface LyricsState {
 	lrc: string
@@ -27,6 +28,8 @@ export const useLyricsStore = defineStore('lyrics', {
 				if (!res) return
 				this.lrc = res.lrc
 				this.lrc_cn = res.lrc_cn
+				const currentTrack = useCurrentTrackStore()
+				currentTrack.$patch({ isLike: res.isLike })
 			} catch (err: any) {
 				this.error = err.message
 			} finally {

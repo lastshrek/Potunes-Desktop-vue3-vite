@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-05 20:11:44
  * @LastEditors  : lastshrek
- * @LastEditTime : 2023-09-05 20:11:45
+ * @LastEditTime : 2025-01-21 15:00:44
  * @FilePath     : /src/interfaces/track.ts
  * @Description  : track
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -23,4 +23,5 @@ interface Track {
 	nId: number
 	type: string
 	ar: Ar[]
+	isLike: boolean
 }

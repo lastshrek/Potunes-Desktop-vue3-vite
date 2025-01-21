@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-03 11:43:08
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-04 14:25:56
+ * @LastEditTime : 2025-01-21 15:00:33
  * @FilePath     : /src/store/modules/currenttrack.ts
  * @Description  : currentTrack
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -26,6 +26,7 @@ export const useCurrentTrackStore = defineStore({
 		nId: -1,
 		ar: [],
 		type: 'potunes',
+		isLike: false,
 	}),
 	getters: {
 		getCurrentTrack(state): Track {
@@ -48,6 +49,7 @@ export const useCurrentTrackStore = defineStore({
 			this.nId = currentTrack.nId
 			this.ar = currentTrack.ar
 			this.type = currentTrack.type
+			this.isLike = currentTrack.isLike
 		},
 	},
 })

@@ -62,10 +62,12 @@
 						<div
 							v-for="(item, index) in fav_tracks"
 							:key="'index' + index"
-							class="grid grid-cols-12 items-center py-3 px-4 rounded-lg group player-text hover:bg-gray-800/50"
+							class="grid grid-cols-12 items-center py-3 px-4 rounded-lg group player-text"
 							:class="{
-								'bg-[#da5597] text-white':
+								'bg-[#da5597] text-white hover:bg-[#da5597]':
 									currentTrack.type == 'netease' ? currentTrack.nId == item.nId : currentTrack.id == item.id,
+								'hover:bg-gray-800/50':
+									currentTrack.type == 'netease' ? currentTrack.nId != item.nId : currentTrack.id != item.id,
 							}"
 							@click="selectTrack(index)"
 						>
@@ -76,7 +78,15 @@
 								<img v-lazy="item.cover_url" class="w-10 h-10 rounded" />
 								<div>
 									<p class="text-sm font-medium">{{ item.name }}</p>
-									<div class="flex text-xs mt-1 text-gray-400">
+									<div
+										class="flex text-xs mt-1"
+										:class="{
+											'text-white':
+												currentTrack.type == 'netease' ? currentTrack.nId == item.nId : currentTrack.id == item.id,
+											'text-gray-400':
+												currentTrack.type == 'netease' ? currentTrack.nId != item.nId : currentTrack.id != item.id,
+										}"
+									>
 										<div
 											v-for="(artist, index) in item.ar"
 											:key="'artist' + artist.id + index"
@@ -89,12 +99,30 @@
 								</div>
 							</div>
 							<!-- album -->
-							<div class="col-span-4 text-sm text-gray-400">
+							<div
+								class="col-span-4 text-sm"
+								:class="{
+									'text-white':
+										currentTrack.type == 'netease' ? currentTrack.nId == item.nId : currentTrack.id == item.id,
+									'text-gray-400':
+										currentTrack.type == 'netease' ? currentTrack.nId != item.nId : currentTrack.id != item.id,
+								}"
+							>
 								{{ item.album || '-' }}
 							</div>
 							<!-- duration -->
 							<div class="col-span-2 flex items-center justify-end space-x-4">
-								<span class="text-sm text-gray-400">{{ formatTime(item.duration) }}</span>
+								<span
+									class="text-sm"
+									:class="{
+										'text-white':
+											currentTrack.type == 'netease' ? currentTrack.nId == item.nId : currentTrack.id == item.id,
+										'text-gray-400':
+											currentTrack.type == 'netease' ? currentTrack.nId != item.nId : currentTrack.id != item.id,
+									}"
+								>
+									{{ formatTime(item.duration) }}
+								</span>
 							</div>
 						</div>
 					</div>
