@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-05 16:24:18
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-25 21:33:13
+ * @LastEditTime : 2025-01-25 22:10:19
  * @FilePath     : /src/views/Favourites.vue
  * @Description  : Favrourites
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -151,8 +151,7 @@
 </template>
 
 <script setup lang="ts">
-import heartSrc from '@/assets/images/heart.png'
-import { formatTime, handlePromise, showError, getCurrentDate } from '@/utils/index'
+import { formatTime, handlePromise } from '@/utils/index'
 import { useGlobalQueueStore } from '@/store/modules/globalQueue'
 import { useRouter } from 'vue-router'
 import { onMounted, ref } from 'vue'
@@ -184,7 +183,6 @@ onMounted(async () => {
 	try {
 		const [res] = await handlePromise(getFavouriteTracks())
 		if (!res) return
-		console.log(res)
 		fav_tracks.value = res
 	} catch (error) {
 		console.error('获取收藏歌曲失败:', error)

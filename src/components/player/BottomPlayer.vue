@@ -43,33 +43,35 @@
 
 			<div class="flex justify-center items-center space-x-4">
 				<!-- 喜欢按钮 -->
-				<Button v-if="isLoggedIn" variant="link" size="icon" @click="toggleLike">
-					<svg
-						v-if="isLiked"
-						:class="`w-6 h-6 bg-[rgb(${secondaryColor.join(',')})]`"
-						xmlns="http://www.w3.org/2000/svg"
-						viewBox="0 0 24 24"
-						fill="currentColor"
-					>
-						<path
-							d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"
-						/>
-					</svg>
-					<svg
-						v-else
-						class="w-6 h-6 text-white"
-						xmlns="http://www.w3.org/2000/svg"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke-width="1.5"
-						stroke="currentColor"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
-						/>
-					</svg>
+				<Button v-if="isLoggedIn" variant="link" size="icon" @click="showTrackInfo">
+					<div class="relative group">
+						<svg
+							v-if="isLiked"
+							:class="`w-6 h-6 bg-[rgb(${secondaryColor.join(',')})]`"
+							xmlns="http://www.w3.org/2000/svg"
+							viewBox="0 0 24 24"
+							fill="currentColor"
+						>
+							<path
+								d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"
+							/>
+						</svg>
+						<svg
+							v-else
+							class="w-6 h-6 text-white"
+							xmlns="http://www.w3.org/2000/svg"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke-width="1.5"
+							stroke="currentColor"
+						>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
+							/>
+						</svg>
+					</div>
 				</Button>
 				<!-- 循环 -->
 				<Button variant="link" size="icon" @click="repeatMode">
@@ -272,16 +274,13 @@
 				<Button variant="link" size="icon" @click="showLyrics">
 					<svg
 						t="1691597908372"
-						class="w-4 h-4"
+						class="w-4 h-4 transform rotate-180"
 						viewBox="0 0 1024 1024"
 						version="1.1"
 						xmlns="http://www.w3.org/2000/svg"
-						p-id="1961"
-						width="24"
-						height="24"
 					>
 						<path
-							d="M84.48 648.896C71.456 661.472 64.096 678.752 64 696.832 65.696 737.632 100 769.408 140.8 767.968 161.92 768.064 182.176 759.712 197.12 744.8L512 432.096 826.88 744.8C841.824 759.712 862.08 768.064 883.2 767.968 924 769.408 958.304 737.632 960 696.832 959.904 678.752 952.544 661.472 939.52 648.896L568.32 279.04C537.056 248.32 486.944 248.32 455.68 279.04L84.48 648.896Z"
+							d="M512 768c-17.066667 0-32-6.4-44.8-19.2l-358.4-358.4c-25.6-25.6-25.6-64 0-89.6s64-25.6 89.6 0L512 614.4l313.6-313.6c25.6-25.6 64-25.6 89.6 0s25.6 64 0 89.6l-358.4 358.4C544 761.6 529.066667 768 512 768z"
 							p-id="1962"
 							fill="#ffffff"
 						></path>
@@ -327,6 +326,7 @@ import ColorThief from 'colorthief'
 import { fm } from '@/api'
 // @ts-ignore
 const { electron } = window as Window & typeof globalThis & { electron: ElectronAPI }
+import { useToast } from '@/composables/useToast'
 
 const currentTrack = useCurrentTrackStore()
 // const favourites = useFavouritesStore()
@@ -807,6 +807,33 @@ const toggleLike = () => {
 	if (!currentTrack.id) return
 	if (!isLoggedIn.value) return
 	// TODO: 实现喜欢/取消喜欢的逻辑
+}
+
+const toast = useToast()
+
+// 显示歌曲信息
+const showTrackInfo = () => {
+	if (!currentTrack.name) {
+		toast.info('当前没有播放歌曲')
+		return
+	}
+	console.log('Current Track Info:', {
+		id: currentTrack.id,
+		name: currentTrack.name,
+		artist: currentTrack.artist,
+		album: currentTrack.album,
+		cover_url: currentTrack.cover_url,
+		url: currentTrack.url,
+		duration: currentTrack.duration,
+		playlist_id: currentTrack.playlist_id,
+		original_album: currentTrack.original_album,
+		original_album_id: currentTrack.original_album_id,
+		mv: currentTrack.mv,
+		nId: currentTrack.nId,
+		ar: currentTrack.ar,
+		type: currentTrack.type,
+		isLike: currentTrack.isLike,
+	})
 }
 
 onMounted(() => {
