@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-05 16:28:54
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-19 09:38:55
+ * @LastEditTime : 2025-01-25 21:25:16
  * @FilePath     : /src/views/Trends.vue
  * @Description  : Trends
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -10,41 +10,15 @@
 -->
 <template>
 	<div class="bg-black w-full h-screen pt-16 pb-20">
-		<div class="container mx-auto h-full overflow-y-scroll flex flex-col text-white">
-			<!-- 周榜card -->
-			<div v-if="!isLoading" class="rounded-lg shadow-md flex p-4">
-				<!-- 左侧图片 -->
-				<div class="w-full md:w-40 relative text-center">
-					<img :src="hotImageSrc" class="w-full h-auto rounded-lg mr-4 border border-gray-800" />
-				</div>
-				<!-- 右侧三段 -->
-				<div class="w-full md:flex-1 md:flex md:flex-col justify-end px-4">
-					<div>
-						<p class="text-lg font-semibold mb-2">大家最爱</p>
-					</div>
-					<!-- 专辑介绍 -->
-					<p class="mb-4 custom-truncate text-gray-400 max-h-16">一周歌曲收听排行『{{ weekago }} - {{ todayFull }}』</p>
-				</div>
+		<!-- 悬浮标题 -->
+		<div class="fixed top-16 left-44 right-0 z-10 bg-black/90 backdrop-blur-sm border-b border-gray-800">
+			<div class="px-4 py-4">
+				<h1 class="text-white text-2xl font-bold">Trends - 一周歌曲收听排行『{{ weekago }} - {{ todayFull }}』</h1>
 			</div>
-			<div v-else class="rounded-lg shadow-md flex p-4 animate-pulse">
-				<div class="w-full md:w-40 relative">
-					<div class="w-full h-40 bg-gray-800 rounded-lg"></div>
-				</div>
-				<div class="w-full md:flex-1 md:flex md:flex-col justify-end px-4">
-					<div class="h-6 bg-gray-800 rounded w-1/4 mb-2"></div>
-					<div class="h-4 bg-gray-800 rounded w-3/4"></div>
-				</div>
-			</div>
-
+		</div>
+		<div class="container mx-auto h-full overflow-y-scroll flex flex-col text-white pt-20">
 			<!-- tracklist -->
 			<div class="w-full">
-				<!-- 列表头部 -->
-				<div class="grid grid-cols-12 text-gray-400 text-sm py-2 px-4 border-b border-gray-800 player-text">
-					<div class="col-span-1">#</div>
-					<div class="col-span-5">标题</div>
-					<div class="col-span-4">专辑</div>
-					<div class="col-span-2 text-right">时长</div>
-				</div>
 				<template v-if="!isLoading">
 					<div
 						v-for="(item, index) in playlist.tracks"

@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2025-01-18 22:36:46
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-20 15:20:08
+ * @LastEditTime : 2025-01-25 21:34:18
  * @FilePath     : /src/views/History.vue
  * @Description  : 播放历史
  * Copyright 2025 lastshrek, All Rights Reserved.
@@ -11,17 +11,36 @@
 <template>
 	<div class="w-full">
 		<div class="bg-black w-full pt-16 pb-20 h-screen">
-			<div class="h-full overflow-y-scroll flex flex-col text-white px-6 pt-8">
+			<!-- 悬浮标题 -->
+			<div class="fixed top-16 left-44 right-0 z-10 bg-black/90 backdrop-blur-sm border-b border-gray-800">
+				<div class="px-4 py-4 flex justify-between items-center">
+					<h1 class="text-white text-2xl font-bold album-title">History - 播放历史({{ playHistory.length }} tracks)</h1>
+					<button
+						v-if="playHistory.length > 0"
+						class="bg-[#da5597] text-white px-4 py-2 rounded-full hover:bg-[#da5597]/90 flex items-center justify-center space-x-2 player-text"
+						@click="playAll"
+					>
+						<svg
+							t="1691599025349"
+							class="icon w-5 h-5"
+							viewBox="0 0 1024 1024"
+							version="1.1"
+							xmlns="http://www.w3.org/2000/svg"
+							p-id="3841"
+						>
+							<path
+								d="M732.502883 465.602819c-107.883492-82.3454-215.772403-164.681769-323.652282-247.014525-38.414608-29.327534-93.780555-1.929039-93.780555 46.396277v494.029051c0 48.325316 55.365948 75.725617 93.780555 46.398084 107.87988-82.332757 215.76879-164.669126 323.652282-247.014525 30.61356-23.357989 30.61356-69.436372 0-92.794362z"
+								fill="currentColor"
+							></path>
+						</svg>
+						<span class="player-text">Play</span>
+					</button>
+				</div>
+			</div>
+			<div class="h-full overflow-y-scroll flex flex-col text-white px-6 pt-20">
 				<!-- 歌曲列表 -->
 				<div class="w-full">
-					<div v-if="playHistory.length > 0" class="mt-8">
-						<!-- 列表头部 -->
-						<div class="grid grid-cols-12 text-gray-400 text-sm py-2 px-4 border-b border-gray-800 player-text">
-							<div class="col-span-1">#</div>
-							<div class="col-span-5">标题</div>
-							<div class="col-span-4">专辑</div>
-							<div class="col-span-2 text-right">时长</div>
-						</div>
+					<div v-if="playHistory.length > 0">
 						<div
 							v-for="(track, index) in playHistory"
 							:key="`${track.id}-${index}`"

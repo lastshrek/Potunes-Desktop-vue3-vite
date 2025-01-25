@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-05 16:26:25
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-14 22:09:51
+ * @LastEditTime : 2025-01-25 21:25:51
  * @FilePath     : /src/views/Albums.vue
  * @Description  : Albums
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -69,13 +69,13 @@ const type = ref('collections')
 const typeTitle = computed(() => {
 	switch (type.value) {
 		case 'collections':
-			return '月度精选'
+			return 'Collections - 月度精选'
 		case 'finals':
-			return '年终精选'
+			return 'Finals - 年终精选'
 		case 'albums':
-			return '专辑'
+			return 'Albums - 专辑'
 		default:
-			return '专辑列表'
+			return 'Albums - 专辑'
 	}
 })
 

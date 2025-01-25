@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-05 16:30:59
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-20 16:10:12
+ * @LastEditTime : 2025-01-25 21:24:09
  * @FilePath     : /src/views/Suggestion.vue
  * @Description  : Suggestions
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -10,17 +10,22 @@
 -->
 <template>
 	<div class="min-h-screen pt-16 pb-24 w-full bg-black">
-		<div class="container mx-auto px-6 py-8 flex flex-col items-center">
-			<h1 class="text-2xl font-bold text-white mb-6 album-title">意见反馈</h1>
+		<!-- 悬浮标题 -->
+		<div class="fixed top-16 left-44 right-0 z-10 bg-black/90 backdrop-blur-sm border-b border-gray-800">
+			<div class="px-4 py-4">
+				<h1 class="text-white text-2xl font-bold album-title">Advices - 建议反馈</h1>
+			</div>
+		</div>
+		<div class="container mx-auto px-6 pt-20 flex flex-col items-center">
 			<form @submit.prevent="handleSubmit" class="w-full max-w-2xl">
 				<div class="space-y-4">
 					<div>
-						<label class="block text-sm font-medium text-gray-400 mb-2 player-text">您的建议</label>
+						<label class="block text-sm font-medium text-gray-400 mb-2 player-text">Your Advices</label>
 						<textarea
 							v-model="suggestion"
 							rows="6"
 							class="w-full rounded-lg bg-gray-800 border-gray-700 text-white resize-none p-3 focus:ring-[#da5597] focus:border-[#da5597] player-text"
-							placeholder="请输入您的建议或反馈..."
+							placeholder="Please enter your suggestions or feedback..."
 						></textarea>
 					</div>
 					<div class="flex justify-end">
@@ -29,8 +34,8 @@
 							:disabled="isSubmitting || !suggestion.trim()"
 							class="bg-[#da5597] text-white px-6 py-2 rounded-full hover:bg-[#da5597]/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 player-text"
 						>
-							<span v-if="isSubmitting">提交中...</span>
-							<span v-else>提交建议</span>
+							<span v-if="isSubmitting">Submitting...</span>
+							<span v-else>Submit</span>
 						</button>
 					</div>
 				</div>
