@@ -355,7 +355,7 @@ ipcMain.on('update-lyric', (_, lyric: string) => {
 		console.log('lyricsTray 不存在')
 		return
 	}
-
+	console.log('更新歌词', lyric)
 	// 如果没有歌词，显示空白
 	if (!lyric || lyric === 'undefined' || lyric === 'null' || lyric === '[object Object]') {
 		console.log('歌词为空或无效')

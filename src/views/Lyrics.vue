@@ -334,6 +334,9 @@ import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
 import { useCurrentTrackStore } from '@/store/modules/currenttrack'
 import { PlayMode, usePlayModeStore } from '@/store/modules/playMode'
 import ColorThief from 'colorthief'
+import { likeTrack } from '@/api'
+import { handlePromise } from '@/utils'
+import { useToast } from '@/composables/useToast'
 
 interface LyricItem {
 	time: number
@@ -352,6 +355,7 @@ const currentTime = computed(() => {
 const lyricsStore = useLyricsStore()
 const currentProgress = useCurrentProgressStore()
 const playMode = usePlayModeStore()
+const toast = useToast()
 
 // 解析歌词
 const parsedLyrics = computed<LyricItem[]>(() => {
@@ -653,8 +657,37 @@ const isLiked = computed(() => {
 })
 
 // 处理喜欢/取消喜欢
-const toggleLike = () => {
-	if (!currentTrack.id) return
+const toggleLike = async () => {
+	if (!isLoggedIn.value) return
+	if (!currentTrack.name) {
+		toast.info('当前没有播放歌曲')
+		return
+	}
+	const track = {
+		id: currentTrack.id,
+		name: currentTrack.name,
+		artist: currentTrack.artist,
+		album: currentTrack.album,
+		cover_url: currentTrack.cover_url,
+		url: currentTrack.url,
+		duration: currentTrack.duration,
+		playlist_id: currentTrack.playlist_id,
+		original_album: currentTrack.original_album,
+		original_album_id: currentTrack.original_album_id,
+		mv: currentTrack.mv,
+		nId: currentTrack.nId,
+		ar: currentTrack.ar,
+		type: currentTrack.type,
+		isLike: !currentTrack.isLike,
+	}
+	const [res] = await handlePromise(likeTrack(track))
+	if (res) {
+		currentTrack.updateLikeStatus(true)
+		toast.success('已添加到收藏')
+	} else {
+		currentTrack.updateLikeStatus(false)
+		toast.success('已取消收藏')
+	}
 }
 </script>
 
