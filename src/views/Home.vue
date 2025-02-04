@@ -57,7 +57,8 @@
 									v-for="(collection, index) in lastestCollections"
 									:key="collection.id"
 									class="absolute inset-0 transition-opacity duration-500"
-									:class="{ 'opacity-0': currentIndex !== index }"
+									:class="{ 'opacity-0': currentIndex !== index, 'z-10': currentIndex === index }"
+									:data-playlist-id="collection.id"
 								>
 									<AlbumCard
 										:cover_url="collection.cover"

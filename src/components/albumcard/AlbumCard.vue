@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-02 18:27:16
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-02-04 14:07:11
+ * @LastEditTime : 2025-02-04 14:54:57
  * @FilePath     : /src/components/albumcard/AlbumCard.vue
  * @Description  : album card
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -209,7 +209,8 @@ const handlePlay = async (e: Event) => {
 	e.preventDefault()
 	e.stopPropagation()
 	const type = props.type
-	const id = props.id + ''
+	// 获取当前可见的卡片的 id
+	let id = props.id + ''
 	let tracks: any = []
 	if (type === 'potunes') {
 		const [res] = await handlePromise(getTracks(id))
