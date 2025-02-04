@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-05 16:26:25
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-25 21:25:51
+ * @LastEditTime : 2025-02-04 14:05:50
  * @FilePath     : /src/views/Albums.vue
  * @Description  : Albums
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -30,6 +30,7 @@
 						:useColorThief="false"
 						:showPlayButton="true"
 						:image-ratio="type === 'collections' ? '' : 'square'"
+						:id="album.id"
 					></AlbumCard>
 				</router-link>
 			</div>

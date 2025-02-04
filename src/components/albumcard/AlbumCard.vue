@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-02 18:27:16
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-02-04 13:39:18
+ * @LastEditTime : 2025-02-04 14:07:11
  * @FilePath     : /src/components/albumcard/AlbumCard.vue
  * @Description  : album card
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -18,7 +18,7 @@
 			WebkitBackdropFilter: 'blur(16px)',
 			'--hover-brightness': dominantColor === '#121212' ? '1.2' : '1.3',
 		}"
-		@click="handleClick"
+		@click.stop="handleClick"
 	>
 		<div
 			class="relative w-full mb-2"
@@ -206,10 +206,10 @@ const handleClick = () => {
 
 const handlePlay = async (e: Event) => {
 	console.log('handlePlay点击了id:', props.id, props.type)
+	e.preventDefault()
+	e.stopPropagation()
 	const type = props.type
 	const id = props.id + ''
-	e.stopPropagation()
-	// emit('play', { id: props.id, type: props.type })
 	let tracks: any = []
 	if (type === 'potunes') {
 		const [res] = await handlePromise(getTracks(id))
