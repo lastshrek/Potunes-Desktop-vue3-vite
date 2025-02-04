@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-02 17:09:39
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-29 19:43:39
+ * @LastEditTime : 2025-02-04 15:07:53
  * @FilePath     : /src/api/index.ts
  * @Description  : api
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -122,3 +122,8 @@ export const getLyrics = (id: number, nId?: number) => get(`/v1/lyrics/${id}/${n
  * @param {object} data
  */
 export const likeTrack = (data: any) => post('/v1/tracks/like', data)
+/**
+ * @description: 更新歌曲播放次数
+ * @param {object} data
+ */
+export const updatePlayCount = (data: any) => post('/v1/tracks/play_count', data)

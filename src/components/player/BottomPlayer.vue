@@ -323,10 +323,11 @@ import Lyrics from '@/views/Lyrics.vue'
 import { useLyricsStore } from '@/store/modules/lyrics'
 import { emitter } from '@/utils/mitt'
 import ColorThief from 'colorthief'
-import { fm, likeTrack } from '@/api'
+import { fm, likeTrack, updatePlayCount } from '@/api'
 // @ts-ignore
 const { electron } = window as Window & typeof globalThis & { electron: ElectronAPI }
 import { useToast } from '@/composables/useToast'
+import { useThrottleFn } from '@vueuse/core'
 
 const currentTrack = useCurrentTrackStore()
 // const favourites = useFavouritesStore()
@@ -590,15 +591,29 @@ watch(
 		} else {
 			player.volume = volume.value
 		}
-		console.log('播放歌曲', initial)
-		// 等待一小段时间确保音频源已经加载
-		await new Promise(resolve => setTimeout(resolve, 100))
+
+		// 等待音频加载完成
+		await new Promise((resolve, reject) => {
+			const handleCanPlay = () => {
+				player.removeEventListener('canplay', handleCanPlay)
+				player.removeEventListener('error', handleError)
+				resolve(true)
+			}
+			const handleError = (error: Event) => {
+				player.removeEventListener('canplay', handleCanPlay)
+				player.removeEventListener('error', handleError)
+				reject(error)
+			}
+			player.addEventListener('canplay', handleCanPlay)
+			player.addEventListener('error', handleError)
+		})
 
 		// 如果初始化，则不播放
 		if (initial) {
 			initial = false
 			return
 		}
+
 		try {
 			// 尝试播放
 			await player.play()
@@ -633,6 +648,8 @@ const prev = () => {
 	// 如果当前播放时间超过3秒，重新播放当前歌曲
 	if (audio.value && audio.value.currentTime > 3) {
 		audio.value.currentTime = 0
+		// 重置更新状态，允许再次更新播放次数
+		hasUpdated.value = false
 		return
 	}
 
@@ -687,6 +704,10 @@ const volumeChanged = () => {
 }
 // 播放结束
 const end = () => {
+	// 如果是单曲循环，重置更新状态
+	if (playMode.playMode === PlayMode.Repeat) {
+		hasUpdated.value = false
+	}
 	setIndex()
 }
 // 播放时间改变
@@ -699,6 +720,14 @@ const timeupdate = () => {
 	value.value = newValue
 	currentTime.setCurrentTime(curTime)
 	currentProgress.setCurrentProgress(newValue)
+
+	// 更新播放时长
+	playDuration.value = curTime
+
+	// 当播放时长超过30秒时更新歌曲信息
+	if (curTime >= 30 && !hasUpdated.value) {
+		updateTrackInfo()
+	}
 }
 // 显示播放列表
 const showNowPlayingList = () => {
@@ -721,7 +750,8 @@ const setIndex = async () => {
 	} else {
 		audio.value!.currentTime = 0
 		audio.value!.play()
-		// 单曲循环
+		// 单曲循环时重置更新状态
+		hasUpdated.value = false
 	}
 	console.log(currentIndex.currentIndex)
 	// TODO 更新歌曲播放次数
@@ -874,6 +904,52 @@ const toggleLike = async () => {
 		toast.success('已取消收藏')
 	}
 }
+
+// 记录歌曲播放时间的状态
+const playDuration = ref(0)
+const hasUpdated = ref(false)
+
+// 更新歌曲信息的函数
+const updateTrackInfo = useThrottleFn(async () => {
+	console.log('更新歌曲信息', !currentTrack.id, !currentTrack.nId)
+	if (!currentTrack.id && !currentTrack.nId) return
+	if (hasUpdated.value) return
+
+	try {
+		const track = {
+			id: currentTrack.id,
+			name: currentTrack.name,
+			artist: currentTrack.artist,
+			album: currentTrack.album,
+			cover_url: currentTrack.cover_url,
+			url: currentTrack.url,
+			duration: currentTrack.duration,
+			playlist_id: currentTrack.playlist_id,
+			original_album: currentTrack.original_album,
+			original_album_id: currentTrack.original_album_id,
+			mv: currentTrack.mv,
+			nId: currentTrack.nId,
+			ar: currentTrack.ar,
+			type: currentTrack.id ? 'potunes' : 'netease',
+			isLike: currentTrack.isLike,
+		}
+		hasUpdated.value = true
+		const [res] = await handlePromise(updatePlayCount(track))
+		if (!res) return
+		console.log('更新歌曲播放信息成功')
+	} catch (error) {
+		console.error('更新歌曲播放信息失败:', error)
+	}
+}, 1000)
+
+// 当切换歌曲时重置状态
+watch(
+	() => currentTrack.id,
+	() => {
+		playDuration.value = 0
+		hasUpdated.value = false
+	}
+)
 
 onMounted(() => {
 	// 监听进度跳转事件
