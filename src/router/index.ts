@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-02 15:51:57
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-20 16:09:38
+ * @LastEditTime : 2025-02-04 12:49:28
  * @FilePath     : /src/router/index.ts
  * @Description  : router
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -121,12 +121,7 @@ const router = createRouter({
 
 // 修改导航守卫
 router.beforeEach((to, from, next) => {
-	console.log('Navigation started:', { from: from.path, to: to.path })
 	next()
-})
-
-router.afterEach((to, from) => {
-	console.log('Navigation completed:', { from: from.path, to: to.path })
 })
 
 /** 解决跳转重复路由报错问题 */

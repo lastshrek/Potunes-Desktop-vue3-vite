@@ -359,7 +359,6 @@ const HISTORY_STORAGE_KEY = 'playHistory'
 
 // 添加歌曲到播放历史
 const addToHistory = (track: Track) => {
-	console.log('新增的歌曲', track)
 	if (track.id) track.type = 'potunes'
 	if (!track.id) track.type = 'netease'
 	try {
@@ -387,7 +386,7 @@ const addToHistory = (track: Track) => {
 		}
 
 		// 移除已存在的相同歌曲
-		history = history.filter(item => item.id !== cleanTrack.id)
+		history = history.filter(item => item.id !== cleanTrack.id || item.nId !== cleanTrack.nId)
 
 		// 将新歌曲添加到开头
 		history.unshift(cleanTrack)
@@ -569,7 +568,7 @@ watch(
 		if (!audio.value || !currentTrack.url) return
 
 		// 添加到播放历史
-		if (currentTrack.id) {
+		if (currentTrack.id || currentTrack.nId) {
 			addToHistory(currentTrack)
 		}
 

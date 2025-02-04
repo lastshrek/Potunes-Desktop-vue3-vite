@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2025-01-05 20:09:28
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-20 14:45:13
+ * @LastEditTime : 2025-02-04 12:48:23
  * @FilePath     : /src/components/navbar/LeftNav.vue
  * @Description  : LeftNav
  * Copyright 2025 lastshrek, All Rights Reserved.
@@ -92,18 +92,7 @@ import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import {
-	ListMusic,
-	BarChart3,
-	Heart,
-	History,
-	MessageSquare,
-	HandMetal,
-	House,
-	Car,
-	Disc3,
-	Plus,
-} from 'lucide-vue-next'
+import { BarChart3, Heart, History, MessageSquare, HandMetal, House, Car, Disc3, Plus } from 'lucide-vue-next'
 import { useToast } from '@/composables/useToast'
 
 const router = useRouter()
@@ -171,7 +160,6 @@ const playlists = ref([
 
 // 修改导航处理方法
 const handleNavigation = (item: (typeof navItems)[0]) => {
-	console.log('Navigating to:', item.path)
 	if (item.routeName === 'albums') {
 		router
 			.push({
