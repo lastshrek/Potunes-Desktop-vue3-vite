@@ -355,12 +355,13 @@ ipcMain.on('update-lyric', (_, lyric: string) => {
 		console.log('lyricsTray 不存在')
 		return
 	}
-	console.log('更新歌词', lyric)
-	// 如果没有歌词，显示空白
-	if (!lyric || lyric === 'undefined' || lyric === 'null' || lyric === '[object Object]') {
-		console.log('歌词为空或无效')
-		lyricsTray.setTitle('')
-		return
+
+	console.log('收到歌词更新:', lyric)
+
+	// 停止任何正在进行的滚动动画
+	if (animationTimer) {
+		clearTimeout(animationTimer)
+		animationTimer = null
 	}
 
 	// 移除时间标记和首尾空白字符
@@ -370,8 +371,11 @@ ipcMain.on('update-lyric', (_, lyric: string) => {
 		.replace(/\【\d{2}:\d{2}\.\d{1,3}\】/g, '') // 【00:27.462】
 		.trim()
 
+	console.log('清理后的歌词:', cleanLyric)
+
 	// 如果清理后没有内容，显示空白
 	if (!cleanLyric || cleanLyric.length === 0) {
+		console.log('清理后歌词为空，设置空白')
 		lyricsTray.setTitle('')
 		return
 	}
@@ -379,6 +383,7 @@ ipcMain.on('update-lyric', (_, lyric: string) => {
 	// 如果歌词长度小于等于最大长度，直接显示
 	const maxLength = 60
 	if (cleanLyric.length <= maxLength) {
+		console.log('歌词长度合适，直接显示:', cleanLyric)
 		lyricsTray.setTitle(cleanLyric)
 		return
 	}
@@ -418,6 +423,7 @@ ipcMain.on('update-lyric', (_, lyric: string) => {
 		}
 
 		const displayText = scrollText.substring(currentPosition, currentPosition + maxLength)
+		console.log('更新滚动歌词:', displayText)
 		lyricsTray.setTitle(displayText)
 
 		// 使用 setTimeout 来模拟 requestAnimationFrame
@@ -425,10 +431,6 @@ ipcMain.on('update-lyric', (_, lyric: string) => {
 	}
 
 	// 启动动画
-	if (animationTimer) {
-		clearTimeout(animationTimer)
-		animationTimer = null
-	}
 	updateScroll()
 })
 

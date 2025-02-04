@@ -443,6 +443,36 @@ watch(
 	{ immediate: true }
 )
 
+// 监听当前歌曲变化 - 处理歌词
+watch(
+	() => currentTrack.id,
+	async () => {
+		if (!currentTrack.id) return
+
+		// 清空当前歌词
+		currentLyricLines.value = []
+		currentLyricIndex.value = -1
+
+		try {
+			// 获取歌词
+			await lyricsStore.fetchLyrics(currentTrack.id, currentTrack.nId)
+
+			// 解析歌词
+			if (lyricsStore.lrc) {
+				currentLyricLines.value = lyricsStore.lrc.split('\n').filter(line => line.trim() !== '')
+			}
+
+			// 初始化歌词更新
+			if (audio.value) {
+				updateLyric()
+			}
+		} catch (error) {
+			console.error('获取歌词失败:', error)
+		}
+	},
+	{ immediate: true }
+)
+
 // 修改 showLyrics 方法
 const showLyrics = () => {
 	if (currentTrack.url === '') return
@@ -459,8 +489,15 @@ const updateLyric = () => {
 		const line = currentLyricLines.value[i]
 		if (!line || line.trim() === '') continue
 
+		// console.log('处理歌词行:', line)
 		const match = line.match(/\[(\d{2}):(\d{2})\.(\d{1,3})\](.*)/)
-		if (!match) continue
+		if (!match) {
+			// console.log('歌词行格式不匹配:', line)
+			// 显示歌手名 - 歌曲名
+			const defaultText = `${currentTrack.artist} - ${currentTrack.name}`
+			electron.updateLyric(defaultText)
+			return
+		}
 
 		const minutes = parseInt(match[1])
 		const seconds = parseInt(match[2])
@@ -468,13 +505,25 @@ const updateLyric = () => {
 		const time = minutes * 60 + seconds + milliseconds / 1000
 		const text = match[4].trim()
 
+		// console.log('解析结果:', {
+		// 	minutes,
+		// 	seconds,
+		// 	milliseconds,
+		// 	time,
+		// 	text,
+		// })
+
 		if (
 			currentTime >= time &&
 			(!currentLyricLines.value[i + 1] || currentTime < getLyricTime(currentLyricLines.value[i + 1]))
 		) {
 			if (i !== currentLyricIndex.value) {
 				currentLyricIndex.value = i
-				electron.updateLyric(text)
+				// console.log('发送新歌词到托盘:', text)
+				// 确保歌词文本不为空且不包含时间标记
+				if (text && !text.includes('[') && !text.includes(']')) {
+					electron.updateLyric(text)
+				}
 			}
 			break
 		}
@@ -720,6 +769,9 @@ const timeupdate = () => {
 	value.value = newValue
 	currentTime.setCurrentTime(curTime)
 	currentProgress.setCurrentProgress(newValue)
+
+	// 更新歌词
+	updateLyric()
 
 	// 更新播放时长
 	playDuration.value = curTime
