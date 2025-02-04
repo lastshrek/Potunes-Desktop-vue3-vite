@@ -72,7 +72,6 @@
 										:showInfo="true"
 										:titleSize="'text-2xl'"
 										:useColorThief="false"
-										@click="toPlaylist(collection.id, '')"
 									/>
 								</div>
 

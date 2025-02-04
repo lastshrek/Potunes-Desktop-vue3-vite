@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-02 18:27:16
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-20 16:52:29
+ * @LastEditTime : 2025-02-04 13:39:18
  * @FilePath     : /src/components/albumcard/AlbumCard.vue
  * @Description  : album card
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -63,7 +63,7 @@
 					{{ info }}
 				</p>
 				<div v-if="showControls" class="mt-4 flex items-center gap-2">
-					<Button class="bg-[#da5597] hover:bg-[#da5597]/90 text-white rounded-full">
+					<Button class="bg-[#da5597] hover:bg-[#da5597]/90 text-white rounded-full" @click.stop="handlePlay">
 						<svg
 							t="1691599025349"
 							class="icon h-4 w-4"
@@ -80,7 +80,7 @@
 						</svg>
 						Play
 					</Button>
-					<Button variant="ghost" class="text-white hover:bg-white/10 rounded-full">
+					<Button variant="ghost" class="text-white hover:bg-white/10 rounded-full" @click.stop="handleCreatePlaylist">
 						<Heart class="h-4 w-4" />
 					</Button>
 				</div>
@@ -111,8 +111,9 @@ import {
 } from '@/api'
 import { handlePromise } from '@/utils'
 import { useGlobalQueueStore } from '@/store/modules/globalQueue'
-
+import { useToast } from '@/composables/useToast'
 const router = useRouter()
+const toast = useToast()
 // 播放队列
 const globalQueue = useGlobalQueueStore()
 const dominantColor = ref<string>('#121212')
@@ -192,6 +193,7 @@ const getImageSrc = (url: string | ImportMetaImage): string => {
 }
 
 const handleClick = () => {
+	console.log('handleClick点击了id:', props.id, props.type)
 	const id = props.id
 	const type = props.type
 	if (type === 'fm') return
@@ -203,7 +205,7 @@ const handleClick = () => {
 }
 
 const handlePlay = async (e: Event) => {
-	console.log('点击了id:', props.id, props.type)
+	console.log('handlePlay点击了id:', props.id, props.type)
 	const type = props.type
 	const id = props.id + ''
 	e.stopPropagation()
@@ -249,6 +251,10 @@ const handlePlay = async (e: Event) => {
 	}
 	if (!tracks.length) return
 	globalQueue.setGlobalQueue(tracks, 0)
+}
+
+const handleCreatePlaylist = () => {
+	toast.info('创建播放列表功能开发中')
 }
 
 // 获取图片主色调
