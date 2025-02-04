@@ -756,12 +756,20 @@ const restorePlayState = () => {
 	try {
 		const savedQueue = localStorage.getItem('playQueue')
 		const savedIndex = localStorage.getItem('playIndex')
+		const isFirstLaunch = localStorage.getItem('isFirstLaunch')
+
+		// 如果是首次启动，设置标记并返回
+		if (!isFirstLaunch) {
+			localStorage.setItem('isFirstLaunch', 'false')
+			return
+		}
 
 		if (savedQueue && savedIndex) {
 			const queue = JSON.parse(savedQueue)
 			const index = parseInt(savedIndex)
 
 			if (queue.length > 0 && index >= 0 && index < queue.length) {
+				initial = true // 确保不会自动播放
 				globalQueue.setGlobalQueue(queue, index)
 			}
 		}
