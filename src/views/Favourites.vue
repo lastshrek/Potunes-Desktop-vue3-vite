@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-05 16:24:18
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-25 22:10:19
+ * @LastEditTime : 2025-02-04 12:27:21
  * @FilePath     : /src/views/Favourites.vue
  * @Description  : Favrourites
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -111,16 +111,6 @@
 				<template v-else>
 					<!-- Skeleton Loading -->
 					<div class="flex flex-col w-full animate-pulse">
-						<!-- 顶部信息区域 skeleton -->
-						<div class="flex items-start space-x-6">
-							<div class="w-64 h-64 bg-gray-800 rounded-lg flex-shrink-0"></div>
-							<div class="flex flex-col flex-grow">
-								<div class="h-8 bg-gray-800 rounded w-1/3 mb-2"></div>
-								<div class="h-4 bg-gray-800 rounded w-1/4 mb-4"></div>
-								<div class="h-10 bg-gray-800 rounded w-32 mt-4"></div>
-							</div>
-						</div>
-
 						<!-- 列表 skeleton -->
 						<div class="mt-8">
 							<div class="grid grid-cols-12 text-gray-400 text-sm py-2 px-4 border-b border-gray-800"></div>

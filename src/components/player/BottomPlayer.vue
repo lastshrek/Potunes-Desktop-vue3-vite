@@ -43,7 +43,7 @@
 
 			<div class="flex justify-center items-center space-x-4">
 				<!-- 喜欢按钮 -->
-				<Button v-if="isLoggedIn" variant="link" size="icon" @click="showTrackInfo">
+				<Button v-if="isLoggedIn" variant="link" size="icon" @click="toggleLike">
 					<div class="relative group">
 						<svg
 							v-if="isLiked"
@@ -323,7 +323,7 @@ import Lyrics from '@/views/Lyrics.vue'
 import { useLyricsStore } from '@/store/modules/lyrics'
 import { emitter } from '@/utils/mitt'
 import ColorThief from 'colorthief'
-import { fm } from '@/api'
+import { fm, likeTrack } from '@/api'
 // @ts-ignore
 const { electron } = window as Window & typeof globalThis & { electron: ElectronAPI }
 import { useToast } from '@/composables/useToast'
@@ -359,6 +359,9 @@ const HISTORY_STORAGE_KEY = 'playHistory'
 
 // 添加歌曲到播放历史
 const addToHistory = (track: Track) => {
+	console.log('新增的歌曲', track)
+	if (track.id) track.type = 'potunes'
+	if (!track.id) track.type = 'netease'
 	try {
 		// 获取现有历史记录
 		const historyJson = localStorage.getItem(HISTORY_STORAGE_KEY)
@@ -534,13 +537,21 @@ watch(
 
 // 监听当前歌曲变化 - 处理播放
 watch(
-	() => currentTrack.$state,
+	() => ({
+		url: currentTrack.url,
+		id: currentTrack.id,
+		nId: currentTrack.nId,
+		name: currentTrack.name,
+		artist: currentTrack.artist,
+		cover_url: currentTrack.cover_url,
+		duration: currentTrack.duration,
+	}),
 	async newValue => {
-		if (!audio.value || !newValue.url) return
+		if (!audio.value || !currentTrack.url) return
 
 		// 添加到播放历史
-		if (newValue.id) {
-			addToHistory(newValue)
+		if (currentTrack.id) {
+			addToHistory(currentTrack)
 		}
 
 		const player = audio.value
@@ -553,7 +564,7 @@ watch(
 		}
 
 		// 设置新的音频源
-		player.src = newValue.url
+		player.src = currentTrack.url
 
 		// 设置音量
 		if (volume.value === 0) {
@@ -561,7 +572,7 @@ watch(
 		} else {
 			player.volume = volume.value
 		}
-
+		console.log('播放歌曲', initial)
 		// 等待一小段时间确保音频源已经加载
 		await new Promise(resolve => setTimeout(resolve, 100))
 
@@ -802,22 +813,16 @@ const initLoginStatus = () => {
 	}
 }
 
-// 处理喜欢/取消喜欢
-const toggleLike = () => {
-	if (!currentTrack.id) return
-	if (!isLoggedIn.value) return
-	// TODO: 实现喜欢/取消喜欢的逻辑
-}
-
 const toast = useToast()
 
 // 显示歌曲信息
-const showTrackInfo = () => {
+const toggleLike = async () => {
+	if (!isLoggedIn.value) return
 	if (!currentTrack.name) {
 		toast.info('当前没有播放歌曲')
 		return
 	}
-	console.log('Current Track Info:', {
+	const track = {
 		id: currentTrack.id,
 		name: currentTrack.name,
 		artist: currentTrack.artist,
@@ -832,8 +837,16 @@ const showTrackInfo = () => {
 		nId: currentTrack.nId,
 		ar: currentTrack.ar,
 		type: currentTrack.type,
-		isLike: currentTrack.isLike,
-	})
+		isLike: !currentTrack.isLike,
+	}
+	const [res] = await handlePromise(likeTrack(track))
+	if (res) {
+		currentTrack.updateLikeStatus(true)
+		toast.success('已添加到收藏')
+	} else {
+		currentTrack.updateLikeStatus(false)
+		toast.success('已取消收藏')
+	}
 }
 
 onMounted(() => {
@@ -894,7 +907,7 @@ onUnmounted(() => {
 
 	// 移除事件监听
 	// @ts-ignore
-	window.electron?.ipcRenderer.removeListener('tray-control', handleTrayControl)
+	if (window.electron?.ipcRenderer) window.electron?.ipcRenderer.removeListener('tray-control', handleTrayControl)
 
 	emitter.off('logout')
 })

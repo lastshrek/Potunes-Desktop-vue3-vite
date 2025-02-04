@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-02 17:09:39
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-20 19:40:57
+ * @LastEditTime : 2025-01-29 19:43:39
  * @FilePath     : /src/api/index.ts
  * @Description  : api
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -117,3 +117,8 @@ export const getFavouriteTracks = () => get('v1/users/favs')
  * @description: 获取歌词
  */
 export const getLyrics = (id: number, nId?: number) => get(`/v1/lyrics/${id}/${nId}`)
+/**
+ * @description: 收藏/取消收藏
+ * @param {object} data
+ */
+export const likeTrack = (data: any) => post('/v1/tracks/like', data)
