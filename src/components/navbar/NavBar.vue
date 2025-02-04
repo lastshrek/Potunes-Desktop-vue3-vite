@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-01 21:16:34
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-21 16:23:30
+ * @LastEditTime : 2025-02-04 13:13:04
  * @FilePath     : /src/components/navbar/NavBar.vue
  * @Description  : 
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -53,7 +53,7 @@
 								<!-- 搜索输入框 -->
 								<input
 									type="text"
-									:placeholder="selectedTags.length > 0 ? '' : 'Search by artists, songs or albums'"
+									:placeholder="selectedTags.length > 0 ? '' : 'Search by artists, songs or albums『暂不可用』'"
 									v-model="searchQuery"
 									@click="handleInputClick"
 									@keydown.backspace="handleBackspace"
