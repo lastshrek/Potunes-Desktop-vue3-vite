@@ -367,11 +367,30 @@ const addToHistory = (track: Track) => {
 		const historyJson = localStorage.getItem(HISTORY_STORAGE_KEY)
 		let history: Track[] = historyJson ? JSON.parse(historyJson) : []
 
+		// 创建一个干净的对象，只包含需要的属性
+		const cleanTrack = {
+			id: track.id,
+			name: track.name,
+			artist: track.artist,
+			album: track.album,
+			cover_url: track.cover_url,
+			url: track.url,
+			duration: track.duration,
+			playlist_id: track.playlist_id,
+			original_album: track.original_album,
+			original_album_id: track.original_album_id,
+			mv: track.mv,
+			nId: track.nId,
+			ar: track.ar,
+			type: track.type,
+			isLike: track.isLike,
+		}
+
 		// 移除已存在的相同歌曲
-		history = history.filter(item => item.id !== track.id)
+		history = history.filter(item => item.id !== cleanTrack.id)
 
 		// 将新歌曲添加到开头
-		history.unshift(track)
+		history.unshift(cleanTrack)
 
 		// 限制历史记录长度
 		if (history.length > HISTORY_MAX_LENGTH) {

@@ -112,25 +112,22 @@
 					<!-- Skeleton Loading -->
 					<div class="flex flex-col w-full animate-pulse">
 						<!-- 列表 skeleton -->
-						<div class="mt-8">
-							<div class="grid grid-cols-12 text-gray-400 text-sm py-2 px-4 border-b border-gray-800"></div>
-							<div v-for="i in 10" :key="i" class="grid grid-cols-12 items-center py-3 px-4">
-								<div class="col-span-1">
-									<div class="h-4 bg-gray-800 rounded w-4"></div>
+						<div v-for="i in 10" :key="i" class="grid grid-cols-12 items-center py-3 px-4">
+							<div class="col-span-1">
+								<div class="h-4 bg-gray-800 rounded w-4"></div>
+							</div>
+							<div class="col-span-5 flex items-center space-x-3">
+								<div class="w-10 h-10 bg-gray-800 rounded"></div>
+								<div class="flex-grow">
+									<div class="h-4 bg-gray-800 rounded w-3/4 mb-2"></div>
+									<div class="h-3 bg-gray-800 rounded w-1/2"></div>
 								</div>
-								<div class="col-span-5 flex items-center space-x-3">
-									<div class="w-10 h-10 bg-gray-800 rounded"></div>
-									<div class="flex-grow">
-										<div class="h-4 bg-gray-800 rounded w-3/4 mb-2"></div>
-										<div class="h-3 bg-gray-800 rounded w-1/2"></div>
-									</div>
-								</div>
-								<div class="col-span-4">
-									<div class="h-4 bg-gray-800 rounded w-2/3"></div>
-								</div>
-								<div class="col-span-2 flex justify-end">
-									<div class="h-4 bg-gray-800 rounded w-16"></div>
-								</div>
+							</div>
+							<div class="col-span-4">
+								<div class="h-4 bg-gray-800 rounded w-2/3"></div>
+							</div>
+							<div class="col-span-2 flex justify-end">
+								<div class="h-4 bg-gray-800 rounded w-16"></div>
 							</div>
 						</div>
 					</div>
