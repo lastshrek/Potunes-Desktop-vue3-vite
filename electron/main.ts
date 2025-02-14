@@ -94,6 +94,7 @@ const createMenuBarControls = () => {
 			? path.join(process.resourcesPath, 'dist/assets/menubar/app-template.png')
 			: path.join(__dirname, '../src/assets/images/menubar/app-template.png')
 		const appIcon = nativeImage.createFromPath(appIconPath)
+		appIcon.setTemplateImage(true)
 		appTray = new Tray(appIcon.resize({ width: 18, height: 18, quality: 'best' }))
 		appTray.setToolTip('PoTunes')
 		appTray.setTitle('') // 应用图标不显示文字
@@ -130,8 +131,8 @@ const createMenuBarControls = () => {
 
 		// 创建歌词显示托盘（放在最左侧，最后创建）
 		const emptyIconPath = app.isPackaged
-			? path.join(process.resourcesPath, 'dist/assets/menubar', 'empty-template.png')
-			: path.join(__dirname, '../src/assets/images/menubar', 'empty-template.png')
+			? path.join(process.resourcesPath, 'dist/assets/menubar', 'empty.png')
+			: path.join(__dirname, '../src/assets/images/menubar', 'empty.png')
 		const emptyIcon = nativeImage.createFromPath(emptyIconPath)
 		emptyIcon.setTemplateImage(true)
 		lyricsTray = new Tray(emptyIcon.resize({ width: 18, height: 18, quality: 'best' }))
