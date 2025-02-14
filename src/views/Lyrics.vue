@@ -17,6 +17,7 @@
 			WebkitBackdropFilter: 'blur(30px)',
 			transition: 'all 0.3s ease-in-out',
 		}"
+		:class="[isOpen ? 'translate-y-0' : 'translate-y-full', 'transition-transform duration-500 ease-in-out']"
 	>
 		<!-- 添加一个半透明遮罩层 -->
 		<div class="absolute inset-0 bg-black/20"></div>
@@ -288,7 +289,7 @@
 										'opacity-50 scale-100': !isCurrentLyric(item, index),
 									}"
 									:ref="el => (lyricRefs[index] = el as HTMLElement)"
-									class="transition-all duration-300 px-4 py-2 cursor-pointer hover:opacity-100 w-full"
+									class="transition-all duration-300 px-4 py-2 cursor-pointer hover:opacity-100 w-full break-words"
 									@click="seekToTime(item.time)"
 								>
 									<p
@@ -320,6 +321,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { Button } from '@/components/ui/button'
 import { X, Play, Pause, SkipBack, SkipForward } from 'lucide-vue-next'
 import VueSlider from 'vue-slider-component'
@@ -330,13 +332,23 @@ import { useCurrentProgressStore } from '@/store/modules/currentProgress'
 import { formatTime, formatCurrentTime } from '@/utils'
 import { useLyricsStore } from '@/store/modules/lyrics'
 import { emitter } from '@/utils/mitt'
-import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
+import { computed, onMounted, watch, onUnmounted } from 'vue'
 import { useCurrentTrackStore } from '@/store/modules/currenttrack'
 import { PlayMode, usePlayModeStore } from '@/store/modules/playMode'
 import ColorThief from 'colorthief'
 import { likeTrack } from '@/api'
 import { handlePromise } from '@/utils'
 import { useToast } from '@/composables/useToast'
+
+// 定义 props
+const props = defineProps<{
+	isOpen: boolean
+}>()
+
+// 定义 emits
+const emit = defineEmits<{
+	(e: 'close'): void
+}>()
 
 interface LyricItem {
 	time: number
@@ -345,7 +357,6 @@ interface LyricItem {
 }
 
 const router = useRouter()
-defineEmits(['close'])
 const currentTrack = useCurrentTrackStore()
 const isPlaying = useIsPlayingStore().isPlaying
 const currentTimeStore = useCurrentTimeStore()
