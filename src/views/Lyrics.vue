@@ -183,10 +183,10 @@
 								</svg>
 							</Button>
 							<!-- 暂停/播放 -->
-							<Button variant="link" size="icon" class="h-12 w-12" @click="togglePlay">
+							<Button variant="link" size="icon" @click="togglePlay">
 								<svg
 									t="1691599025349"
-									v-if="!isPlaying"
+									v-if="!isPlaying.isPlaying"
 									class="icon"
 									viewBox="0 0 1024 1024"
 									version="1.1"
@@ -208,14 +208,14 @@
 									viewBox="0 0 1024 1024"
 									version="1.1"
 									xmlns="http://www.w3.org/2000/svg"
-									p-id="6673"
+									p-id="4707"
 									width="24"
 									height="24"
 								>
 									<path
-										d="M320 128A64 64 0 0 0 256 192v640a64 64 0 0 0 128 0v-640A64 64 0 0 0 320 128z m384 0A64 64 0 0 0 640 192v640a64 64 0 0 0 128 0v-640A64 64 0 0 0 704 128z"
+										d="M304.128 768V256c0-19.2 15.872-35.072 35.072-35.072h72.192c19.2 0 35.072 15.872 35.072 35.072v512c0 19.2-15.872 35.072-35.072 35.072H339.2c-19.2 0-35.072-15.872-35.072-35.072z m272.896 0V256c0-19.2 15.872-35.072 35.072-35.072h72.192c19.2 0 35.072 15.872 35.072 35.072v512c0 19.2-15.872 35.072-35.072 35.072h-72.192c-19.2 0-35.072-15.872-35.072-35.072z"
 										fill="#ffffff"
-										p-id="6674"
+										p-id="4708"
 									></path>
 								</svg>
 							</Button>
@@ -358,7 +358,7 @@ interface LyricItem {
 
 const router = useRouter()
 const currentTrack = useCurrentTrackStore()
-const isPlaying = useIsPlayingStore().isPlaying
+const isPlaying = useIsPlayingStore()
 const currentTimeStore = useCurrentTimeStore()
 const currentTime = computed(() => {
 	return currentTimeStore.currentTime
@@ -592,7 +592,7 @@ watch(
 )
 
 const togglePlay = () => {
-	useIsPlayingStore().setIsPlaying(!isPlaying)
+	isPlaying.setIsPlaying(!isPlaying.isPlaying)
 }
 
 const prev = () => {

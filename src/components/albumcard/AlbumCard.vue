@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-02 18:27:16
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-02-04 14:54:57
+ * @LastEditTime : 2025-02-16 13:11:46
  * @FilePath     : /src/components/albumcard/AlbumCard.vue
  * @Description  : album card
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -205,7 +205,6 @@ const handleClick = () => {
 }
 
 const handlePlay = async (e: Event) => {
-	console.log('handlePlay点击了id:', props.id, props.type)
 	e.preventDefault()
 	e.stopPropagation()
 	const type = props.type
@@ -248,6 +247,7 @@ const handlePlay = async (e: Event) => {
 	if (type === 'fm') {
 		const [res] = await handlePromise(fm())
 		if (!res) return
+		res.playMode = 'fm'
 		tracks = [res]
 	}
 	if (!tracks.length) return

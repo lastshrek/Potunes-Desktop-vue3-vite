@@ -293,11 +293,11 @@
 			enter-active-class="transition duration-300 ease-out"
 			enter-from-class="transform translate-y-full opacity-0"
 			enter-to-class="transform translate-y-0 opacity-100"
-			leave-active-class="transition duration-200 ease-in"
+			leave-active-class="transition duration-300 ease-in"
 			leave-from-class="transform translate-y-0 opacity-100"
 			leave-to-class="transform translate-y-full opacity-0"
 		>
-			<Lyrics v-if="showLyricsPanel" @close="showLyricsPanel = false" />
+			<Lyrics v-if="showLyricsPanel" :isOpen="showLyricsPanel" @close="showLyricsPanel = false" />
 		</Transition>
 	</div>
 </template>
@@ -384,6 +384,7 @@ const addToHistory = (track: Track) => {
 			ar: track.ar,
 			type: track.type,
 			isLike: track.isLike,
+			playMode: track.playMode ?? 'sequence',
 		}
 
 		// 移除已存在的相同歌曲
@@ -489,10 +490,8 @@ const updateLyric = () => {
 		const line = currentLyricLines.value[i]
 		if (!line || line.trim() === '') continue
 
-		// console.log('处理歌词行:', line)
 		const match = line.match(/\[(\d{2}):(\d{2})\.(\d{1,3})\](.*)/)
 		if (!match) {
-			// console.log('歌词行格式不匹配:', line)
 			// 显示歌手名 - 歌曲名
 			const defaultText = `${currentTrack.artist} - ${currentTrack.name}`
 			electron.updateLyric(defaultText)
@@ -505,21 +504,12 @@ const updateLyric = () => {
 		const time = minutes * 60 + seconds + milliseconds / 1000
 		const text = match[4].trim()
 
-		// console.log('解析结果:', {
-		// 	minutes,
-		// 	seconds,
-		// 	milliseconds,
-		// 	time,
-		// 	text,
-		// })
-
 		if (
 			currentTime >= time &&
 			(!currentLyricLines.value[i + 1] || currentTime < getLyricTime(currentLyricLines.value[i + 1]))
 		) {
 			if (i !== currentLyricIndex.value) {
 				currentLyricIndex.value = i
-				// console.log('发送新歌词到托盘:', text)
 				// 确保歌词文本不为空且不包含时间标记
 				if (text && !text.includes('[') && !text.includes(']')) {
 					electron.updateLyric(text)
@@ -787,11 +777,19 @@ const showNowPlayingList = () => {
 }
 // 设置下一首播放歌曲的索引
 const setIndex = async () => {
-	if (currentTrack.type === 'fm') {
+	if (currentTrack.playMode === 'fm') {
 		const [res] = await handlePromise(fm())
 		if (!res) return
+		// 确保新的 FM 歌曲也带有 fm playMode
+		res.playMode = 'fm'
 		globalQueue.setGlobalQueue([res], 0)
+		// 设置播放状态
+		isPlaying.setIsPlaying(true)
+		// 重置更新状态，确保新歌曲能被记录
+		hasUpdated.value = false
+		return
 	}
+
 	if (playMode.playMode == PlayMode.Sequence) {
 		// 顺序循环
 		currentIndex.setCurrentIndex(currentIndex.currentIndex + 1)
@@ -805,8 +803,6 @@ const setIndex = async () => {
 		// 单曲循环时重置更新状态
 		hasUpdated.value = false
 	}
-	console.log(currentIndex.currentIndex)
-	// TODO 更新歌曲播放次数
 }
 
 // 监听播放状态变化
@@ -963,7 +959,6 @@ const hasUpdated = ref(false)
 
 // 更新歌曲信息的函数
 const updateTrackInfo = useThrottleFn(async () => {
-	console.log('更新歌曲信息', !currentTrack.id, !currentTrack.nId)
 	if (!currentTrack.id && !currentTrack.nId) return
 	if (hasUpdated.value) return
 
@@ -988,7 +983,6 @@ const updateTrackInfo = useThrottleFn(async () => {
 		hasUpdated.value = true
 		const [res] = await handlePromise(updatePlayCount(track))
 		if (!res) return
-		console.log('更新歌曲播放信息成功')
 	} catch (error) {
 		console.error('更新歌曲播放信息失败:', error)
 	}

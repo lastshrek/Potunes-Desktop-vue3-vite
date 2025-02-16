@@ -2,7 +2,7 @@
  * @Author       : lastshrek
  * @Date         : 2023-09-03 11:43:08
  * @LastEditors  : lastshrek
- * @LastEditTime : 2025-01-21 15:00:33
+ * @LastEditTime : 2025-02-16 13:04:18
  * @FilePath     : /src/store/modules/currenttrack.ts
  * @Description  : currentTrack
  * Copyright 2023 lastshrek, All Rights Reserved.
@@ -27,6 +27,7 @@ export const useCurrentTrackStore = defineStore({
 		ar: [],
 		type: 'potunes',
 		isLike: false,
+		playMode: 'sequence',
 	}),
 	getters: {
 		getCurrentTrack(state): Track {
@@ -50,6 +51,7 @@ export const useCurrentTrackStore = defineStore({
 			this.ar = currentTrack.ar
 			this.type = currentTrack.type
 			this.isLike = currentTrack.isLike
+			this.playMode = currentTrack.playMode ?? 'sequence'
 		},
 		updateLikeStatus(isLike: boolean) {
 			this.isLike = isLike
