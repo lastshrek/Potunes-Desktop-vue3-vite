@@ -3,10 +3,12 @@
 	"private": true,
 	"version": "2.1.0",
 	"scripts": {
-		"dev": "vite --mode development",
-		"build": "vite build --mode production && electron-builder --mac",
-		"build:all": "vite build && electron-builder -mw",
-		"build:win": "vite build && electron-builder --win",
+		"dev": "vite --mode electron",
+		"dev:web": "vite --mode development",
+		"build:web": "vite build --mode production",
+		"build:electron": "vite build --mode electron && electron-builder --mac",
+		"build:all": "vite build --mode electron && electron-builder -mw",
+		"build:win": "vite build --mode electron && electron-builder --win",
 		"preview": "vite preview"
 	},
 	"dependencies": {

@@ -88,6 +88,17 @@
 			<!-- user profile -->
 			<div class="relative z-10" style="-webkit-app-region: no-drag">
 				<div class="flex items-center space-x-4">
+					<!-- 下载客户端按钮 -->
+					<Button
+						v-if="!isElectron"
+						variant="link"
+						class="text-white hover:text-[#da5597] flex items-center gap-2"
+						@click="downloadClient"
+					>
+						<Download class="w-4 h-4" />
+						下载客户端
+					</Button>
+
 					<!-- 未登录时显示登录按钮 -->
 					<Button
 						v-if="!isUserExist"
@@ -218,6 +229,7 @@ import {
 	Link,
 	LogOut,
 	UserCircle2,
+	Download,
 } from 'lucide-vue-next'
 import { toast } from '@/components/ui/toast'
 import {
@@ -240,6 +252,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import NeteaseIcon from '@/assets/images/netease.png'
 import { emitter } from '@/utils/mitt'
+import { isElectron as checkIsElectron } from '@/utils/platform'
 
 const router = useRouter()
 const route = useRoute()
@@ -541,6 +554,14 @@ watch(userInfo, newValue => {
 		userPhone.value = ''
 	}
 })
+
+// 创建响应式的 electron 环境检测
+const isElectron = ref(checkIsElectron())
+
+// 下载客户端
+const downloadClient = () => {
+	window.open('https://poche.pink', '_blank')
+}
 </script>
 
 <style scoped>

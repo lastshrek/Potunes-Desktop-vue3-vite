@@ -324,10 +324,11 @@ import { useLyricsStore } from '@/store/modules/lyrics'
 import { emitter } from '@/utils/mitt'
 import ColorThief from 'colorthief'
 import { fm, likeTrack, updatePlayCount } from '@/api'
-// @ts-ignore
-const { electron } = window as Window & typeof globalThis & { electron: ElectronAPI }
+import { getElectronAPI } from '@/utils/platform'
 import { useToast } from '@/composables/useToast'
 import { useThrottleFn } from '@vueuse/core'
+
+const electron = getElectronAPI()
 
 const currentTrack = useCurrentTrackStore()
 // const favourites = useFavouritesStore()

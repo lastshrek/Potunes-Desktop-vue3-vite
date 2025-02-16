@@ -1,0 +1,21 @@
+{
+	"name": "PoTunes",
+	"short_name": "PoTunes",
+	"description": "一个优雅的音乐播放器",
+	"start_url": "/",
+	"display": "standalone",
+	"background_color": "#000000",
+	"theme_color": "#da5597",
+	"icons": [
+		{
+			"src": "/icon-192.png",
+			"sizes": "192x192",
+			"type": "image/png"
+		},
+		{
+			"src": "/icon-512.png",
+			"sizes": "512x512",
+			"type": "image/png"
+		}
+	]
+}
