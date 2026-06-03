@@ -81,9 +81,9 @@
 						</div>
 					</div>
 
-					<!-- 加载更多 spinner -->
-					<div v-if="isLoadingMore" class="flex justify-center py-6">
-						<div class="animate-spin h-6 w-6 border-2 border-[#da5597] border-t-transparent rounded-full" />
+					<!-- 加载更多 -->
+					<div class="h-12 flex items-center justify-center">
+						<div v-show="isLoadingMore" class="animate-spin h-6 w-6 border-2 border-[#da5597] border-t-transparent rounded-full" />
 					</div>
 				</template>
 			</div>
