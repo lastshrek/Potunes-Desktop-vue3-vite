@@ -161,6 +161,7 @@ const isLoading = ref(false)
 const isLoadingMore = ref(false)
 const hasMore = ref(true)
 const page = ref(1)
+let wasNearBottom = false
 const showTrackMenuDialog = ref(false)
 const showPlaylistPicker = ref(false)
 const selectedTrack = ref<any>(null)
@@ -252,10 +253,12 @@ const confirmAddToPlaylist = async (pl: any) => {
 const handleScroll = () => {
 	const el = scrollContainer.value
 	if (!el || isLoadingMore.value || !hasMore.value) return
-	const threshold = 300
-	if (el.scrollHeight - el.scrollTop - el.clientHeight < threshold) {
+	const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 300
+	if (nearBottom && !wasNearBottom) {
+		wasNearBottom = true
 		loadMore()
 	}
+	wasNearBottom = nearBottom
 }
 
 watch(
@@ -263,6 +266,7 @@ watch(
 	(val) => {
 		if (val && typeof val === 'string') {
 			keyword.value = val
+			wasNearBottom = false
 			fetchResults(true)
 		}
 	},
