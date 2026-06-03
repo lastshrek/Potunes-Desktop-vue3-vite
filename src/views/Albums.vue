@@ -19,7 +19,7 @@
 			</div>
 		</div>
 
-		<div v-if="!isLoading" class="flex-row flex-wrap grid grid-cols-4 gap-4 w-full px-4">
+		<div v-if="!isLoading" class="flex-row flex-wrap grid grid-cols-4 gap-4 w-full px-4 pt-16">
 			<div v-for="album in albums" :key="album.id">
 				<router-link :to="{ name: 'playlist', params: { id: album.id } }">
 					<AlbumCard
@@ -36,7 +36,7 @@
 			</div>
 		</div>
 
-		<div v-else class="flex-row flex-wrap grid grid-cols-4 gap-4 w-full px-4">
+		<div v-else class="flex-row flex-wrap grid grid-cols-4 gap-4 w-full px-4 pt-16">
 			<div v-for="n in 12" :key="n" class="flex flex-col">
 				<div
 					:class="[
