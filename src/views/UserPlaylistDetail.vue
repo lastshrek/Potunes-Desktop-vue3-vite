@@ -1,7 +1,7 @@
 <template>
 	<div class="w-full">
 		<div class="bg-black w-full pt-16 pb-20 h-screen">
-			<div class="h-full overflow-y-scroll flex flex-col text-white px-6 pt-8">
+			<div class="h-full overflow-y-scroll flex flex-col text-white px-6">
 				<!-- Loading -->
 				<div v-if="isLoading" class="flex items-center justify-center pt-20">
 					<div class="animate-spin h-8 w-8 border-2 border-[#da5597] border-t-transparent rounded-full" />
