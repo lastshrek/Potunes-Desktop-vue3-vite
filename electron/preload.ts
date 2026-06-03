@@ -28,6 +28,15 @@ contextBridge.exposeInMainWorld('electron', {
 	updateSongInfo: (info: { title: string; artist: string; cover_url?: string }) => {
 		ipcRenderer.send('update-song-info', info)
 	},
+	onShowQuitHint: (callback: () => void) => {
+		ipcRenderer.on('show-quit-hint', () => callback())
+	},
+	onHideQuitHint: (callback: () => void) => {
+		ipcRenderer.on('hide-quit-hint', () => callback())
+	},
+	confirmQuit: () => {
+		ipcRenderer.send('confirm-quit')
+	},
 	openInBrowser: (url: string) => shell.openExternal(url),
 	getAssetPath,
 })

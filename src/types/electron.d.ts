@@ -19,6 +19,9 @@ interface ElectronAPI {
 	updateSongInfo: (info: { title: string; artist: string; cover_url?: string }) => void
 	showUpdateDialog: (version: string, currentVersion: string, url: string) => Promise<void>
 	openInBrowser: (url: string) => Promise<void>
+	onShowQuitHint: (callback: () => void) => void
+	onHideQuitHint: (callback: () => void) => void
+	confirmQuit: () => void
 }
 
 interface Window {

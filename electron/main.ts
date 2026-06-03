@@ -31,10 +31,8 @@ let lastLyricText = ''
 let lastCoverUrl = ''
 let appIconPath = ''
 let lastQuitTime = 0
-const QUIT_INTERVAL = 500 // 双击间隔时间（毫秒）
-let isAppActive = false
+let quitHintTimer: NodeJS.Timeout | null = null
 const isDev = process.env.NODE_ENV === 'development'
-let isWindowFocused = false
 
 const version = '2.1.0'
 Object.defineProperty(globalThis, '__APP_VERSION__', {
@@ -192,12 +190,10 @@ function createWindow() {
 
 	// 监听窗口焦点变化
 	win.on('focus', () => {
-		isWindowFocused = true
 		registerShortcuts()
 	})
 
 	win.on('blur', () => {
-		isWindowFocused = false
 		unregisterShortcuts()
 	})
 }
@@ -230,7 +226,28 @@ const createMenu = () => {
 					label: 'Quit',
 					accelerator: 'Command+Q',
 					click: () => {
-						app.quit()
+						const now = Date.now()
+						if (now - lastQuitTime <= 1000) {
+							// 第二次按下 → 退出
+							if (quitHintTimer) {
+								clearTimeout(quitHintTimer)
+								quitHintTimer = null
+							}
+							lastQuitTime = 0
+							win?.webContents.send('hide-quit-hint')
+							extendedApp.isQuitting = true
+							cleanupTrayIcons()
+							app.quit()
+						} else {
+							// 第一次按下 → 显示提示
+							lastQuitTime = now
+							win?.webContents.send('show-quit-hint')
+							quitHintTimer = setTimeout(() => {
+								quitHintTimer = null
+								lastQuitTime = 0
+								win?.webContents.send('hide-quit-hint')
+							}, 3000)
+						}
 					},
 				},
 			],
@@ -279,26 +296,8 @@ app.on('ready', () => {
 		}
 	}, 1000)
 
-	// 注册全局快捷键
-	globalShortcut.register('Command+Q', () => {
-		console.log('Command+Q 快捷键被触发')
-		// Command+Q 时直接退出应用
-		extendedApp.isQuitting = true // 标记应用正在退出
-		cleanupTrayIcons()
-		app.quit()
-	})
-
-	globalShortcut.register('Command+W', () => {
-		console.log('Command+W 快捷键被触发')
-		// Command+W 时隐藏窗口
-		if (win) {
-			win.hide()
-		}
-	})
-
-	// 检查快捷键是否注册成功
-	console.log('Command+Q registered:', globalShortcut.isRegistered('Command+Q'))
-	console.log('Command+W registered:', globalShortcut.isRegistered('Command+W'))
+	// Command+Q 已由菜单加速器处理（双击退出）
+	// Command+W 在窗口聚焦时注册
 })
 
 app.on('window-all-closed', () => {
@@ -318,6 +317,10 @@ app.on('activate', () => {
 })
 
 app.on('before-quit', () => {
+	if (quitHintTimer) {
+		clearTimeout(quitHintTimer)
+		quitHintTimer = null
+	}
 	// 标记应用正在退出
 	extendedApp.isQuitting = true
 	// 注销所有快捷键
@@ -495,6 +498,18 @@ ipcMain.on('quit-app', () => {
 	app.quit()
 })
 
+// 渲染层点击"退出"按钮确认退出
+ipcMain.on('confirm-quit', () => {
+	if (quitHintTimer) {
+		clearTimeout(quitHintTimer)
+		quitHintTimer = null
+	}
+	lastQuitTime = 0
+	extendedApp.isQuitting = true
+	cleanupTrayIcons()
+	app.quit()
+})
+
 // 处理窗口关闭
 const handleWindowClose = () => {
 	console.log('handleWindowClose 被调用，平台:', process.platform)
@@ -514,18 +529,14 @@ const handleWindowClose = () => {
 
 // 注册快捷键
 function registerShortcuts() {
-	// 只在窗口有焦点时注册 Command+Q 快捷键
-	globalShortcut.register('CommandOrControl+Q', () => {
-		const now = Date.now()
-		if (now - lastQuitTime <= QUIT_INTERVAL) {
-			app.quit()
-		} else {
-			lastQuitTime = now
-		}
+	// Cmd+Q 已由菜单加速器统一处理
+	globalShortcut.register('CommandOrControl+W', () => {
+		if (win) win.hide()
 	})
 }
 
 // 注销快捷键
 function unregisterShortcuts() {
-	globalShortcut.unregisterAll()
+	globalShortcut.unregister('CommandOrControl+Q')
+	globalShortcut.unregister('CommandOrControl+W')
 }

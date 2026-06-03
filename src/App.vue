@@ -2,6 +2,7 @@
 	<div class="bg-black min-h-screen" id="app">
 		<!-- 导航栏可拖拽 -->
 		<NavBar />
+		<QuitHint />
 		<div class="flex">
 			<LeftNav />
 			<!-- 移除所有过渡动画，直接渲染组件 -->
@@ -24,6 +25,7 @@ import BottomPlayer from '@/components/player/BottomPlayer.vue'
 import { Toaster } from '@/components/ui/toast'
 import LeftNav from '@/components/navbar/LeftNav.vue'
 import NowPlayingDrawer from '@/components/player/NowPlayingDrawer.vue'
+import QuitHint from '@/components/ui/QuitHint.vue'
 </script>
 
 <style lang="scss">

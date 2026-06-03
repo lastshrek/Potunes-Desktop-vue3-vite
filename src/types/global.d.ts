@@ -15,6 +15,9 @@ declare global {
 			updateLyric: (lyric: string) => void
 			updateSongInfo: (info: { title: string; artist: string; cover_url?: string }) => void
 			getAssetPath: (path: string) => string
+			onShowQuitHint: (callback: () => void) => void
+			onHideQuitHint: (callback: () => void) => void
+			confirmQuit: () => void
 		}
 	}
 }
