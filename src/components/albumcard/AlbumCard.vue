@@ -110,12 +110,12 @@ import {
 	neteasePlaylistDetail,
 } from '@/api'
 import { handlePromise } from '@/utils'
-import { useGlobalQueueStore } from '@/store/modules/globalQueue'
+import { usePlayerStore } from '@/store/modules/player'
 import { useToast } from '@/composables/useToast'
 const router = useRouter()
 const toast = useToast()
 // 播放队列
-const globalQueue = useGlobalQueueStore()
+const playerStore = usePlayerStore()
 const dominantColor = ref<string>('#121212')
 const dominantColorWithOpacity = computed(() => {
 	if (dominantColor.value === '#121212') {
@@ -251,7 +251,7 @@ const handlePlay = async (e: Event) => {
 		tracks = [res]
 	}
 	if (!tracks.length) return
-	globalQueue.setGlobalQueue(tracks, 0)
+	playerStore.setGlobalQueue(tracks, 0)
 }
 
 const handleCreatePlaylist = () => {

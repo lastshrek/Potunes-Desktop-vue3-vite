@@ -48,11 +48,11 @@
 					class="h-14 w-full flex justify-between md:justify-around items-center md:space-x-4 space-x-1 rounded-lg shadow-md mb-4"
 					:class="{
 						active:
-							currentTrack.type == 'netease'
-								? currentTrack.nId == item.nId
-								: !currentTrack.type
+							playerStore.currentTrack.type == 'netease'
+								? playerStore.currentTrack.nId == item.nId
+								: !playerStore.currentTrack.type
 								? false
-								: currentTrack.id == item.id,
+								: playerStore.currentTrack.id == item.id,
 					}"
 					@click="selectTrack(index)"
 				>
@@ -116,20 +116,18 @@ import { onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { neteaseArtist, neteaseArtistAlbum, neteaseArtistHotSongs } from '@/api/index'
 import { formatTime, handlePromise, showError } from '@/utils/index'
-import { useCurrentTrackStore } from '@/store/modules/currenttrack'
+import { usePlayerStore } from '@/store/modules/player'
 import HeaderTitle from '@/components/headertitle/HeaderTitle.vue'
 import AlbumCard from '@/components/albumcard/AlbumCard.vue'
 import Loading from 'vue-loading-overlay'
-import { useGlobalQueueStore } from '@/store/modules/globalQueue'
+
 import type { Track } from '@/interfaces/track'
 const isLoading = ref(true)
 const description = ref('')
 const artist_id = ref('')
 const active_el = ref(-1)
 const isModalOpen = ref(false)
-const currentTrack = useCurrentTrackStore()
-// 播放队列
-const globalQueue = useGlobalQueueStore()
+const playerStore = usePlayerStore()
 let artist = reactive({} as Artist)
 // TODO album类型
 const albums = ref([] as any[])
@@ -181,7 +179,7 @@ const toggleShowMore = () => {
 // 点击歌曲
 const selectTrack = (index: number) => {
 	playlist.currentIndex = index
-	globalQueue.setGlobalQueue(playlist.tracks, index)
+	playerStore.setGlobalQueue(playlist.tracks, index)
 	active_el.value = playlist.tracks[index].id
 	// TODO update play counts
 }

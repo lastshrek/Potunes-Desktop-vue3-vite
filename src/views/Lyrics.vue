@@ -51,13 +51,13 @@
 					>
 						<!-- 封面 -->
 						<div class="w-96 h-96 rounded-lg overflow-hidden">
-							<img :src="currentTrack?.cover_url" class="w-full h-full object-cover" />
+							<img :src="playerStore.currentTrack?.cover_url" class="w-full h-full object-cover" />
 						</div>
 
 						<!-- 歌曲信息 -->
 						<div class="text-center space-y-2">
-							<h2 class="text-2xl font-bold text-white">{{ currentTrack?.name }}</h2>
-							<p class="text-white">{{ currentTrack?.artist }}</p>
+							<h2 class="text-2xl font-bold text-white">{{ playerStore.currentTrack?.name }}</h2>
+							<p class="text-white">{{ playerStore.currentTrack?.artist }}</p>
 						</div>
 
 						<!-- 进度条 -->
@@ -86,7 +86,7 @@
 							></vue-slider>
 							<div class="flex justify-between text-sm text-white">
 								<span>{{ formatCurrentTime(currentTime) }}</span>
-								<span>{{ formatTime(currentTrack?.duration || 0) }}</span>
+								<span>{{ formatTime(playerStore.currentTrack?.duration || 0) }}</span>
 							</div>
 						</div>
 
@@ -125,7 +125,7 @@
 							<Button variant="link" size="icon" @click="repeatMode">
 								<svg
 									t="1691598118430"
-									v-if="playMode.playMode === 0 || playMode.playMode === 2"
+									v-if="playerStore.playMode === 0 || playerStore.playMode === 2"
 									class="icon"
 									viewBox="0 0 1024 1024"
 									version="1.1"
@@ -186,7 +186,7 @@
 							<Button variant="link" size="icon" @click="togglePlay">
 								<svg
 									t="1691599025349"
-									v-if="!isPlaying.isPlaying"
+									v-if="!playerStore.isPlaying"
 									class="icon"
 									viewBox="0 0 1024 1024"
 									version="1.1"
@@ -249,7 +249,7 @@
 									viewBox="0 0 20 18"
 								>
 									<path
-										:stroke="playMode.playMode === 2 ? '#da5597' : '#ffffff'"
+										:stroke="playerStore.playMode === 2 ? '#da5597' : '#ffffff'"
 										stroke-linecap="round"
 										stroke-linejoin="round"
 										stroke-width="2"
@@ -315,20 +315,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { Button } from '@/components/ui/button'
 import { X, Play, Pause, SkipBack, SkipForward } from 'lucide-vue-next'
 import VueSlider from 'vue-slider-component'
 import { useRouter } from 'vue-router'
-import { useIsPlayingStore } from '@/store/modules/isPlaying'
-import { useCurrentTimeStore } from '@/store/modules/currentTime'
-import { useCurrentProgressStore } from '@/store/modules/currentProgress'
+import { PlayMode, usePlayerStore } from '@/store/modules/player'
 import { formatTime, formatCurrentTime } from '@/utils'
 import { useLyricsStore } from '@/store/modules/lyrics'
 import { emitter } from '@/utils/mitt'
-import { computed, onMounted, watch } from 'vue'
-import { useCurrentTrackStore } from '@/store/modules/currenttrack'
-import { PlayMode, usePlayModeStore } from '@/store/modules/playMode'
 import ColorThief from 'colorthief'
 import { likeTrack } from '@/api'
 import { handlePromise } from '@/utils'
@@ -351,15 +346,11 @@ interface LyricItem {
 }
 
 const router = useRouter()
-const currentTrack = useCurrentTrackStore()
-const isPlaying = useIsPlayingStore()
-const currentTimeStore = useCurrentTimeStore()
+const playerStore = usePlayerStore()
 const currentTime = computed(() => {
-	return currentTimeStore.currentTime
+	return playerStore.currentTime
 })
 const lyricsStore = useLyricsStore()
-const currentProgress = useCurrentProgressStore()
-const playMode = usePlayModeStore()
 const toast = useToast()
 
 // 解析歌词
@@ -523,7 +514,7 @@ const getImageColor = async (imageUrl: string) => {
 
 // 监听封面变化
 watch(
-	() => currentTrack.cover_url,
+	() => playerStore.currentTrack.cover_url,
 	async newUrl => {
 		if (newUrl) {
 			await getImageColor(newUrl)
@@ -557,19 +548,19 @@ const scrollToCurrentLyric = (time: number, immediate = false) => {
 
 // 进度条拖动结束
 const dragEnd = () => {
-	if (!currentTrack.duration) return
+	if (!playerStore.currentTrack.duration) return
 
 	// 确保值在 0-100 之间
 	const clampedValue = Math.max(0, Math.min(100, value.value))
 
 	// 将毫秒转换为秒
-	const durationInSeconds = currentTrack.duration / 1000
+	const durationInSeconds = playerStore.currentTrack.duration / 1000
 	const newTime = (clampedValue / 100) * durationInSeconds
 
 	// 确保时间不超过总时长
 	const clampedTime = Math.min(newTime, durationInSeconds)
 
-	currentTimeStore.setCurrentTime(clampedTime)
+	playerStore.setCurrentTime(clampedTime)
 	if (audio.value) {
 		audio.value.currentTime = clampedTime
 	}
@@ -577,7 +568,7 @@ const dragEnd = () => {
 
 // 监听播放进度变化来更新进度条
 watch(
-	() => currentProgress.currentProgress,
+	() => playerStore.currentProgress,
 	newValue => {
 		if (isNaN(newValue)) return
 		// 确保进度值在 0-100 之间
@@ -591,7 +582,7 @@ watch(
 watch(
 	currentTime,
 	newTime => {
-		if (!currentTrack.duration) return
+		if (!playerStore.currentTrack.duration) return
 		if (!isAutoScrollPaused.value) {
 			debouncedScroll(newTime)
 		}
@@ -611,15 +602,15 @@ watch(
 )
 
 const togglePlay = () => {
-	isPlaying.setIsPlaying(!isPlaying.isPlaying)
+	playerStore.setIsPlaying(!playerStore.isPlaying)
 }
 
 const prev = () => {
-	if (currentTrack.url === '') return
+	if (playerStore.currentTrack.url === '') return
 
 	// 如果当前播放时间超过3秒，重新播放当前歌曲
 	if (audio.value && audio.value.currentTime > 3) {
-		currentTimeStore.setCurrentTime(0)
+		playerStore.setCurrentTime(0)
 		audio.value.currentTime = 0
 		return
 	}
@@ -644,27 +635,27 @@ onMounted(() => {
 
 // 添加循环模式切换方法
 const repeatMode = () => {
-	if (playMode.playMode == PlayMode.Sequence) {
-		playMode.setPlayMode(PlayMode.Repeat)
+	if (playerStore.playMode == PlayMode.Sequence) {
+		playerStore.setPlayMode(PlayMode.Repeat)
 		return
 	}
-	playMode.setPlayMode(PlayMode.Sequence)
+	playerStore.setPlayMode(PlayMode.Sequence)
 }
 
 // 添加随机播放方法
 const shuffle = () => {
-	if (playMode.playMode == PlayMode.Shuffle) {
-		usePlayModeStore().setPlayMode(PlayMode.Sequence)
+	if (playerStore.playMode == PlayMode.Shuffle) {
+		playerStore.setPlayMode(PlayMode.Sequence)
 		return
 	}
-	usePlayModeStore().setPlayMode(PlayMode.Shuffle)
+	playerStore.setPlayMode(PlayMode.Shuffle)
 }
 
 // 跳转到指定时间
 const seekToTime = (time: number) => {
-	if (!currentTrack.duration) return
+	if (!playerStore.currentTrack.duration) return
 
-	currentTimeStore.setCurrentTime(time)
+	playerStore.setCurrentTime(time)
 	if (audio.value) {
 		audio.value.currentTime = time
 	}
@@ -677,39 +668,39 @@ const isLoggedIn = computed(() => {
 
 // 检查当前歌曲是否已收藏
 const isLiked = computed(() => {
-	return currentTrack.isLike
+	return playerStore.currentTrack.isLike
 })
 
 // 处理喜欢/取消喜欢
 const toggleLike = async () => {
 	if (!isLoggedIn.value) return
-	if (!currentTrack.name) {
+	if (!playerStore.currentTrack.name) {
 		toast.info('当前没有播放歌曲')
 		return
 	}
 	const track = {
-		id: currentTrack.id,
-		name: currentTrack.name,
-		artist: currentTrack.artist,
-		album: currentTrack.album,
-		cover_url: currentTrack.cover_url,
-		url: currentTrack.url,
-		duration: currentTrack.duration,
-		playlist_id: currentTrack.playlist_id,
-		original_album: currentTrack.original_album,
-		original_album_id: currentTrack.original_album_id,
-		mv: currentTrack.mv,
-		nId: currentTrack.nId,
-		ar: currentTrack.ar,
-		type: currentTrack.type,
-		isLike: !currentTrack.isLike,
+		id: playerStore.currentTrack.id,
+		name: playerStore.currentTrack.name,
+		artist: playerStore.currentTrack.artist,
+		album: playerStore.currentTrack.album,
+		cover_url: playerStore.currentTrack.cover_url,
+		url: playerStore.currentTrack.url,
+		duration: playerStore.currentTrack.duration,
+		playlist_id: playerStore.currentTrack.playlist_id,
+		original_album: playerStore.currentTrack.original_album,
+		original_album_id: playerStore.currentTrack.original_album_id,
+		mv: playerStore.currentTrack.mv,
+		nId: playerStore.currentTrack.nId,
+		ar: playerStore.currentTrack.ar,
+		type: playerStore.currentTrack.type,
+		isLike: !playerStore.currentTrack.isLike,
 	}
 	const [res] = await handlePromise(likeTrack(track))
 	if (res) {
-		currentTrack.updateLikeStatus(true)
+		playerStore.updateLikeStatus(true)
 		toast.success('已添加到收藏')
 	} else {
-		currentTrack.updateLikeStatus(false)
+		playerStore.updateLikeStatus(false)
 		toast.success('已取消收藏')
 	}
 }

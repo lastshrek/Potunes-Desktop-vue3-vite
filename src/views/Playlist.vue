@@ -115,19 +115,19 @@
 								class="grid grid-cols-12 items-center py-3 px-4 rounded-lg group player-text"
 								:class="{
 									'bg-[#da5597] text-white':
-										currentTrack.type == 'netease' ? currentTrack.nId == item.nId : currentTrack.id == item.id,
-									'hover:bg-gray-800/50': !(currentTrack.type == 'netease'
-										? currentTrack.nId == item.nId
-										: currentTrack.id == item.id),
+										playerStore.currentTrack.type == 'netease' ? playerStore.currentTrack.nId == item.nId : playerStore.currentTrack.id == item.id,
+									'hover:bg-gray-800/50': !(playerStore.currentTrack.type == 'netease'
+										? playerStore.currentTrack.nId == item.nId
+										: playerStore.currentTrack.id == item.id),
 								}"
 								@click="selectTrack(index)"
 							>
 								<div
 									class="col-span-1 text-sm"
 									:class="{
-										'text-gray-400': !(currentTrack.type == 'netease'
-											? currentTrack.nId == item.nId
-											: currentTrack.id == item.id),
+										'text-gray-400': !(playerStore.currentTrack.type == 'netease'
+											? playerStore.currentTrack.nId == item.nId
+											: playerStore.currentTrack.id == item.id),
 									}"
 								>
 									{{ index + 1 }}
@@ -142,9 +142,9 @@
 										<div
 											class="flex text-xs mt-1"
 											:class="{
-												'text-gray-400': !(currentTrack.type == 'netease'
-													? currentTrack.nId == item.nId
-													: currentTrack.id == item.id),
+												'text-gray-400': !(playerStore.currentTrack.type == 'netease'
+													? playerStore.currentTrack.nId == item.nId
+													: playerStore.currentTrack.id == item.id),
 											}"
 										>
 											<div
@@ -163,9 +163,9 @@
 								<div
 									class="col-span-4 text-sm"
 									:class="{
-										'text-gray-400': !(currentTrack.type == 'netease'
-											? currentTrack.nId == item.nId
-											: currentTrack.id == item.id),
+										'text-gray-400': !(playerStore.currentTrack.type == 'netease'
+											? playerStore.currentTrack.nId == item.nId
+											: playerStore.currentTrack.id == item.id),
 									}"
 								>
 									{{ item.album || '-' }}
@@ -173,9 +173,9 @@
 								<div
 									class="col-span-2 flex items-center justify-end space-x-4"
 									:class="{
-										'text-gray-400': !(currentTrack.type == 'netease'
-											? currentTrack.nId == item.nId
-											: currentTrack.id == item.id),
+										'text-gray-400': !(playerStore.currentTrack.type == 'netease'
+											? playerStore.currentTrack.nId == item.nId
+											: playerStore.currentTrack.id == item.id),
 									}"
 								>
 									<span class="text-sm">{{ formatTime(item.duration) }}</span>
@@ -266,19 +266,19 @@
 								class="grid grid-cols-12 items-center py-3 px-4 rounded-lg group player-text"
 								:class="{
 									'bg-[#da5597] text-white':
-										currentTrack.type == 'netease' ? currentTrack.nId == item.nId : currentTrack.id == item.id,
-									'hover:bg-gray-800/50': !(currentTrack.type == 'netease'
-										? currentTrack.nId == item.nId
-										: currentTrack.id == item.id),
+										playerStore.currentTrack.type == 'netease' ? playerStore.currentTrack.nId == item.nId : playerStore.currentTrack.id == item.id,
+									'hover:bg-gray-800/50': !(playerStore.currentTrack.type == 'netease'
+										? playerStore.currentTrack.nId == item.nId
+										: playerStore.currentTrack.id == item.id),
 								}"
 								@click="selectTrack(index)"
 							>
 								<div
 									class="col-span-1 text-sm"
 									:class="{
-										'text-gray-400': !(currentTrack.type == 'netease'
-											? currentTrack.nId == item.nId
-											: currentTrack.id == item.id),
+										'text-gray-400': !(playerStore.currentTrack.type == 'netease'
+											? playerStore.currentTrack.nId == item.nId
+											: playerStore.currentTrack.id == item.id),
 									}"
 								>
 									{{ index + 1 }}
@@ -293,9 +293,9 @@
 										<div
 											class="flex text-xs mt-1"
 											:class="{
-												'text-gray-400': !(currentTrack.type == 'netease'
-													? currentTrack.nId == item.nId
-													: currentTrack.id == item.id),
+												'text-gray-400': !(playerStore.currentTrack.type == 'netease'
+													? playerStore.currentTrack.nId == item.nId
+													: playerStore.currentTrack.id == item.id),
 											}"
 										>
 											<div
@@ -314,9 +314,9 @@
 								<div
 									class="col-span-4 text-sm"
 									:class="{
-										'text-gray-400': !(currentTrack.type == 'netease'
-											? currentTrack.nId == item.nId
-											: currentTrack.id == item.id),
+										'text-gray-400': !(playerStore.currentTrack.type == 'netease'
+											? playerStore.currentTrack.nId == item.nId
+											: playerStore.currentTrack.id == item.id),
 									}"
 								>
 									{{ item.album || '-' }}
@@ -324,9 +324,9 @@
 								<div
 									class="col-span-2 flex items-center justify-end space-x-4"
 									:class="{
-										'text-gray-400': !(currentTrack.type == 'netease'
-											? currentTrack.nId == item.nId
-											: currentTrack.id == item.id),
+										'text-gray-400': !(playerStore.currentTrack.type == 'netease'
+											? playerStore.currentTrack.nId == item.nId
+											: playerStore.currentTrack.id == item.id),
 									}"
 								>
 									<span class="text-sm">{{ formatTime(item.duration) }}</span>
@@ -477,10 +477,8 @@ import {
 	addTrackToPlaylist,
 } from '@/api/index'
 import { formatTime, handlePromise, showError, getCurrentDate } from '@/utils/index'
-import { useCurrentTrackStore } from '@/store/modules/currenttrack'
+import { usePlayerStore } from '@/store/modules/player'
 import { Artist } from '@/interfaces/artist'
-import { useGlobalQueueStore } from '@/store/modules/globalQueue'
-import { useIsPlayingStore } from '@/store/modules/isPlaying'
 import dailyImageSrc from '@/assets/images/daily.png'
 import type { Track } from '@/interfaces/track'
 let playlist = reactive({
@@ -518,11 +516,7 @@ const showTrackMenuDialog = ref(false)
 const showPlaylistPicker = ref(false)
 const selectedTrack = ref<any>(null)
 const userPlaylists = ref<any[]>([])
-// 当前歌曲
-const currentTrack = useCurrentTrackStore()
-// 播放队列
-const globalQueue = useGlobalQueueStore()
-const isPlaying = useIsPlayingStore()
+const playerStore = usePlayerStore()
 onMounted(async () => {
 	const url = route.fullPath
 	const id = route.params.id as string
@@ -602,8 +596,8 @@ const getActiveTrack = (tracks: Track[]) => {
 	if (tracks.length == 0) return
 	for (let index = 0; index < tracks.length; index++) {
 		const element = tracks[index]
-		if (element.id === currentTrack.id) {
-			active_el.value = currentTrack.id
+		if (element.id === playerStore.currentTrack.id) {
+			active_el.value = playerStore.currentTrack.id
 			console.log('active_el', active_el.value)
 			break
 		}
@@ -619,9 +613,9 @@ const handleArtistClick = (artistId: number) => {
 }
 const selectTrack = (index: number) => {
 	playlist.currentIndex = index
-	globalQueue.setGlobalQueue(playlist.tracks, index)
+	playerStore.setGlobalQueue(playlist.tracks, index)
 	active_el.value = playlist.tracks[index].id
-	isPlaying.setIsPlaying(true)
+	playerStore.setIsPlaying(true)
 }
 watch(
 	() => playlist,
@@ -634,7 +628,7 @@ watch(
 	{ deep: true }
 )
 watch(
-	() => globalQueue,
+	() => playerStore.queue,
 	() => {
 		getActiveTrack(playlist.tracks)
 	},
@@ -671,13 +665,13 @@ const confirmAddToPlaylist = async (pl: any) => {
 // 播放全部
 const playAll = () => {
 	if (playlist.tracks.length === 0) return
-	globalQueue.setGlobalQueue(playlist.tracks, 0)
+	playerStore.setGlobalQueue(playlist.tracks, 0)
 }
 // 随机播放
 const playRandom = () => {
 	if (playlist.tracks.length === 0) return
 	const randomIndex = Math.floor(Math.random() * playlist.tracks.length)
-	globalQueue.setGlobalQueue(playlist.tracks, randomIndex)
+	playerStore.setGlobalQueue(playlist.tracks, randomIndex)
 }
 </script>
 

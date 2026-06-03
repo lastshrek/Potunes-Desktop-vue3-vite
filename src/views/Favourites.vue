@@ -47,9 +47,9 @@
 						class="grid grid-cols-12 items-center py-3 px-4 rounded-lg group player-text"
 						:class="{
 							'bg-[#da5597] text-white hover:bg-[#da5597]':
-								currentTrack.type == 'netease' ? currentTrack.nId == item.nId : currentTrack.id == item.id,
+								playerStore.currentTrack.type == 'netease' ? playerStore.currentTrack.nId == item.nId : playerStore.currentTrack.id == item.id,
 							'hover:bg-gray-800/50':
-								currentTrack.type == 'netease' ? currentTrack.nId != item.nId : currentTrack.id != item.id,
+								playerStore.currentTrack.type == 'netease' ? playerStore.currentTrack.nId != item.nId : playerStore.currentTrack.id != item.id,
 						}"
 						@click="selectTrack(index)"
 					>
@@ -64,9 +64,9 @@
 									class="flex text-xs mt-1"
 									:class="{
 										'text-white':
-											currentTrack.type == 'netease' ? currentTrack.nId == item.nId : currentTrack.id == item.id,
+											playerStore.currentTrack.type == 'netease' ? playerStore.currentTrack.nId == item.nId : playerStore.currentTrack.id == item.id,
 										'text-gray-400':
-											currentTrack.type == 'netease' ? currentTrack.nId != item.nId : currentTrack.id != item.id,
+											playerStore.currentTrack.type == 'netease' ? playerStore.currentTrack.nId != item.nId : playerStore.currentTrack.id != item.id,
 									}"
 								>
 									<div
@@ -85,9 +85,9 @@
 							class="col-span-4 text-sm"
 							:class="{
 								'text-white':
-									currentTrack.type == 'netease' ? currentTrack.nId == item.nId : currentTrack.id == item.id,
+									playerStore.currentTrack.type == 'netease' ? playerStore.currentTrack.nId == item.nId : playerStore.currentTrack.id == item.id,
 								'text-gray-400':
-									currentTrack.type == 'netease' ? currentTrack.nId != item.nId : currentTrack.id != item.id,
+									playerStore.currentTrack.type == 'netease' ? playerStore.currentTrack.nId != item.nId : playerStore.currentTrack.id != item.id,
 							}"
 						>
 							{{ item.album || '-' }}
@@ -98,9 +98,9 @@
 								class="text-sm"
 								:class="{
 									'text-white':
-										currentTrack.type == 'netease' ? currentTrack.nId == item.nId : currentTrack.id == item.id,
+										playerStore.currentTrack.type == 'netease' ? playerStore.currentTrack.nId == item.nId : playerStore.currentTrack.id == item.id,
 									'text-gray-400':
-										currentTrack.type == 'netease' ? currentTrack.nId != item.nId : currentTrack.id != item.id,
+										playerStore.currentTrack.type == 'netease' ? playerStore.currentTrack.nId != item.nId : playerStore.currentTrack.id != item.id,
 								}"
 							>
 								{{ formatTime(item.duration) }}
@@ -139,23 +139,21 @@
 
 <script setup lang="ts">
 import { formatTime, handlePromise } from '@/utils/index'
-import { useGlobalQueueStore } from '@/store/modules/globalQueue'
+import { usePlayerStore } from '@/store/modules/player'
 import { useRouter } from 'vue-router'
 import { onMounted, ref } from 'vue'
 import { getFavouriteTracks } from '@/api/index'
-import { useCurrentTrackStore } from '@/store/modules/currenttrack'
+
 
 const router = useRouter()
-const globalQueue = useGlobalQueueStore()
-// 当前歌曲
-const currentTrack = useCurrentTrackStore()
+const playerStore = usePlayerStore()
 const fav_tracks: any = ref([])
 const isLoading = ref(true)
 
 // 播放全部
 const playAll = () => {
 	if (fav_tracks.value.length === 0) return
-	globalQueue.setGlobalQueue(fav_tracks.value, 0)
+	playerStore.setGlobalQueue(fav_tracks.value, 0)
 }
 
 // 处理歌手点击
@@ -179,7 +177,7 @@ onMounted(async () => {
 })
 
 const selectTrack = (index: number) => {
-	globalQueue.setGlobalQueue(fav_tracks.value, index)
+	playerStore.setGlobalQueue(fav_tracks.value, index)
 }
 </script>
 

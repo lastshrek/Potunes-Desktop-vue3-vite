@@ -108,16 +108,15 @@
 
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
-import { useCurrentTrackStore } from '@/store/modules/currenttrack'
+import { usePlayerStore } from '@/store/modules/player'
 import { Artist } from '@/interfaces/artist'
-import { useGlobalQueueStore } from '@/store/modules/globalQueue'
 import { useRouter } from 'vue-router'
 import { formatTime, handlePromise, showError } from '@/utils/index'
 import { weeklyTrends } from '@/api/index'
 import hotImageSrc from '@/assets/images/hot.png'
 import type { Track } from '@/interfaces/track'
 
-const currentTrack = useCurrentTrackStore()
+const playerStore = usePlayerStore()
 const todayFull = ref('')
 const weekago = ref('')
 const isLoading = ref(true)
@@ -125,8 +124,6 @@ const isLoading = ref(true)
 const active_el = ref(-1)
 // 路由
 const router = useRouter()
-// 播放队列
-const globalQueue = useGlobalQueueStore()
 let playlist = reactive({
 	title: '',
 	cover: '',
@@ -160,7 +157,7 @@ onMounted(async () => {
 // 点击歌曲
 const selectTrack = (index: number) => {
 	playlist.currentIndex = index
-	globalQueue.setGlobalQueue(playlist.tracks, index)
+	playerStore.setGlobalQueue(playlist.tracks, index)
 	active_el.value = playlist.tracks[index].id
 	// TODO update play counts
 }
@@ -179,7 +176,7 @@ const handleAlbumClick = (albumId?: number) => {
 }
 
 const isCurrentTrack = (item: Track) => {
-	return currentTrack.type == 'netease' ? currentTrack.nId == item.nId : currentTrack.id == item.id
+	return playerStore.currentTrack.type == 'netease' ? playerStore.currentTrack.nId == item.nId : playerStore.currentTrack.id == item.id
 }
 </script>
 

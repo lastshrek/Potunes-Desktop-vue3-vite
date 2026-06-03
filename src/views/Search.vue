@@ -146,13 +146,11 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { search, getUserPlaylists, addTrackToPlaylist } from '@/api'
 import { useToast } from '@/composables/useToast'
-import { useGlobalQueueStore } from '@/store/modules/globalQueue'
-import { useCurrentTrackStore } from '@/store/modules/currenttrack'
+import { usePlayerStore } from '@/store/modules/player'
 
 const route = useRoute()
 const toast = useToast()
-const globalQueue = useGlobalQueueStore()
-const currentTrack = useCurrentTrackStore()
+const playerStore = usePlayerStore()
 
 const scrollContainer = ref<HTMLElement | null>(null)
 const keyword = ref('')
@@ -177,9 +175,9 @@ const formatTime = (ms: number) => {
 }
 
 const isCurrentTrack = (item: any) => {
-	return currentTrack.type === 'netease'
-		? currentTrack.nId === item.nId
-		: currentTrack.id === item.id
+	return playerStore.currentTrack.type === 'netease'
+		? playerStore.currentTrack.nId === item.nId
+		: playerStore.currentTrack.id === item.id
 }
 
 const fetchResults = async (reset: boolean) => {
@@ -219,7 +217,7 @@ const loadMore = () => {
 }
 
 const selectTrack = (index: number) => {
-	globalQueue.setGlobalQueue(tracks.value, index)
+	playerStore.setGlobalQueue(tracks.value, index)
 }
 
 const showTrackMenu = (e: MouseEvent, track: any) => {

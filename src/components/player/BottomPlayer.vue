@@ -1,17 +1,17 @@
 <template>
 	<div
 		class="bg-black shadow-lg text-white fixed bottom-0 left-0 z-50 w-full h-20 flex justify-evenly items-center border-t border-gray-900"
-		v-show="isShowMiniPlayer"
+		v-show="playerStore.isShowMiniPlayer"
 	>
 		<!-- cover & meta -->
 		<div class="flex items-center overflow-hidden w-full h-full justify-start flex-1">
 			<div class="ml-4 w-12 h-12 rounded overflow-hidden">
-				<img :src="currentTrack.cover_url" />
+				<img :src="playerStore.currentTrack.cover_url" />
 			</div>
 			<div class="ml-3 flex flex-col" @click="showLyrics">
-				<div v-text="currentTrack.name" class="text-xs overflow-hidden whitespace-nowrap overflow-ellipsis"></div>
+				<div v-text="playerStore.currentTrack.name" class="text-xs overflow-hidden whitespace-nowrap overflow-ellipsis"></div>
 				<div
-					v-text="currentTrack.artist"
+					v-text="playerStore.currentTrack.artist"
 					class="text-xs text-gray-400 overflow-hidden whitespace-nowrap overflow-ellipsis"
 				></div>
 			</div>
@@ -77,7 +77,7 @@
 				<Button variant="link" size="icon" @click="repeatMode">
 					<svg
 						t="1691598118430"
-						v-if="playMode.playMode === 0 || playMode.playMode === 2"
+						v-if="playerStore.playMode === 0 || playerStore.playMode === 2"
 						class="icon"
 						viewBox="0 0 1024 1024"
 						version="1.1"
@@ -139,7 +139,7 @@
 				<Button variant="link" size="icon" ref="play" @click="play">
 					<svg
 						t="1691599025349"
-						v-if="!isPlaying.isPlaying"
+						v-if="!playerStore.isPlaying"
 						class="icon"
 						viewBox="0 0 1024 1024"
 						version="1.1"
@@ -195,7 +195,7 @@
 				<!-- 随机 -->
 				<Button variant="link" size="icon" @click="shuffle">
 					<svg
-						v-if="playMode.playMode !== 2"
+						v-if="playerStore.playMode !== 2"
 						t="1691599262562"
 						class="icon"
 						viewBox="0 0 1024 1024"
@@ -288,7 +288,7 @@
 				</Button>
 			</div>
 		</div>
-		<audio :src="currentTrack.url" ref="audio" @timeupdate="timeupdate" @ended="end"></audio>
+		<audio :src="playerStore.currentTrack.url" ref="audio" @timeupdate="timeupdate" @ended="end"></audio>
 		<Transition
 			enter-active-class="transition duration-300 ease-out"
 			enter-from-class="transform translate-y-full opacity-0"
@@ -304,16 +304,9 @@
 
 <script setup lang="ts">
 import { onMounted, ref, watch, onUnmounted, computed } from 'vue'
-import { useCurrentTrackStore } from '@/store/modules/currenttrack'
-import { useIsShowMiniPlayerStore } from '@/store/modules/isShowMiniPlayer'
-import { useGlobalQueueStore } from '@/store/modules/globalQueue'
-import { useIsPlayingStore } from '@/store/modules/isPlaying'
-import { PlayMode, usePlayModeStore } from '@/store/modules/playMode'
-import { useCurrentIndexStore } from '@/store/modules/currentIndex'
-import { useCurrentTimeStore } from '@/store/modules/currentTime'
+import { PlayMode, usePlayerStore } from '@/store/modules/player'
 import { getRandomIntInclusive, handlePromise } from '@/utils'
 import { parseLrc } from '@/utils/lrc'
-import { useCurrentProgressStore } from '@/store/modules/currentProgress'
 import { Button } from '@/components/ui/button'
 import { ListMusic, Volume1, Volume2, VolumeOff } from 'lucide-vue-next'
 import VueSlider from 'vue-slider-component'
@@ -332,18 +325,10 @@ import type { Track } from '@/interfaces/track'
 
 const electron = getElectronAPI()
 
-const currentTrack = useCurrentTrackStore()
-// const favourites = useFavouritesStore()
-const isShowMiniPlayer = useIsShowMiniPlayerStore()
+const playerStore = usePlayerStore()
 const volume = ref(JSON.parse(localStorage.getItem('volumeBeforeMuted') || '1'))
 const value = ref(0)
 const audio = ref<HTMLAudioElement | null>(null)
-const isPlaying = useIsPlayingStore()
-const playMode = usePlayModeStore()
-const currentIndex = useCurrentIndexStore()
-const globalQueue = useGlobalQueueStore()
-const currentTime = useCurrentTimeStore()
-const currentProgress = useCurrentProgressStore()
 const lyricsStore = useLyricsStore()
 let initial = true
 // 歌词相关状态
@@ -434,7 +419,7 @@ const getImageColor = async (imageUrl: string) => {
 
 // 监听封面变化
 watch(
-	() => currentTrack.cover_url,
+	() => playerStore.currentTrack.cover_url,
 	async newUrl => {
 		if (newUrl) {
 			await getImageColor(newUrl)
@@ -448,16 +433,16 @@ watch(
 
 // 监听当前歌曲变化 - 处理歌词
 watch(
-	() => currentTrack.id,
+	() => playerStore.currentTrack.id,
 	async () => {
-		if (!currentTrack.id) return
+		if (!playerStore.currentTrack.id) return
 
 		// 清空当前歌词
 		currentLyricIndex.value = -1
 
 		try {
 			// 获取歌词
-			await lyricsStore.fetchLyrics(currentTrack.id, currentTrack.nId)
+			await lyricsStore.fetchLyrics(playerStore.currentTrack.id, playerStore.currentTrack.nId)
 
 			// 初始化歌词更新
 			if (audio.value) {
@@ -472,7 +457,7 @@ watch(
 
 // 修改 showLyrics 方法
 const showLyrics = () => {
-	if (currentTrack.url === '') return
+	if (playerStore.currentTrack.url === '') return
 	showLyricsPanel.value = true
 }
 
@@ -483,7 +468,7 @@ const updateLyric = () => {
 
 	const lines = parseLrc(lyricsStore.lrc)
 	if (!lines.length) {
-		const defaultText = `${currentTrack.artist} - ${currentTrack.name}`
+		const defaultText = `${playerStore.currentTrack.artist} - ${playerStore.currentTrack.name}`
 		electron.updateLyric(defaultText)
 		return
 	}
@@ -541,7 +526,7 @@ watch(
 
 // 监听当前歌曲变化 - 更新歌曲信息
 watch(
-	() => currentTrack.$state,
+	() => playerStore.currentTrack,
 	newSong => {
 		// 清除当前歌词
 		electron.updateLyric('')
@@ -567,20 +552,20 @@ watch(
 // 监听当前歌曲变化 - 处理播放
 watch(
 	() => ({
-		url: currentTrack.url,
-		id: currentTrack.id,
-		nId: currentTrack.nId,
-		name: currentTrack.name,
-		artist: currentTrack.artist,
-		cover_url: currentTrack.cover_url,
-		duration: currentTrack.duration,
+		url: playerStore.currentTrack.url,
+		id: playerStore.currentTrack.id,
+		nId: playerStore.currentTrack.nId,
+		name: playerStore.currentTrack.name,
+		artist: playerStore.currentTrack.artist,
+		cover_url: playerStore.currentTrack.cover_url,
+		duration: playerStore.currentTrack.duration,
 	}),
 	async newValue => {
-		if (!audio.value || !currentTrack.url) return
+		if (!audio.value || !playerStore.currentTrack.url) return
 
 		// 添加到播放历史
-		if (currentTrack.id || currentTrack.nId) {
-			addToHistory(currentTrack)
+		if (playerStore.currentTrack.id || playerStore.currentTrack.nId) {
+			addToHistory(playerStore.currentTrack)
 		}
 
 		const player = audio.value
@@ -593,7 +578,7 @@ watch(
 		}
 
 		// 设置新的音频源
-		player.src = currentTrack.url
+		player.src = playerStore.currentTrack.url
 
 		// 设置音量
 		if (volume.value === 0) {
@@ -627,10 +612,10 @@ watch(
 		try {
 			// 尝试播放
 			await player.play()
-			isPlaying.setIsPlaying(true)
+			playerStore.setIsPlaying(true)
 		} catch (err) {
 			console.error('播放出错:', err)
-			isPlaying.setIsPlaying(false)
+			playerStore.setIsPlaying(false)
 		}
 	},
 	{ deep: true }
@@ -641,19 +626,19 @@ const dragEnd = () => {
 	if (value.value == 0) return
 	const newTime = (value.value / 100) * audio.value!.duration
 	audio.value!.currentTime = newTime
-	currentTime.setCurrentTime(newTime)
+	playerStore.setCurrentTime(newTime)
 }
 // 设置循环格式
 const repeatMode = () => {
-	if (playMode.playMode == PlayMode.Sequence) {
-		playMode.setPlayMode(PlayMode.Repeat)
+	if (playerStore.playMode == PlayMode.Sequence) {
+		playerStore.setPlayMode(PlayMode.Repeat)
 		return
 	}
-	playMode.setPlayMode(PlayMode.Sequence)
+	playerStore.setPlayMode(PlayMode.Sequence)
 }
 // 上一首
 const prev = () => {
-	if (currentTrack.url === '') return
+	if (playerStore.currentTrack.url === '') return
 
 	// 如果当前播放时间超过3秒，重新播放当前歌曲
 	if (audio.value && audio.value.currentTime > 3) {
@@ -664,19 +649,19 @@ const prev = () => {
 	}
 
 	// 否则播放上一首
-	currentIndex.setCurrentIndex(currentIndex.currentIndex - 1)
+	playerStore.setCurrentIndex(playerStore.currentIndex - 1)
 }
 // 播放/暂停
 const play = async () => {
-	if (currentTrack.url === '') return
+	if (playerStore.currentTrack.url === '') return
 
 	try {
-		if (isPlaying.isPlaying) {
+		if (playerStore.isPlaying) {
 			await audio.value?.pause()
 		} else {
 			await audio.value?.play()
 		}
-		isPlaying.setIsPlaying(!isPlaying.isPlaying)
+		playerStore.setIsPlaying(!playerStore.isPlaying)
 	} catch (err) {
 		console.error('播放切换失败:', err)
 	}
@@ -687,11 +672,11 @@ const next = () => {
 }
 // 随机播放
 const shuffle = () => {
-	if (playMode.playMode == PlayMode.Shuffle) {
-		usePlayModeStore().setPlayMode(PlayMode.Sequence)
+	if (playerStore.playMode == PlayMode.Shuffle) {
+		playerStore.setPlayMode(PlayMode.Sequence)
 		return
 	}
-	usePlayModeStore().setPlayMode(PlayMode.Shuffle)
+	playerStore.setPlayMode(PlayMode.Shuffle)
 }
 // 静音
 const mute = () => {
@@ -715,7 +700,7 @@ const volumeChanged = () => {
 // 播放结束
 const end = () => {
 	// 如果是单曲循环，重置更新状态
-	if (playMode.playMode === PlayMode.Repeat) {
+	if (playerStore.playMode === PlayMode.Repeat) {
 		hasUpdated.value = false
 	}
 	setIndex()
@@ -728,8 +713,8 @@ const timeupdate = () => {
 	const newValue = (curTime / duration) * 100
 	if (isNaN(newValue)) return
 	value.value = newValue
-	currentTime.setCurrentTime(curTime)
-	currentProgress.setCurrentProgress(newValue)
+	playerStore.setCurrentTime(curTime)
+	playerStore.setCurrentProgress(newValue)
 
 	// 更新歌词
 	updateLyric()
@@ -748,26 +733,26 @@ const showNowPlayingList = () => {
 }
 // 设置下一首播放歌曲的索引
 const setIndex = async () => {
-	if (currentTrack.playMode === 'fm') {
+	if (playerStore.currentTrack.playMode === 'fm') {
 		const [res] = await handlePromise(fm())
 		if (!res) return
 		// 确保新的 FM 歌曲也带有 fm playMode
 		res.playMode = 'fm'
-		globalQueue.setGlobalQueue([res], 0)
+		playerStore.setGlobalQueue([res], 0)
 		// 设置播放状态
-		isPlaying.setIsPlaying(true)
+		playerStore.setIsPlaying(true)
 		// 重置更新状态，确保新歌曲能被记录
 		hasUpdated.value = false
 		return
 	}
 
-	if (playMode.playMode == PlayMode.Sequence) {
+	if (playerStore.playMode == PlayMode.Sequence) {
 		// 顺序循环
-		currentIndex.setCurrentIndex(currentIndex.currentIndex + 1)
-	} else if (playMode.playMode == PlayMode.Shuffle) {
+		playerStore.setCurrentIndex(playerStore.currentIndex + 1)
+	} else if (playerStore.playMode == PlayMode.Shuffle) {
 		// 随机播放
-		const index = getRandomIntInclusive(0, globalQueue.globalQueue.length - 1)
-		currentIndex.setCurrentIndex(index)
+		const index = getRandomIntInclusive(0, playerStore.globalQueue.length - 1)
+		playerStore.setCurrentIndex(index)
 	} else {
 		audio.value!.currentTime = 0
 		audio.value!.play()
@@ -778,7 +763,7 @@ const setIndex = async () => {
 
 // 监听播放状态变化
 watch(
-	() => isPlaying.isPlaying,
+	() => playerStore.isPlaying,
 	async newValue => {
 		// 更新菜单栏播放状态
 		electron.updatePlayState(newValue)
@@ -787,7 +772,7 @@ watch(
 			navigator.mediaSession.playbackState = newValue ? 'playing' : 'paused'
 		}
 
-		if (!audio.value || currentTrack.url === '') return
+		if (!audio.value || playerStore.currentTrack.url === '') return
 
 		try {
 			if (newValue) {
@@ -797,7 +782,7 @@ watch(
 			}
 		} catch (err) {
 			console.error('播放状态切换失败:', err)
-			isPlaying.setIsPlaying(!newValue)
+			playerStore.setIsPlaying(!newValue)
 		}
 	},
 	{ deep: true }
@@ -822,7 +807,7 @@ const restorePlayState = () => {
 
 			if (queue.length > 0 && index >= 0 && index < queue.length) {
 				initial = true // 确保不会自动播放
-				globalQueue.setGlobalQueue(queue, index)
+				playerStore.setGlobalQueue(queue, index)
 			}
 		}
 	} catch (error) {
@@ -833,8 +818,8 @@ const restorePlayState = () => {
 // 保存播放状态到 localStorage
 const savePlayState = () => {
 	try {
-		localStorage.setItem('playQueue', JSON.stringify(globalQueue.queue))
-		localStorage.setItem('playIndex', currentIndex.currentIndex.toString())
+		localStorage.setItem('playQueue', JSON.stringify(playerStore.queue))
+		localStorage.setItem('playIndex', playerStore.currentIndex.toString())
 	} catch (error) {
 		console.error('保存播放状态失败:', error)
 	}
@@ -842,7 +827,7 @@ const savePlayState = () => {
 
 // 监听播放队列和索引变化
 watch(
-	[() => globalQueue.queue, () => currentIndex.currentIndex],
+	[() => playerStore.queue, () => playerStore.currentIndex],
 	() => {
 		savePlayState()
 	},
@@ -853,20 +838,20 @@ watch(
 const handleTrayControl = (event: Electron.IpcRendererEvent, command: string) => {
 	switch (command) {
 		case 'toggle-play':
-			if (isPlaying.isPlaying) {
-				isPlaying.setIsPlaying(false)
+			if (playerStore.isPlaying) {
+				playerStore.setIsPlaying(false)
 			} else {
-				isPlaying.setIsPlaying(true)
+				playerStore.setIsPlaying(true)
 			}
 			break
 		case 'prev-track':
-			if (currentIndex.currentIndex > 0) {
-				currentIndex.setCurrentIndex(currentIndex.currentIndex - 1)
+			if (playerStore.currentIndex > 0) {
+				playerStore.setCurrentIndex(playerStore.currentIndex - 1)
 			}
 			break
 		case 'next-track':
-			if (currentIndex.currentIndex < globalQueue.queue.length - 1) {
-				currentIndex.setCurrentIndex(currentIndex.currentIndex + 1)
+			if (playerStore.currentIndex < playerStore.queue.length - 1) {
+				playerStore.setCurrentIndex(playerStore.currentIndex + 1)
 			}
 			break
 	}
@@ -876,18 +861,18 @@ const handleTrayControl = (event: Electron.IpcRendererEvent, command: string) =>
 function updateMediaSession() {
 	if (!('mediaSession' in navigator)) return
 	navigator.mediaSession.metadata = new MediaMetadata({
-		title: currentTrack.name || '',
-		artist: currentTrack.ar?.map((a: { name: string }) => a.name).join('/') || '',
-		album: currentTrack.album || '',
-		artwork: currentTrack.cover_url
-			? [{ src: currentTrack.cover_url, sizes: '512x512', type: 'image/jpeg' }]
+		title: playerStore.currentTrack.name || '',
+		artist: playerStore.currentTrack.ar?.map((a: { name: string }) => a.name).join('/') || '',
+		album: playerStore.currentTrack.album || '',
+		artwork: playerStore.currentTrack.cover_url
+			? [{ src: playerStore.currentTrack.cover_url, sizes: '512x512', type: 'image/jpeg' }]
 			: [],
 	})
 }
 
 // 检查当前歌曲是否已收藏
 const isLiked = computed(() => {
-	return currentTrack.isLike
+	return playerStore.currentTrack.isLike
 })
 
 // 检查登录状态
@@ -910,33 +895,33 @@ const toast = useToast()
 // 显示歌曲信息
 const toggleLike = async () => {
 	if (!isLoggedIn.value) return
-	if (!currentTrack.name) {
+	if (!playerStore.currentTrack.name) {
 		toast.info('当前没有播放歌曲')
 		return
 	}
 	const track = {
-		id: currentTrack.id,
-		name: currentTrack.name,
-		artist: currentTrack.artist,
-		album: currentTrack.album,
-		cover_url: currentTrack.cover_url,
-		url: currentTrack.url,
-		duration: currentTrack.duration,
-		playlist_id: currentTrack.playlist_id,
-		original_album: currentTrack.original_album,
-		original_album_id: currentTrack.original_album_id,
-		mv: currentTrack.mv,
-		nId: currentTrack.nId,
-		ar: currentTrack.ar,
-		type: currentTrack.type,
-		isLike: !currentTrack.isLike,
+		id: playerStore.currentTrack.id,
+		name: playerStore.currentTrack.name,
+		artist: playerStore.currentTrack.artist,
+		album: playerStore.currentTrack.album,
+		cover_url: playerStore.currentTrack.cover_url,
+		url: playerStore.currentTrack.url,
+		duration: playerStore.currentTrack.duration,
+		playlist_id: playerStore.currentTrack.playlist_id,
+		original_album: playerStore.currentTrack.original_album,
+		original_album_id: playerStore.currentTrack.original_album_id,
+		mv: playerStore.currentTrack.mv,
+		nId: playerStore.currentTrack.nId,
+		ar: playerStore.currentTrack.ar,
+		type: playerStore.currentTrack.type,
+		isLike: !playerStore.currentTrack.isLike,
 	}
 	const [res] = await handlePromise(likeTrack(track))
 	if (res) {
-		currentTrack.updateLikeStatus(true)
+		playerStore.updateLikeStatus(true)
 		toast.success('已添加到收藏')
 	} else {
-		currentTrack.updateLikeStatus(false)
+		playerStore.updateLikeStatus(false)
 		toast.success('已取消收藏')
 	}
 }
@@ -947,26 +932,26 @@ const hasUpdated = ref(false)
 
 // 更新歌曲信息的函数
 const updateTrackInfo = useThrottleFn(async () => {
-	if (!currentTrack.id && !currentTrack.nId) return
+	if (!playerStore.currentTrack.id && !playerStore.currentTrack.nId) return
 	if (hasUpdated.value) return
 
 	try {
 		const track = {
-			id: currentTrack.id,
-			name: currentTrack.name,
-			artist: currentTrack.artist,
-			album: currentTrack.album,
-			cover_url: currentTrack.cover_url,
-			url: currentTrack.url,
-			duration: currentTrack.duration,
-			playlist_id: currentTrack.playlist_id,
-			original_album: currentTrack.original_album,
-			original_album_id: currentTrack.original_album_id,
-			mv: currentTrack.mv,
-			nId: currentTrack.nId,
-			ar: currentTrack.ar,
-			type: currentTrack.id ? 'potunes' : 'netease',
-			isLike: currentTrack.isLike,
+			id: playerStore.currentTrack.id,
+			name: playerStore.currentTrack.name,
+			artist: playerStore.currentTrack.artist,
+			album: playerStore.currentTrack.album,
+			cover_url: playerStore.currentTrack.cover_url,
+			url: playerStore.currentTrack.url,
+			duration: playerStore.currentTrack.duration,
+			playlist_id: playerStore.currentTrack.playlist_id,
+			original_album: playerStore.currentTrack.original_album,
+			original_album_id: playerStore.currentTrack.original_album_id,
+			mv: playerStore.currentTrack.mv,
+			nId: playerStore.currentTrack.nId,
+			ar: playerStore.currentTrack.ar,
+			type: playerStore.currentTrack.id ? 'potunes' : 'netease',
+			isLike: playerStore.currentTrack.isLike,
 		}
 		hasUpdated.value = true
 		const [res] = await handlePromise(updatePlayCount(track))
@@ -978,7 +963,7 @@ const updateTrackInfo = useThrottleFn(async () => {
 
 // 当切换歌曲时重置状态
 watch(
-	() => currentTrack.id,
+	() => playerStore.currentTrack.id,
 	() => {
 		playDuration.value = 0
 		hasUpdated.value = false
@@ -1003,10 +988,10 @@ onMounted(() => {
 	emitter.on('prev', prev)
 
 	// 如果当前应该播放，尝试恢复播放
-	if (isPlaying.isPlaying && audio.value && currentTrack.url) {
+	if (playerStore.isPlaying && audio.value && playerStore.currentTrack.url) {
 		audio.value.play().catch(err => {
 			console.error('恢复播放失败:', err)
-			isPlaying.setIsPlaying(false)
+			playerStore.setIsPlaying(false)
 		})
 	}
 
@@ -1018,8 +1003,8 @@ onMounted(() => {
 
 	// 注册 Media Session action handlers
 	if ('mediaSession' in navigator) {
-		navigator.mediaSession.setActionHandler('play', () => isPlaying.setIsPlaying(true))
-		navigator.mediaSession.setActionHandler('pause', () => isPlaying.setIsPlaying(false))
+		navigator.mediaSession.setActionHandler('play', () => playerStore.setIsPlaying(true))
+		navigator.mediaSession.setActionHandler('pause', () => playerStore.setIsPlaying(false))
 		navigator.mediaSession.setActionHandler('previoustrack', prev)
 		navigator.mediaSession.setActionHandler('nexttrack', next)
 		navigator.mediaSession.setActionHandler('seekto', (details) => {
@@ -1032,7 +1017,7 @@ onMounted(() => {
 	// 监听登出事件
 	emitter.on('logout', () => {
 		// 重置喜欢状态
-		currentTrack.resetLikeStatus()
+		playerStore.resetLikeStatus()
 		isLoggedIn.value = false
 	})
 

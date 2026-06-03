@@ -108,23 +108,19 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useGlobalQueueStore } from '@/store/modules/globalQueue'
-import { useCurrentIndexStore } from '@/store/modules/currentIndex'
-import { useCurrentTrackStore } from '@/store/modules/currenttrack'
+import { usePlayerStore } from '@/store/modules/player'
 import { formatTime } from '@/utils/index'
 import { useRouter } from 'vue-router'
 import type { Track } from '@/interfaces/track'
 
 const HISTORY_STORAGE_KEY = 'playHistory'
 const playHistory = ref<Track[]>([])
-const globalQueueStore = useGlobalQueueStore()
-const currentIndexStore = useCurrentIndexStore()
-const currentTrack = useCurrentTrackStore()
+const playerStore = usePlayerStore()
 const router = useRouter()
 
 // 判断是否是当前播放的歌曲
 const isCurrentTrack = (track: Track) => {
-	return currentTrack.type == 'netease' ? currentTrack.nId == track.nId : currentTrack.id == track.id
+	return playerStore.currentTrack.type == 'netease' ? playerStore.currentTrack.nId == track.nId : playerStore.currentTrack.id == track.id
 }
 
 // 获取播放历史
@@ -141,14 +137,14 @@ const getPlayHistory = () => {
 // 播放歌曲
 const playTrack = (track: Track) => {
 	// 将当前歌曲设置为播放队列中的唯一歌曲
-	globalQueueStore.setGlobalQueue([track], 0)
-	currentIndexStore.setCurrentIndex(0)
+	playerStore.setGlobalQueue([track], 0)
+	playerStore.setCurrentIndex(0)
 }
 
 // 播放全部
 const playAll = () => {
 	if (playHistory.value.length === 0) return
-	globalQueueStore.setGlobalQueue(playHistory.value, 0)
+	playerStore.setGlobalQueue(playHistory.value, 0)
 }
 
 // 处理歌手点击

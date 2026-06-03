@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { getLyrics } from '@/api'
 import { handlePromise } from '@/utils'
 import { getCurrentLyricText as getLrcText } from '@/utils/lrc'
-import { useCurrentTrackStore } from '@/store/modules/currenttrack'
+import { usePlayerStore } from '@/store/modules/player'
 // @ts-ignore
 const { electron } = window as Window & typeof globalThis & { electron: ElectronAPI }
 
@@ -33,8 +33,7 @@ export const useLyricsStore = defineStore('lyrics', {
 				if (!res) return
 				this.lrc = res.lrc
 				this.lrc_cn = res.lrc_cn
-				const currentTrack = useCurrentTrackStore()
-				currentTrack.$patch({ isLike: res.isLike })
+				usePlayerStore().updateLikeStatus(res.isLike)
 			} catch (err: any) {
 				this.error = err.message
 			} finally {

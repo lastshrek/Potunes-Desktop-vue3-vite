@@ -163,16 +163,14 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { getUserPlaylistDetail, deletePlaylist, removeTracksFromPlaylist } from '@/api'
-import { useGlobalQueueStore } from '@/store/modules/globalQueue'
-import { useCurrentTrackStore } from '@/store/modules/currenttrack'
+import { usePlayerStore } from '@/store/modules/player'
 import { emitter } from '@/utils/mitt'
 import { useToast } from '@/composables/useToast'
 
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
-const globalQueue = useGlobalQueueStore()
-const currentTrack = useCurrentTrackStore()
+const playerStore = usePlayerStore()
 
 const playlist = ref<any>(null)
 const tracks = ref<any[]>([])
@@ -199,9 +197,9 @@ const formatDuration = (ms: number) => {
 }
 
 const isCurrentTrack = (item: any) => {
-	return currentTrack.type === 'netease'
-		? currentTrack.nId === item.nId
-		: currentTrack.id === item.id
+	return playerStore.currentTrack.type === 'netease'
+		? playerStore.currentTrack.nId === item.nId
+		: playerStore.currentTrack.id === item.id
 }
 
 const loadDetail = async () => {
@@ -222,17 +220,17 @@ const loadDetail = async () => {
 
 const playAll = () => {
 	if (tracks.value.length === 0) return
-	globalQueue.setGlobalQueue(tracks.value, 0)
+	playerStore.setGlobalQueue(tracks.value, 0)
 }
 
 const playRandom = () => {
 	if (tracks.value.length === 0) return
 	const index = Math.floor(Math.random() * tracks.value.length)
-	globalQueue.setGlobalQueue(tracks.value, index)
+	playerStore.setGlobalQueue(tracks.value, index)
 }
 
 const selectTrack = (index: number) => {
-	globalQueue.setGlobalQueue(tracks.value, index)
+	playerStore.setGlobalQueue(tracks.value, index)
 }
 
 const showTrackMenu = (e: MouseEvent, track: any, index: number) => {
