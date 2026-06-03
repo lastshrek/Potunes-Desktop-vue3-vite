@@ -74,12 +74,27 @@ const checkLoginStatus = async () => {
 			console.log('res.cookie', res.cookie)
 			// 获取登录状态
 			const [loginRes] = await handlePromise(neteaseLoginStatus(res.cookie))
-			if (!loginRes) return
+			if (!loginRes) {
+				toast({
+					title: '登录失败',
+					description: '获取登录状态失败，请重试',
+					type: 'error',
+				})
+				return
+			}
 			console.log('Login response:', loginRes)
 
 			try {
 				// 保存用户信息和 cookie
 				const user = loginRes.profile
+				if (!user) {
+					toast({
+						title: '登录失败',
+						description: '未获取到用户信息，请重试',
+						type: 'error',
+					})
+					return
+				}
 				localStorage.setItem('netease-user', JSON.stringify(user))
 				localStorage.setItem('netease-cookie', res.cookie)
 
