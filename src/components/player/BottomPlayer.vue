@@ -312,6 +312,7 @@ import { PlayMode, usePlayModeStore } from '@/store/modules/playMode'
 import { useCurrentIndexStore } from '@/store/modules/currentIndex'
 import { useCurrentTimeStore } from '@/store/modules/currentTime'
 import { getRandomIntInclusive, handlePromise } from '@/utils'
+import { parseLrc } from '@/utils/lrc'
 import { useCurrentProgressStore } from '@/store/modules/currentProgress'
 import { Button } from '@/components/ui/button'
 import { ListMusic, Volume1, Volume2, VolumeOff } from 'lucide-vue-next'
@@ -346,7 +347,6 @@ const lyricsStore = useLyricsStore()
 let initial = true
 // 歌词相关状态
 const currentLyricIndex = ref(-1)
-const currentLyricLines = ref<string[]>([])
 let lyricUpdateHandler: number | null = null
 
 // 添加控制歌词面板的状态
@@ -452,17 +452,11 @@ watch(
 		if (!currentTrack.id) return
 
 		// 清空当前歌词
-		currentLyricLines.value = []
 		currentLyricIndex.value = -1
 
 		try {
 			// 获取歌词
 			await lyricsStore.fetchLyrics(currentTrack.id, currentTrack.nId)
-
-			// 解析歌词
-			if (lyricsStore.lrc) {
-				currentLyricLines.value = lyricsStore.lrc.split('\n').filter(line => line.trim() !== '')
-			}
 
 			// 初始化歌词更新
 			if (audio.value) {
@@ -483,52 +477,30 @@ const showLyrics = () => {
 
 // 更新音频时间处理函数
 const updateLyric = () => {
-	if (!audio.value || currentLyricLines.value.length === 0) return
-	const currentTime = audio.value.currentTime
+	if (!audio.value || !lyricsStore.lrc) return
+	const curTime = audio.value.currentTime
 
-	// 找到当前时间对应的歌词
-	for (let i = 0; i < currentLyricLines.value.length; i++) {
-		const line = currentLyricLines.value[i]
-		if (!line || line.trim() === '') continue
+	const lines = parseLrc(lyricsStore.lrc)
+	if (!lines.length) {
+		const defaultText = `${currentTrack.artist} - ${currentTrack.name}`
+		electron.updateLyric(defaultText)
+		return
+	}
 
-		const match = line.match(/\[(\d{2}):(\d{2})\.(\d{1,3})\](.*)/)
-		if (!match) {
-			// 显示歌手名 - 歌曲名
-			const defaultText = `${currentTrack.artist} - ${currentTrack.name}`
-			electron.updateLyric(defaultText)
-			return
-		}
+	for (let i = 0; i < lines.length; i++) {
+		const line = lines[i]
+		const nextTime = i + 1 < lines.length ? lines[i + 1].time : Infinity
 
-		const minutes = parseInt(match[1])
-		const seconds = parseInt(match[2])
-		const milliseconds = parseInt(match[3])
-		const time = minutes * 60 + seconds + milliseconds / 1000
-		const text = match[4].trim()
-
-		if (
-			currentTime >= time &&
-			(!currentLyricLines.value[i + 1] || currentTime < getLyricTime(currentLyricLines.value[i + 1]))
-		) {
+		if (curTime >= line.time && curTime < nextTime) {
 			if (i !== currentLyricIndex.value) {
 				currentLyricIndex.value = i
-				// 确保歌词文本不为空且不包含时间标记
-				if (text && !text.includes('[') && !text.includes(']')) {
-					electron.updateLyric(text)
+				if (line.text) {
+					electron.updateLyric(line.text)
 				}
 			}
 			break
 		}
 	}
-}
-
-// 辅助函数：获取歌词时间戳
-const getLyricTime = (line: string) => {
-	const match = line.match(/\[(\d{2}):(\d{2})\.(\d{1,3})\]/)
-	if (!match) return Infinity
-	const minutes = parseInt(match[1])
-	const seconds = parseInt(match[2])
-	const milliseconds = parseInt(match[3])
-	return minutes * 60 + seconds + milliseconds / 1000
 }
 
 // 设置歌词更新处理器
@@ -555,12 +527,8 @@ watch(
 		currentLyricIndex.value = -1
 
 		if (!newLyric) {
-			currentLyricLines.value = []
 			return
 		}
-
-		// 解析歌词，过滤掉空行
-		currentLyricLines.value = newLyric.split('\n').filter(line => line.trim() !== '')
 
 		// 设置新的事件监听器
 		setupLyricHandler()
@@ -577,7 +545,6 @@ watch(
 		// 清除当前歌词
 		electron.updateLyric('')
 		currentLyricIndex.value = -1
-		currentLyricLines.value = []
 
 		if (newSong && newSong.name) {
 			electron.updateSongInfo({
