@@ -8,7 +8,8 @@
  * Copyright 2023 lastshrek, All Rights Reserved.
  * 2023-09-05 20:11:44
  */
-interface Track {
+import type { Ar } from '@/interfaces/ar'
+export interface Track {
 	id: number
 	name: string
 	artist: string

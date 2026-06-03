@@ -9,6 +9,7 @@
  * 2023-09-03 11:43:08
  */
 import { defineStore } from 'pinia'
+import type { Track } from '@/interfaces/track'
 export const useCurrentTrackStore = defineStore({
 	id: 'currenttrack',
 	state: (): Track => ({

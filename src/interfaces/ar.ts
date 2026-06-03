@@ -8,16 +8,16 @@
  * Copyright 2023 lastshrek, All Rights Reserved.
  * 2023-09-05 20:12:06
  */
-interface Ar {
+export interface Ar {
 	id: number
 	name: string
-	alias: any[]
+	alias: string[]
 	picId?: number
-	trans: any
+	trans: string | null
 	img1v1?: number
-	picUrl: any
+	picUrl: string
 	albumSize?: number
-	fansGroup: any
+	fansGroup: string | null
 	img1v1Url?: string
-	tns?: any[]
+	tns?: string[]
 }

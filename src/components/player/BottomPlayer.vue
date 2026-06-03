@@ -328,6 +328,7 @@ import { fm, likeTrack, updatePlayCount } from '@/api'
 import { getElectronAPI } from '@/utils/platform'
 import { useToast } from '@/composables/useToast'
 import { useThrottleFn } from '@vueuse/core'
+import type { Track } from '@/interfaces/track'
 
 const electron = getElectronAPI()
 

@@ -115,6 +115,7 @@ import { useRouter } from 'vue-router'
 import { formatTime, handlePromise, showError } from '@/utils/index'
 import { weeklyTrends } from '@/api/index'
 import hotImageSrc from '@/assets/images/hot.png'
+import type { Track } from '@/interfaces/track'
 
 const currentTrack = useCurrentTrackStore()
 const todayFull = ref('')

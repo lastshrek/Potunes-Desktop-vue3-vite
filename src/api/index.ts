@@ -9,6 +9,7 @@
  * 2023-09-02 17:09:39
  */
 import { del, get, patch, post, put } from './network'
+import type { Track } from '@/interfaces/track'
 // 获取首页数据
 export const home = () => get('/playlists/home')
 // 获取网易云音乐新碟发布
@@ -100,7 +101,8 @@ export const updateUserAvatar = (avatar: string) => patch('/v1/users/avatar', { 
 /**
  * @description: 更新用户信息
  */
-export const updateUserInfo = (data: any) => patch('/v1/users/profile', data)
+export const updateUserInfo = (data: { nickname: string; intro: string; gender: string; avatar: string }) =>
+	patch('/v1/users/profile', data)
 /**
  * @description: 获取FM歌曲
  */
@@ -121,12 +123,9 @@ export const getLyrics = (id: number, nId?: number) => get(`/v1/lyrics/${id}/${n
  * @description: 收藏/取消收藏
  * @param {object} data
  */
-export const likeTrack = (data: any) => post('/v1/tracks/like', data)
-/**
- * @description: 更新歌曲播放次数
- * @param {object} data
- */
-export const updatePlayCount = (data: any) => post('/v1/tracks/play_count', data)
+export const likeTrack = (data: Partial<Track>) => post('/v1/tracks/like', data)
+
+export const updatePlayCount = (data: Partial<Track>) => post('/v1/tracks/play_count', data)
 
 /**
  * @description: 密码登录
@@ -193,7 +192,7 @@ export const deletePlaylist = (id: number) => del(`/v1/user-playlists/${id}`)
 /**
  * @description: 添加歌曲到歌单
  */
-export const addTrackToPlaylist = (id: number, tracks: any[]) =>
+export const addTrackToPlaylist = (id: number, tracks: Partial<Track>[]) =>
 	post(`/v1/user-playlists/${id}/tracks`, { tracks })
 
 /**

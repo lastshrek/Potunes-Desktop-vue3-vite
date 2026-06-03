@@ -482,6 +482,7 @@ import { Artist } from '@/interfaces/artist'
 import { useGlobalQueueStore } from '@/store/modules/globalQueue'
 import { useIsPlayingStore } from '@/store/modules/isPlaying'
 import dailyImageSrc from '@/assets/images/daily.png'
+import type { Track } from '@/interfaces/track'
 let playlist = reactive({
 	title: '',
 	cover: '',

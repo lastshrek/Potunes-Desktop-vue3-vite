@@ -113,6 +113,7 @@ import { useCurrentIndexStore } from '@/store/modules/currentIndex'
 import { useCurrentTrackStore } from '@/store/modules/currenttrack'
 import { formatTime } from '@/utils/index'
 import { useRouter } from 'vue-router'
+import type { Track } from '@/interfaces/track'
 
 const HISTORY_STORAGE_KEY = 'playHistory'
 const playHistory = ref<Track[]>([])

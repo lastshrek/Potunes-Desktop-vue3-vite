@@ -11,6 +11,7 @@
 import { defineStore } from 'pinia'
 import { useCurrentTrackStore } from './currenttrack'
 import { useCurrentIndexStore } from './currentIndex'
+import type { Track } from '@/interfaces/track'
 export const useGlobalQueueStore = defineStore({
 	id: 'globalQueue',
 	state: () => ({

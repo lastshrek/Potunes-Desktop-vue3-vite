@@ -121,6 +121,7 @@ import HeaderTitle from '@/components/headertitle/HeaderTitle.vue'
 import AlbumCard from '@/components/albumcard/AlbumCard.vue'
 import Loading from 'vue-loading-overlay'
 import { useGlobalQueueStore } from '@/store/modules/globalQueue'
+import type { Track } from '@/interfaces/track'
 const isLoading = ref(true)
 const description = ref('')
 const artist_id = ref('')
