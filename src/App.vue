@@ -7,10 +7,12 @@
 			<LeftNav />
 			<!-- 移除所有过渡动画，直接渲染组件 -->
 			<router-view v-slot="{ Component }">
-				<keep-alive :include="['Suggestion']">
-					<component :is="Component" v-if="$route.meta.keepAlive" />
-				</keep-alive>
-				<component :is="Component" v-if="!$route.meta.keepAlive" />
+				<div class="flex-1 pt-2">
+					<keep-alive :include="['Suggestion']">
+						<component :is="Component" v-if="$route.meta.keepAlive" />
+					</keep-alive>
+					<component :is="Component" v-if="!$route.meta.keepAlive" />
+				</div>
 			</router-view>
 		</div>
 		<BottomPlayer />
