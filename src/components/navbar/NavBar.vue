@@ -34,7 +34,7 @@
 						<Search class="absolute left-3 h-4 w-4 text-gray-500 shrink-0" />
 						<input
 							type="text"
-							placeholder="Search by artists, songs or albums"
+							placeholder="Search for songs you want to listen to"
 							v-model="searchQuery"
 							@keydown.enter="handleSearch"
 							class="w-full h-full pl-9 pr-4 bg-transparent border-none text-sm text-white placeholder:text-gray-500 focus:outline-none focus:ring-0 player-text"
