@@ -101,10 +101,10 @@ export const put = (url: string, params: any = {}) => {
 	})
 }
 
-export const del = (url: string, params: any = {}) => {
+export const del = (url: string, config: { params?: any; data?: any } = {}) => {
 	return new Promise((resolve, reject) => {
 		axios
-			.delete(url, { params: params })
+			.delete(url, config)
 			.then(res => {
 				resolve(res.data.data)
 			})

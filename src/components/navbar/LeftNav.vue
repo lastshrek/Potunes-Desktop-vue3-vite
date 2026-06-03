@@ -76,30 +76,85 @@
 							:key="playlist.id"
 							variant="ghost"
 							class="w-full justify-start pl-4 text-gray-400 hover:text-white hover:bg-gray-800/50"
+							@click="router.push(`/user-playlist/${playlist.id}`)"
 						>
-							<span class="w-2 h-2 rounded-full mr-2" :class="playlist.color" />
-							{{ playlist.name }}
+							<Music class="w-3.5 h-3.5 mr-2 shrink-0" />
+							<span class="truncate">{{ playlist.title }}</span>
 						</Button>
+						<div v-if="playlists.length === 0 && isLoggedIn" class="text-xs text-gray-500 px-4 py-2">
+							No playlists yet
+						</div>
 					</div>
 				</ScrollArea>
+
+				<!-- 创建歌单对话框 -->
+				<Dialog :open="showCreateDialog" @update:open="showCreateDialog = false">
+					<DialogContent class="sm:max-w-sm bg-[#1A1A1A] border-gray-800 text-white">
+						<DialogHeader>
+							<DialogTitle class="text-base font-medium">New Playlist</DialogTitle>
+						</DialogHeader>
+						<input
+							v-model="newPlaylistTitle"
+							type="text"
+							placeholder="Playlist name"
+							class="w-full h-10 px-4 rounded-lg bg-[#111] text-sm text-white placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-[#da5597] player-text"
+							@keydown.enter="confirmCreatePlaylist"
+						/>
+						<div class="flex justify-end gap-2 mt-2">
+							<Button variant="ghost" class="text-gray-400 hover:text-white" @click="showCreateDialog = false">
+								Cancel
+							</Button>
+							<Button
+								class="bg-[#da5597] hover:bg-[#da5597]/90 text-white"
+								:disabled="!newPlaylistTitle.trim()"
+								@click="confirmCreatePlaylist"
+							>
+								Create
+							</Button>
+						</div>
+					</DialogContent>
+				</Dialog>
 			</div>
 		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { BarChart3, Heart, History, MessageSquare, HandMetal, House, Car, Disc3, Plus } from 'lucide-vue-next'
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+} from '@/components/ui/dialog'
+import {
+	BarChart3,
+	Heart,
+	History,
+	MessageSquare,
+	HandMetal,
+	House,
+	Car,
+	Disc3,
+	Plus,
+	Music,
+} from 'lucide-vue-next'
 import { useToast } from '@/composables/useToast'
+import { getUserPlaylists, createPlaylist } from '@/api'
+import { emitter } from '@/utils/mitt'
 
 const router = useRouter()
 const route = useRoute()
 const toast = useToast()
 
-// 判断路由是否激活
+const playlists = ref<any[]>([])
+const isLoggedIn = ref(!!localStorage.getItem('token'))
+const showCreateDialog = ref(false)
+const newPlaylistTitle = ref('')
+
 const isActive = (path: string) => {
 	if (path === '/') {
 		return route.path === '/'
@@ -107,7 +162,6 @@ const isActive = (path: string) => {
 	return route.path === path || route.path.startsWith(path)
 }
 
-// 导航配置
 const navItems = [
 	{
 		name: 'Home',
@@ -150,15 +204,6 @@ const navItems = [
 	},
 ]
 
-// 模拟数据
-const playlists = ref([
-	{ id: 1, name: 'Metalcore', color: 'bg-red-500' },
-	{ id: 2, name: 'Electro', color: 'bg-green-500' },
-	{ id: 3, name: 'Funk', color: 'bg-yellow-500' },
-	{ id: 4, name: 'Disco', color: 'bg-purple-500' },
-])
-
-// 修改导航处理方法
 const handleNavigation = (item: (typeof navItems)[0]) => {
 	if (item.routeName === 'albums') {
 		router
@@ -184,10 +229,50 @@ const handleNavigation = (item: (typeof navItems)[0]) => {
 	}
 }
 
-const handleCreatePlaylist = () => {
-	// TODO: 实现创建播放列表的逻辑
-	toast.info('创建播放列表功能开发中')
+const loadPlaylists = async () => {
+	if (!isLoggedIn.value) return
+	try {
+		const data = await getUserPlaylists() as any[]
+		playlists.value = Array.isArray(data) ? data : []
+	} catch {
+		// silent
+	}
 }
+
+const handleCreatePlaylist = () => {
+	if (!isLoggedIn.value) {
+		toast.info('Please login first')
+		return
+	}
+	showCreateDialog.value = true
+}
+
+const confirmCreatePlaylist = async () => {
+	const title = newPlaylistTitle.value.trim()
+	if (!title) return
+	try {
+		await createPlaylist(title)
+		toast.success(`Playlist "${title}" created`)
+		showCreateDialog.value = false
+		newPlaylistTitle.value = ''
+		loadPlaylists()
+	} catch {
+		toast.error('Failed to create playlist')
+	}
+}
+
+onMounted(() => {
+	loadPlaylists()
+	window.addEventListener('user-login', loadPlaylists as any)
+	window.addEventListener('user-updated', loadPlaylists as any)
+	emitter.on('playlist-changed', loadPlaylists)
+})
+
+onUnmounted(() => {
+	window.removeEventListener('user-login', loadPlaylists as any)
+	window.removeEventListener('user-updated', loadPlaylists as any)
+	emitter.off('playlist-changed', loadPlaylists)
+})
 </script>
 
 <style scoped>

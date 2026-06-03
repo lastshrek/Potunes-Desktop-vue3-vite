@@ -176,6 +176,13 @@
 									}"
 								>
 									<span class="text-sm">{{ formatTime(item.duration) }}</span>
+									<button
+										v-if="isLoggedIn"
+										class="opacity-0 group-hover:opacity-100 transition-opacity"
+										@click.stop="showTrackMenu($event, item)"
+									>
+										<MoreHorizontal class="h-4 w-4 text-gray-400 hover:text-white" />
+									</button>
 								</div>
 							</div>
 						</div>
@@ -317,6 +324,13 @@
 									}"
 								>
 									<span class="text-sm">{{ formatTime(item.duration) }}</span>
+									<button
+										v-if="isLoggedIn"
+										class="opacity-0 group-hover:opacity-100 transition-opacity"
+										@click.stop="showTrackMenu($event, item)"
+									>
+										<MoreHorizontal class="h-4 w-4 text-gray-400 hover:text-white" />
+									</button>
 								</div>
 							</div>
 						</div>
@@ -387,6 +401,48 @@
 						</div>
 					</div>
 				</transition>
+
+				<!-- 歌曲操作菜单 -->
+				<Dialog :open="showTrackMenuDialog" @update:open="showTrackMenuDialog = false">
+					<DialogContent class="sm:max-w-xs bg-[#1A1A1A] border-gray-800 text-white">
+						<DialogHeader>
+							<DialogTitle class="text-sm text-gray-400 font-normal">{{ selectedTrack?.name }}</DialogTitle>
+						</DialogHeader>
+						<div class="space-y-1">
+							<button
+								class="w-full text-left px-3 py-2.5 rounded-md text-sm text-gray-300 hover:bg-white/5 hover:text-white"
+								@click="handleAddToPlaylist"
+							>
+								<svg class="h-4 w-4 inline mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+								Add to playlist
+							</button>
+						</div>
+					</DialogContent>
+				</Dialog>
+
+				<!-- 选择歌单 -->
+				<Dialog :open="showPlaylistPicker" @update:open="showPlaylistPicker = false">
+					<DialogContent class="sm:max-w-sm bg-[#1A1A1A] border-gray-800 text-white">
+						<DialogHeader>
+							<DialogTitle class="text-base font-medium">Choose a playlist</DialogTitle>
+						</DialogHeader>
+						<ScrollArea class="max-h-60">
+							<div class="space-y-1">
+								<button
+									v-for="pl in userPlaylists"
+									:key="pl.id"
+									class="w-full text-left px-3 py-2.5 rounded-md text-sm text-gray-300 hover:bg-white/5 hover:text-white"
+									@click="confirmAddToPlaylist(pl)"
+								>
+									{{ pl.title }}
+								</button>
+								<div v-if="userPlaylists.length === 0" class="text-sm text-gray-500 px-3 py-4 text-center">
+									No playlists yet.
+								</div>
+							</div>
+						</ScrollArea>
+					</DialogContent>
+				</Dialog>
 			</div>
 		</div>
 	</div>
@@ -395,6 +451,15 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { MoreHorizontal } from 'lucide-vue-next'
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import {
 	tracks,
 	neteasePlaylist,
@@ -402,6 +467,8 @@ import {
 	neteaseDailyTracks,
 	weeklyTrends,
 	neteasePlaylistDetail,
+	getUserPlaylists,
+	addTrackToPlaylist,
 } from '@/api/index'
 import { formatTime, handlePromise, showError, getCurrentDate } from '@/utils/index'
 import { useCurrentTrackStore } from '@/store/modules/currenttrack'
@@ -438,6 +505,12 @@ const updateTime = ref('')
 const active_el = ref(-1)
 // 今天
 const today = getCurrentDate()
+// 添加歌单相关
+const isLoggedIn = ref(!!localStorage.getItem('token'))
+const showTrackMenuDialog = ref(false)
+const showPlaylistPicker = ref(false)
+const selectedTrack = ref<any>(null)
+const userPlaylists = ref<any[]>([])
 // 当前歌曲
 const currentTrack = useCurrentTrackStore()
 // 播放队列
@@ -560,6 +633,34 @@ watch(
 	},
 	{ deep: true }
 )
+// 歌曲菜单
+const showTrackMenu = (e: MouseEvent, track: any) => {
+	e.stopPropagation()
+	selectedTrack.value = track
+	showTrackMenuDialog.value = true
+}
+
+const handleAddToPlaylist = async () => {
+	showTrackMenuDialog.value = false
+	try {
+		const list = await getUserPlaylists() as any[]
+		userPlaylists.value = Array.isArray(list) ? list : []
+	} catch {
+		userPlaylists.value = []
+	}
+	showPlaylistPicker.value = true
+}
+
+const confirmAddToPlaylist = async (pl: any) => {
+	if (!selectedTrack.value) return
+	showPlaylistPicker.value = false
+	try {
+		await addTrackToPlaylist(pl.id, [selectedTrack.value])
+	} catch {
+		// silent
+	}
+}
+
 // 播放全部
 const playAll = () => {
 	if (playlist.tracks.length === 0) return

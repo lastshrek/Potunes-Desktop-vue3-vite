@@ -53,11 +53,12 @@
 								<!-- 搜索输入框 -->
 								<input
 									type="text"
-									:placeholder="selectedTags.length > 0 ? '' : 'Search by artists, songs or albums『暂不可用』'"
+									:placeholder="selectedTags.length > 0 ? '' : 'Search by artists, songs or albums'"
 									v-model="searchQuery"
 									@click="handleInputClick"
 									@keydown.backspace="handleBackspace"
 									@keydown.esc="handleEsc"
+									@keydown.enter="handleSearch"
 									class="flex-1 min-w-[100px] bg-transparent border-none text-sm text-white placeholder:text-gray-500 focus:outline-none focus:ring-0 player-text"
 								/>
 							</div>
@@ -544,6 +545,15 @@ const handleAvatarError = (e: any) => {
 // 添加 ESC 键处理函数
 const handleEsc = () => {
 	showDropdown.value = false
+}
+
+// 搜索回车跳转
+const handleSearch = () => {
+	const q = searchQuery.value.trim()
+	if (q) {
+		showDropdown.value = false
+		router.push({ name: 'search', query: { q } })
+	}
 }
 
 // 监听用户信息变化

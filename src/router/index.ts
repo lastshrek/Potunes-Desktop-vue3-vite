@@ -20,6 +20,8 @@ import Login from '@/views/Login.vue'
 import NeteaseLink from '@/views/NeteaseLink.vue'
 import EditProfile from '@/views/EditProfile.vue'
 import History from '@/views/History.vue'
+import Search from '@/views/Search.vue'
+import UserPlaylistDetail from '@/views/UserPlaylistDetail.vue'
 const routes: Array<RouteRecordRaw> = [
 	{
 		path: '/',
@@ -110,6 +112,18 @@ const routes: Array<RouteRecordRaw> = [
 		path: '/history',
 		name: 'history',
 		component: History,
+		meta: { keepAlive: false },
+	},
+	{
+		path: '/search',
+		name: 'search',
+		component: Search,
+		meta: { keepAlive: false },
+	},
+	{
+		path: '/user-playlist/:id',
+		name: 'user-playlist-detail',
+		component: UserPlaylistDetail,
 		meta: { keepAlive: false },
 	},
 ]

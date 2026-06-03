@@ -8,7 +8,7 @@
  * Copyright 2023 lastshrek, All Rights Reserved.
  * 2023-09-02 17:09:39
  */
-import { get, patch, post } from './network'
+import { del, get, patch, post, put } from './network'
 // 获取首页数据
 export const home = () => get('/playlists/home')
 // 获取网易云音乐新碟发布
@@ -127,3 +127,41 @@ export const likeTrack = (data: any) => post('/v1/tracks/like', data)
  * @param {object} data
  */
 export const updatePlayCount = (data: any) => post('/v1/tracks/play_count', data)
+
+/**
+ * @description: 全局搜索
+ */
+export const search = (keyword: string, page = 1, limit = 20) =>
+	get('/search', { keyword, page, limit })
+
+/**
+ * @description: 获取用户自定义歌单列表
+ */
+export const getUserPlaylists = () => get('/v1/user-playlists')
+
+/**
+ * @description: 获取用户自定义歌单详情 (含歌曲列表)
+ */
+export const getUserPlaylistDetail = (id: number) => get(`/v1/user-playlists/${id}`)
+
+/**
+ * @description: 创建自定义歌单
+ */
+export const createPlaylist = (title: string) => post('/v1/user-playlists', { title })
+
+/**
+ * @description: 删除自定义歌单
+ */
+export const deletePlaylist = (id: number) => del(`/v1/user-playlists/${id}`)
+
+/**
+ * @description: 添加歌曲到歌单
+ */
+export const addTrackToPlaylist = (id: number, tracks: any[]) =>
+	post(`/v1/user-playlists/${id}/tracks`, { tracks })
+
+/**
+ * @description: 从歌单移除歌曲
+ */
+export const removeTracksFromPlaylist = (id: number, trackIds: number[]) =>
+	del(`/v1/user-playlists/${id}/tracks`, { data: { trackIds } })
