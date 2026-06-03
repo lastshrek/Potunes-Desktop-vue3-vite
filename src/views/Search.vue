@@ -1,30 +1,12 @@
 <template>
 	<div class="w-full">
 		<div class="bg-black w-full pt-16 pb-20 h-screen">
-			<div class="h-full overflow-y-scroll flex flex-col text-white px-6 pt-8">
-				<!-- 搜索栏 -->
-				<div class="flex items-center gap-4 mb-6">
-					<div class="relative flex-1 max-w-xl">
-						<Search class="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-						<input
-							ref="searchInput"
-							v-model="keyword"
-							type="text"
-							placeholder="Search by artists, songs or albums"
-							class="w-full h-10 pl-10 pr-4 rounded-full bg-[#1A1A1A] text-sm text-white placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-[#da5597] player-text"
-							@keydown.enter="handleSearch"
-						/>
-					</div>
-				</div>
-
-				<!-- 初始状态 -->
-				<div v-if="!keyword" class="flex flex-col items-center justify-center pt-20 text-gray-500">
-					<Search class="h-16 w-16 mb-4 opacity-30" />
-					<p class="text-sm player-text">Search your music</p>
-				</div>
+			<div ref="scrollContainer" class="h-full overflow-y-scroll flex flex-col text-white px-6 pt-8">
+				<!-- 标题 -->
+				<h2 v-if="keyword" class="text-xl font-bold mb-4 album-title">Results for "{{ keyword }}"</h2>
 
 				<!-- 加载中 -->
-				<div v-else-if="isLoading" class="space-y-2 mt-4">
+				<div v-if="isLoading" class="space-y-2 mt-4">
 					<div v-for="i in 10" :key="i" class="grid grid-cols-12 items-center py-3 px-4 rounded-lg animate-pulse">
 						<div class="col-span-1"><div class="h-4 w-4 bg-gray-800 rounded" /></div>
 						<div class="col-span-5 flex items-center space-x-3">
@@ -46,7 +28,7 @@
 				</div>
 
 				<!-- 结果列表 -->
-				<template v-else>
+				<template v-else-if="tracks.length > 0">
 					<div class="grid grid-cols-12 text-gray-400 text-sm py-2 px-4 border-b border-gray-800 player-text">
 						<div class="col-span-1">#</div>
 						<div class="col-span-5">Title</div>
@@ -96,17 +78,9 @@
 						</div>
 					</div>
 
-					<!-- 加载更多 -->
+					<!-- 加载更多 spinner -->
 					<div v-if="isLoadingMore" class="flex justify-center py-6">
 						<div class="animate-spin h-6 w-6 border-2 border-[#da5597] border-t-transparent rounded-full" />
-					</div>
-					<div v-else-if="hasMore" class="flex justify-center py-6">
-						<button
-							class="text-sm text-gray-400 hover:text-white player-text"
-							@click="loadMore"
-						>
-							Load more
-						</button>
 					</div>
 				</template>
 			</div>
@@ -157,9 +131,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { Search, Music, MoreHorizontal } from 'lucide-vue-next'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import { Music, MoreHorizontal } from 'lucide-vue-next'
 import {
 	Dialog,
 	DialogContent,
@@ -173,12 +147,11 @@ import { useGlobalQueueStore } from '@/store/modules/globalQueue'
 import { useCurrentTrackStore } from '@/store/modules/currenttrack'
 
 const route = useRoute()
-const router = useRouter()
 const toast = useToast()
 const globalQueue = useGlobalQueueStore()
 const currentTrack = useCurrentTrackStore()
 
-const searchInput = ref<HTMLInputElement | null>(null)
+const scrollContainer = ref<HTMLElement | null>(null)
 const keyword = ref('')
 const tracks = ref<any[]>([])
 const isLoading = ref(false)
@@ -205,45 +178,40 @@ const isCurrentTrack = (item: any) => {
 		: currentTrack.id === item.id
 }
 
-const handleSearch = async () => {
+const fetchResults = async (reset: boolean) => {
 	const q = keyword.value.trim()
 	if (!q) return
-	page.value = 1
-	hasMore.value = true
-	isLoading.value = true
-	tracks.value = []
+	if (reset) {
+		page.value = 1
+		hasMore.value = true
+		isLoading.value = true
+	} else {
+		if (isLoadingMore.value || !hasMore.value) return
+		isLoadingMore.value = true
+	}
 	try {
 		const data = await search(q, page.value) as any
 		if (data.tracks) {
-			tracks.value = data.tracks
+			if (reset) {
+				tracks.value = data.tracks
+			} else {
+				tracks.value.push(...data.tracks)
+			}
 		}
 		if (data.pagination) {
 			hasMore.value = page.value < (data.pagination.totalPages || 1)
 		}
 	} catch {
-		toast.error('Search failed')
+		if (reset) toast.error('Search failed')
 	} finally {
 		isLoading.value = false
+		isLoadingMore.value = false
 	}
 }
 
-const loadMore = async () => {
-	if (isLoadingMore.value || !hasMore.value) return
-	isLoadingMore.value = true
+const loadMore = () => {
 	page.value++
-	try {
-		const data = await search(keyword.value, page.value) as any
-		if (data.tracks) {
-			tracks.value.push(...data.tracks)
-		}
-		if (data.pagination) {
-			hasMore.value = page.value < (data.pagination.totalPages || 1)
-		}
-	} catch {
-		toast.error('Load more failed')
-	} finally {
-		isLoadingMore.value = false
-	}
+	fetchResults(false)
 }
 
 const selectTrack = (index: number) => {
@@ -258,7 +226,6 @@ const showTrackMenu = (e: MouseEvent, track: any) => {
 
 const handleAddToPlaylist = async () => {
 	showTrackMenuDialog.value = false
-	userPlaylists.value = []
 	try {
 		const list = await getUserPlaylists() as any[]
 		userPlaylists.value = Array.isArray(list) ? list : []
@@ -279,14 +246,33 @@ const confirmAddToPlaylist = async (pl: any) => {
 	}
 }
 
+const handleScroll = () => {
+	const el = scrollContainer.value
+	if (!el || isLoadingMore.value || !hasMore.value) return
+	const threshold = 300
+	if (el.scrollHeight - el.scrollTop - el.clientHeight < threshold) {
+		loadMore()
+	}
+}
+
 watch(
 	() => route.query.q,
 	(val) => {
 		if (val && typeof val === 'string') {
 			keyword.value = val
-			nextTick(() => handleSearch())
+			fetchResults(true)
 		}
 	},
 	{ immediate: true }
 )
+
+onMounted(() => {
+	const el = scrollContainer.value
+	if (el) el.addEventListener('scroll', handleScroll)
+})
+
+onUnmounted(() => {
+	const el = scrollContainer.value
+	if (el) el.removeEventListener('scroll', handleScroll)
+})
 </script>

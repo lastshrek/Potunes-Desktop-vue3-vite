@@ -28,60 +28,17 @@
 			<!-- middle navigator -->
 			<div class="w-full max-w-md mx-auto absolute left-1/2 -translate-x-1/2" style="-webkit-app-region: no-drag">
 				<div class="relative w-full">
-					<!-- 搜索输入框 -->
-					<div class="relative" ref="searchContainer">
-						<div
-							class="w-full h-9 rounded-full bg-[#1A1A1A] transition-shadow duration-200"
-							:class="{ 'ring-1 ring-[#da5597]': showDropdown }"
-						>
-							<div class="w-full h-full pl-9 pr-4 flex items-center gap-2 overflow-x-auto">
-								<Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 shrink-0" />
-
-								<!-- 已选择的标签 -->
-								<div
-									v-for="(tag, index) in selectedTags"
-									:key="index"
-									class="flex items-center gap-1 bg-white/10 px-2 py-0.5 rounded-full shrink-0"
-								>
-									<component :is="tag.icon" class="h-3 w-3 text-gray-400" />
-									<span class="text-xs text-gray-300 player-text">{{ tag.label }}</span>
-									<button @click.stop="removeTag(index)" class="hover:text-white ml-1">
-										<X class="h-3 w-3" />
-									</button>
-								</div>
-
-								<!-- 搜索输入框 -->
-								<input
-									type="text"
-									:placeholder="selectedTags.length > 0 ? '' : 'Search by artists, songs or albums'"
-									v-model="searchQuery"
-									@click="handleInputClick"
-									@keydown.backspace="handleBackspace"
-									@keydown.esc="handleEsc"
-									@keydown.enter="handleSearch"
-									class="flex-1 min-w-[100px] bg-transparent border-none text-sm text-white placeholder:text-gray-500 focus:outline-none focus:ring-0 player-text"
-								/>
-							</div>
-						</div>
-
-						<!-- 下拉菜单 -->
-						<div
-							v-if="showDropdown"
-							class="absolute w-full mt-2 py-2 bg-[#1A1A1A] rounded-lg shadow-lg border border-gray-800"
-						>
-							<div class="px-3 py-1.5 text-xs font-medium text-gray-400 player-text">Suggestions</div>
-							<div class="mt-1">
-								<button
-									v-for="(item, index) in availableSuggestions"
-									:key="index"
-									@mousedown="handleSelect(item)"
-									class="w-full px-3 py-1.5 flex items-center gap-2 hover:bg-white/5 text-left"
-								>
-									<component :is="item.icon" class="h-4 w-4 text-gray-400" />
-									<span class="text-sm text-gray-300 player-text">{{ item.label }}</span>
-								</button>
-							</div>
-						</div>
+					<div
+						class="w-full h-9 rounded-full bg-[#1A1A1A] flex items-center"
+					>
+						<Search class="absolute left-3 h-4 w-4 text-gray-500 shrink-0" />
+						<input
+							type="text"
+							placeholder="Search by artists, songs or albums"
+							v-model="searchQuery"
+							@keydown.enter="handleSearch"
+							class="w-full h-full pl-9 pr-4 bg-transparent border-none text-sm text-white placeholder:text-gray-500 focus:outline-none focus:ring-0 player-text"
+						/>
 					</div>
 				</div>
 			</div>
@@ -222,11 +179,8 @@ import {
 	ChevronRight,
 	ChevronLeft,
 	ChevronDown,
-	Music,
 	User,
-	Disc,
 	Search,
-	X,
 	Link,
 	LogOut,
 	UserCircle2,
@@ -261,23 +215,9 @@ const neteaseUser = ref({}) as any
 const isUserExist = ref(false)
 const isNeteaseLogin = ref(false)
 const searchQuery = ref('')
-const showDropdown = ref(false)
-const selectedTags = ref<Array<{ label: string; icon: any }>>([])
-const searchContainer = ref<HTMLElement | null>(null)
 const userPhone = ref('')
 const showUserMenu = ref(false)
 const showQRCode = ref(false)
-
-const suggestions = [
-	{ label: 'Songs', icon: Music },
-	{ label: 'Artists', icon: User },
-	{ label: 'Albums', icon: Disc },
-]
-
-// 计算可用的建议（排除已选择的）
-const availableSuggestions = computed(() => {
-	return suggestions.filter(suggestion => !selectedTags.value.some(tag => tag.label === suggestion.label))
-})
 
 // 返回前进按钮
 const go = (where: string) => {
@@ -304,26 +244,16 @@ const go = (where: string) => {
 	}
 }
 
-// 添加点击外部关闭下拉菜单的处理
-const handleClickOutside = (event: MouseEvent) => {
-	const target = event.target as HTMLElement
-	if (searchContainer.value && !searchContainer.value.contains(target)) {
-		showDropdown.value = false
-	}
-}
-
 // 修改拖动处理函数
 const handleNavbarDrag = (event: MouseEvent) => {
 	const target = event.target as HTMLElement
 	if (!target.closest('[style*="-webkit-app-region: no-drag"]')) {
-		showDropdown.value = false
 		showUserMenu.value = false
 	}
 }
 
 // 修改生命周期钩子
 onMounted(() => {
-	document.addEventListener('click', handleClickOutside)
 	// 检查用户登录状态
 	const token = localStorage.getItem('token')
 	const user = token ? JSON.parse(localStorage.getItem('user') || '{}') : null
@@ -370,7 +300,6 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-	document.removeEventListener('click', handleClickOutside)
 	// 移除事件监听
 	window.removeEventListener('user-login', (() => {}) as EventListener)
 	window.removeEventListener('netease-login', (() => {}) as EventListener)
@@ -378,30 +307,6 @@ onUnmounted(() => {
 	window.removeEventListener('user-updated', updateUserData)
 	emitter.off('login-success')
 })
-
-// 修改输入框点击处理函数
-const handleInputClick = () => {
-	showDropdown.value = true
-}
-
-// 修改选择建议项的处理函数
-const handleSelect = (item: any) => {
-	selectedTags.value.push(item)
-	searchQuery.value = ''
-	showDropdown.value = false
-}
-
-// 修改删除标签的处理函数
-const removeTag = (index: number) => {
-	selectedTags.value.splice(index, 1)
-}
-
-// 修改退格键处理函数
-const handleBackspace = (event: KeyboardEvent) => {
-	if (searchQuery.value === '' && selectedTags.value.length > 0 && event.key === 'Backspace') {
-		selectedTags.value.pop()
-	}
-}
 
 // 添加格式化手机号的函数
 const formatPhone = (phone: string) => {
@@ -542,16 +447,10 @@ const handleAvatarError = (e: any) => {
 	target.src = '' // 清空源，显示默认头像
 }
 
-// 添加 ESC 键处理函数
-const handleEsc = () => {
-	showDropdown.value = false
-}
-
 // 搜索回车跳转
 const handleSearch = () => {
 	const q = searchQuery.value.trim()
 	if (q) {
-		showDropdown.value = false
 		router.push({ name: 'search', query: { q } })
 	}
 }
