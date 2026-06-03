@@ -9,7 +9,7 @@
  * 2023-09-05 16:26:25
 -->
 <template>
-	<div class="overflow-y-scroll pt-36 pb-24 container mx-auto bg-black min-h-screen">
+	<div class="overflow-y-scroll pt-16 pb-24 container mx-auto bg-black min-h-screen">
 		<!-- 悬浮标题 -->
 		<div class="fixed top-16 left-44 right-0 z-10 bg-black/90 backdrop-blur-sm border-b border-gray-800">
 			<div class="px-4 py-4">
@@ -133,7 +133,7 @@ onMounted(async () => {
 <style scoped lang="scss">
 /* 确保悬浮标题下方内容不被遮挡 */
 .overflow-y-scroll {
-	scroll-padding-top: 9rem;
+	scroll-padding-top: 4rem;
 }
 
 /* 在小屏幕上调整标题位置 */
@@ -143,7 +143,7 @@ onMounted(async () => {
 	}
 
 	.overflow-y-scroll {
-		padding-top: 8rem;
+		padding-top: 4rem;
 	}
 }
 </style>
