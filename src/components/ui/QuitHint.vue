@@ -1,36 +1,30 @@
 <template>
   <div
-    class="quit-hint-wrapper overflow-hidden transition-all duration-300 ease-in-out"
-    :class="visible ? 'max-h-14 opacity-100' : 'max-h-0 opacity-0'"
+    class="overflow-hidden transition-all duration-300 ease-in-out"
+    :class="visible ? 'max-h-16' : 'max-h-0'"
   >
     <div
-      class="flex items-center justify-between px-5 py-3 text-sm select-none shadow-lg"
-      style="
-        background: hsl(0, 0%, 11%);
-        border-left: 3px solid hsl(var(--primary));
-        border-bottom: 1px solid hsl(var(--border));
-      "
+      v-show="visible"
+      class="flex items-center justify-between px-5 py-3 text-sm border-l-4"
+      style="background:#222;border-left-color:#f43f5e;border-bottom:1px solid #333"
     >
       <div class="flex items-center gap-2">
-        <span class="text-neutral-400">再按</span>
+        <span style="color:#aaa">再按</span>
         <kbd
-          class="kbd inline-flex items-center justify-center min-w-[30px] h-6 px-1.5 rounded text-xs font-semibold shadow-sm"
-          style="
-            background: hsl(0, 0%, 18%);
-            border: 1px solid hsl(0, 0%, 28%);
-            color: hsl(0, 0%, 95%);
-          "
+          class="inline-flex items-center justify-center min-w-[30px] h-6 px-1.5 rounded text-xs font-semibold shadow-sm"
+          style="background:#333;border:1px solid #555;color:#fff"
         >&#8984;Q</kbd>
-        <span class="text-neutral-100 font-medium">退出程序</span>
+        <span style="color:#fff;font-weight:500">退出程序</span>
       </div>
       <div class="flex items-center gap-2">
         <button
-          class="h-7 px-3.5 rounded text-xs font-semibold transition-all"
-          style="background: hsl(var(--primary)); color: hsl(var(--primary-foreground))"
+          class="h-7 px-3.5 rounded text-xs font-semibold border-0 cursor-pointer"
+          style="background:#f43f5e;color:#fff"
           @click="confirmQuit"
         >退出</button>
         <button
-          class="h-7 w-7 flex items-center justify-center rounded text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800 transition-all"
+          class="h-7 w-7 flex items-center justify-center rounded border-0 cursor-pointer hover:brightness-150"
+          style="color:#888;background:transparent"
           @click="dismiss"
         >
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
@@ -58,13 +52,7 @@ const dismiss = () => {
 
 onMounted(() => {
   if (!window.electron) return
-
-  window.electron.onShowQuitHint(() => {
-    visible.value = true
-  })
-
-  window.electron.onHideQuitHint(() => {
-    visible.value = false
-  })
+  window.electron.onShowQuitHint(() => { visible.value = true })
+  window.electron.onHideQuitHint(() => { visible.value = false })
 })
 </script>
