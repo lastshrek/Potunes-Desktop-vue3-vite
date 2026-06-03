@@ -205,8 +205,10 @@ import { Cropper, CircleStencil } from 'vue-advanced-cropper'
 import 'vue-advanced-cropper/dist/style.css'
 import { handlePromise } from '@/utils'
 import { updateUserAvatar, updateUserInfo } from '@/api'
+import { useAuthStore } from '@/store/modules/auth'
 
 const router = useRouter()
+const auth = useAuthStore()
 const isLoading = ref(false)
 const fileInput = ref<HTMLInputElement | null>(null)
 const showCropper = ref(false)
@@ -422,9 +424,8 @@ const handleCropComplete = async () => {
 		}
 
 		// 更新本地存储
-		const userData = JSON.parse(localStorage.getItem('user') || '{}')
-		userData.avatar = base64 // 先使用本地 base64，等服务器返回 URL 后再更新
-		localStorage.setItem('user', JSON.stringify(userData))
+		const userData = { ...auth.user, avatar: base64 }
+		auth.setUser(userData)
 
 		// 更新表单
 		form.value = {
@@ -466,16 +467,25 @@ const handleCropComplete = async () => {
 	}
 }
 
+function normalizeAvatar(raw: string | undefined | null): string {
+	if (!raw) return ''
+	if (raw.includes('data:image') && !raw.startsWith('data:')) {
+		const idx = raw.indexOf('data:image')
+		return raw.slice(idx)
+	}
+	if (raw.startsWith('data:') || raw.startsWith('http://') || raw.startsWith('https://')) return raw
+	return `data:image/png;base64,${raw}`
+}
+
 onMounted(() => {
-	// 加载用户数据
-	const user = JSON.parse(localStorage.getItem('user') || '{}')
+	const user = auth.user || {}
 
 	form.value = {
 		phone: user.phone || '',
 		nickname: user.nickname || '',
 		intro: user.intro || '',
 		gender: user.gender || '',
-		avatar: user.avatar || '',
+		avatar: normalizeAvatar(user.avatar),
 	}
 })
 
@@ -484,7 +494,7 @@ const handleSubmit = async () => {
 	try {
 		await new Promise(resolve => setTimeout(resolve, 1000))
 
-		const userData = JSON.parse(localStorage.getItem('user') || '{}')
+		const userData = auth.user || {}
 		const updatedUser = {
 			...userData,
 			nickname: form.value.nickname,
@@ -500,7 +510,7 @@ const handleSubmit = async () => {
 		}
 
 		// 更新本地存储
-		localStorage.setItem('user', JSON.stringify(updatedUser))
+		auth.setUser(updatedUser)
 
 		// 立即触发用户信息更新事件
 		window.dispatchEvent(

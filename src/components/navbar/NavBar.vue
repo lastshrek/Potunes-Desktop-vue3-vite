@@ -381,6 +381,11 @@ const avatarUrl = computed(() => {
 	if (avatarBroken.value) return ''
 	const raw = auth.user?.avatar
 	if (!raw) return ''
+	// 兼容历史缓存: 如果被 fileServerUrl 误拼了 data: URI, 提取 data: 之后的部分
+	if (raw.includes('data:image') && !raw.startsWith('data:')) {
+		const idx = raw.indexOf('data:image')
+		return raw.slice(idx)
+	}
 	if (raw.startsWith('data:') || raw.startsWith('http://') || raw.startsWith('https://')) return raw
 	return `data:image/png;base64,${raw}`
 })
