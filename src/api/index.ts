@@ -129,6 +129,42 @@ export const likeTrack = (data: any) => post('/v1/tracks/like', data)
 export const updatePlayCount = (data: any) => post('/v1/tracks/play_count', data)
 
 /**
+ * @description: 密码登录
+ */
+export const login = (account: string, password: string) =>
+	post('/users/login', { account, password })
+
+/**
+ * @description: 注册
+ */
+export const register = (username: string, password: string) =>
+	post('/users/register', { username, password })
+
+/**
+ * @description: 注册并绑定旧手机号
+ */
+export const registerWithBind = (username: string, password: string, oldPhone?: string) =>
+	post('/users/register-with-bind', { username, password, ...(oldPhone ? { oldPhone } : {}) })
+
+/**
+ * @description: 重置密码
+ */
+export const resetPassword = (phone: string, password: string) =>
+	post('/users/reset-password', { phone, password })
+
+/**
+ * @description: 修改密码
+ */
+export const changePassword = (phone: string, oldPassword: string, newPassword: string) =>
+	post('/users/change-password', { phone, oldPassword, newPassword })
+
+/**
+ * @description: 绑定手机号
+ */
+export const bindPhone = (phone: string) =>
+	post('/users/bind-phone', { phone })
+
+/**
  * @description: 全局搜索
  */
 export const search = (keyword: string, page = 1, limit = 20) =>

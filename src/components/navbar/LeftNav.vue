@@ -81,7 +81,7 @@
 							<Music class="w-3.5 h-3.5 mr-2 shrink-0" />
 							<span class="truncate">{{ playlist.title }}</span>
 						</Button>
-						<div v-if="playlists.length === 0 && isLoggedIn" class="text-xs text-gray-500 px-4 py-2">
+						<div v-if="playlists.length === 0 && auth.isLoggedIn" class="text-xs text-gray-500 px-4 py-2">
 							No playlists yet
 						</div>
 					</div>
@@ -146,12 +146,14 @@ import { useToast } from '@/composables/useToast'
 import { getUserPlaylists, createPlaylist } from '@/api'
 import { emitter } from '@/utils/mitt'
 
+import { useAuthStore } from '@/store/modules/auth'
+
 const router = useRouter()
 const route = useRoute()
 const toast = useToast()
+const auth = useAuthStore()
 
 const playlists = ref<any[]>([])
-const isLoggedIn = ref(!!localStorage.getItem('token'))
 const showCreateDialog = ref(false)
 const newPlaylistTitle = ref('')
 
@@ -230,7 +232,7 @@ const handleNavigation = (item: (typeof navItems)[0]) => {
 }
 
 const loadPlaylists = async () => {
-	if (!isLoggedIn.value) return
+	if (!auth.isLoggedIn) return
 	try {
 		const data = await getUserPlaylists() as any[]
 		playlists.value = Array.isArray(data) ? data : []
@@ -240,7 +242,7 @@ const loadPlaylists = async () => {
 }
 
 const handleCreatePlaylist = () => {
-	if (!isLoggedIn.value) {
+	if (!auth.isLoggedIn) {
 		toast.info('Please login first')
 		return
 	}

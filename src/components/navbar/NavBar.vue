@@ -172,7 +172,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import {
@@ -208,14 +208,14 @@ import {
 import NeteaseIcon from '@/assets/images/netease.png'
 import { emitter } from '@/utils/mitt'
 import { isElectron as checkIsElectron } from '@/utils/platform'
+import { useAuthStore } from '@/store/modules/auth'
 
 const router = useRouter()
 const route = useRoute()
+const auth = useAuthStore()
 const neteaseUser = ref({}) as any
-const isUserExist = ref(false)
 const isNeteaseLogin = ref(false)
 const searchQuery = ref('')
-const userPhone = ref('')
 const showUserMenu = ref(false)
 const showQRCode = ref(false)
 
@@ -254,54 +254,27 @@ const handleNavbarDrag = (event: MouseEvent) => {
 
 // 修改生命周期钩子
 onMounted(() => {
-	// 检查用户登录状态
-	const token = localStorage.getItem('token')
-	const user = token ? JSON.parse(localStorage.getItem('user') || '{}') : null
-	if (user && token) {
-		isUserExist.value = true
-		userPhone.value = user.phone
-		userData.value = user
-	}
-
 	if (localStorage.getItem('netease-cookie')) {
 		isNeteaseLogin.value = true
 		neteaseUser.value = JSON.parse(localStorage.getItem('netease-user') || '{}')
 	}
 
-	// 添加用户登录事件监听
-	window.addEventListener('user-login', ((event: CustomEvent) => {
-		const { user } = event.detail
-		console.log(user)
-		isUserExist.value = true
-		userPhone.value = user.phone
-		userData.value = user
-	}) as EventListener)
-
-	// 添加网易云登录事件监听
 	window.addEventListener('netease-login', ((event: CustomEvent) => {
 		const { user } = event.detail
 		isNeteaseLogin.value = true
 		neteaseUser.value = user
 	}) as EventListener)
 
-	// 添加存储变化监听
 	window.addEventListener('storage', updateUserData)
-
-	// 添加自定义事件监听
 	window.addEventListener('user-updated', updateUserData)
 
-	// 添加登录成功事件监听
-	emitter.on('login-success', (user: any) => {
-		console.log('login-success', user)
-		userData.value = user
-		isUserExist.value = true
-		userPhone.value = user.phone
+	emitter.on('login-success', () => {
+		isNeteaseLogin.value = false
+		neteaseUser.value = {}
 	})
 })
 
 onUnmounted(() => {
-	// 移除事件监听
-	window.removeEventListener('user-login', (() => {}) as EventListener)
 	window.removeEventListener('netease-login', (() => {}) as EventListener)
 	window.removeEventListener('storage', updateUserData)
 	window.removeEventListener('user-updated', updateUserData)
@@ -330,34 +303,24 @@ const handleLogout = (event?: MouseEvent) => {
 const confirmLogout = () => {
 	console.log('Confirming logout...')
 
-	// 清除所有存储的用户信息
-	localStorage.removeItem('user')
-	localStorage.removeItem('userId')
-	localStorage.removeItem('token')
+	auth.logout()
+
 	if (isNeteaseLogin.value) {
 		localStorage.removeItem('netease-cookie')
 		localStorage.removeItem('netease-user')
 	}
 
-	// 重置状态
-	isUserExist.value = false
+	// 重置网易云状态
 	isNeteaseLogin.value = false
-	userPhone.value = ''
 	neteaseUser.value = {}
-	userData.value = {}
 	showUserMenu.value = false
 	showLogoutConfirm.value = false
 
-	// 触发登出事件
-	emitter.emit('logout')
-
-	// 显示提示
 	toast({
 		title: '退出成功',
 		description: '您已成功退出登录',
 	})
 
-	// 导航到首页
 	router.push('/')
 }
 
@@ -410,15 +373,10 @@ const handleNeteaseClick = (event: MouseEvent) => {
 	})
 }
 
-// 添加用户数据响应式引用
-const userData: any = ref({})
-
-// 获取用户信息
-const userInfo = computed(() => {
-	const token = localStorage.getItem('token')
-	const user = localStorage.getItem('user')
-	return token && user ? JSON.parse(user) : null
-})
+// 添加用户数据响应式引用 — 跟随 auth store
+const userData = computed(() => auth.user || {})
+const isUserExist = computed(() => auth.isLoggedIn)
+const userPhone = computed(() => auth.user?.phone || '')
 
 // 修改更新用户数据的函数
 const updateUserData = () => {
@@ -426,14 +384,9 @@ const updateUserData = () => {
 	const user = localStorage.getItem('user')
 	try {
 		if (token && user) {
-			const parsedUser = JSON.parse(user)
-			userData.value = parsedUser
-			isUserExist.value = true
-			userPhone.value = parsedUser.phone
+			auth.setUser(JSON.parse(user))
 		} else {
-			userData.value = {}
-			isUserExist.value = false
-			userPhone.value = ''
+			auth.logout()
 		}
 	} catch (error) {
 		console.error('Error updating user data:', error)
@@ -454,15 +407,6 @@ const handleSearch = () => {
 		router.push({ name: 'search', query: { q } })
 	}
 }
-
-// 监听用户信息变化
-watch(userInfo, newValue => {
-	if (!newValue) {
-		userData.value = {}
-		isUserExist.value = false
-		userPhone.value = ''
-	}
-})
 
 // 创建响应式的 electron 环境检测
 const isElectron = ref(checkIsElectron())
