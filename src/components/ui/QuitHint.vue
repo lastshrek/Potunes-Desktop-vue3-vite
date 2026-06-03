@@ -1,6 +1,6 @@
 <template>
   <div
-    class="overflow-hidden transition-all duration-300 ease-in-out"
+    class="overflow-hidden transition-all duration-300 ease-in-out mt-16"
     :class="visible ? 'max-h-16' : 'max-h-0'"
   >
     <div
