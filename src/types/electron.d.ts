@@ -16,7 +16,7 @@ interface ElectronAPI {
 	onTrayControl: (callback: (event: IpcRendererEvent, command: string) => void) => () => void
 	updatePlayState: (isPlaying: boolean) => void
 	updateLyric: (lyric: string) => void
-	updateSongInfo: (info: { title: string; artist: string }) => void
+	updateSongInfo: (info: { title: string; artist: string; cover_url?: string }) => void
 	showUpdateDialog: (version: string, currentVersion: string, url: string) => Promise<void>
 	openInBrowser: (url: string) => Promise<void>
 }

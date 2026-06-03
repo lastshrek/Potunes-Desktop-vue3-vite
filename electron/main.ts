@@ -6,7 +6,7 @@
  * @Description:
  * @FilePath: /potunes-desktop-vue3-vite/electron/main.ts
  */
-import { app, BrowserWindow, ipcMain, Tray, nativeImage, globalShortcut, Menu } from 'electron'
+import { app, BrowserWindow, ipcMain, Tray, nativeImage, globalShortcut, Menu, session } from 'electron'
 import path from 'node:path'
 import type {} from '../types/global'
 
@@ -26,7 +26,10 @@ let appTray: Tray | null = null
 let lyricsTray: Tray | null = null
 let animationTimer: NodeJS.Timeout | null = null
 const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL']
-let currentPosition = 0
+let currentSongTitle = ''
+let lastLyricText = ''
+let lastCoverUrl = ''
+let appIconPath = ''
 let lastQuitTime = 0
 const QUIT_INTERVAL = 500 // 双击间隔时间（毫秒）
 let isAppActive = false
@@ -68,36 +71,64 @@ const cleanupTrayIcons = () => {
 	}
 }
 
+// 创建 1x1 透明占位图标（用于纯文字显示的托盘）
+function createTextTrayIcon() {
+	const TRANSPARENT_PNG =
+		'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
+	return nativeImage.createFromBuffer(Buffer.from(TRANSPARENT_PNG, 'base64'))
+}
+
+// 获取原生图标路径
+function getNativeIconPath(name: string) {
+	return app.isPackaged
+		? path.join(process.resourcesPath, 'dist/assets/menubar', `${name}-template.png`)
+		: path.join(__dirname, '../src/assets/images/menubar', `${name}-template.png`)
+}
+
 // 创建菜单栏控制按钮
 const createMenuBarControls = () => {
 	if (process.platform !== 'darwin') return
 
-	// 先清理已存在的托盘图标
 	cleanupTrayIcons()
 
 	try {
-		const createTemplateImage = (imageName: string) => {
-			const iconPath = app.isPackaged
-				? path.join(process.resourcesPath, 'dist/assets/menubar', `${imageName}-template.png`)
-				: path.join(__dirname, '../src/assets/images/menubar', `${imageName}-template.png`)
-			const icon = nativeImage.createFromPath(iconPath)
-			icon.setTemplateImage(true)
-			return icon.resize({
-				width: 18,
-				height: 18,
-				quality: 'best',
-			})
-		}
+		const emptyIcon = createTextTrayIcon()
 
-		// 创建应用图标（放在最右边，最先创建）
-		const appIconPath = app.isPackaged
-			? path.join(process.resourcesPath, 'dist/assets/menubar/app-template.png')
-			: path.join(__dirname, '../src/assets/images/menubar/app-template.png')
-		const appIcon = nativeImage.createFromPath(appIconPath)
+		// 歌词/歌曲信息（最左侧）
+		lyricsTray = new Tray(emptyIcon)
+		lyricsTray.setToolTip('PoTunes')
+		lyricsTray.setTitle('')
+
+		// 下一首（置于播放右侧）
+		nextTray = new Tray(emptyIcon)
+		nextTray.setTitle('▷')
+		nextTray.setToolTip('下一首')
+		nextTray.on('click', () => {
+			win?.webContents.send('tray-control', 'next-track')
+		})
+
+		// 播放/暂停
+		playTray = new Tray(emptyIcon)
+		playTray.setTitle('▶')
+		playTray.setToolTip('播放/暂停')
+		playTray.on('click', () => {
+			win?.webContents.send('tray-control', 'toggle-play')
+		})
+
+		// 上一首（置于播放左侧）
+		previousTray = new Tray(emptyIcon)
+		previousTray.setTitle('◁')
+		previousTray.setToolTip('上一首')
+		previousTray.on('click', () => {
+			win?.webContents.send('tray-control', 'prev-track')
+		})
+
+		// 应用图标（最右侧，保留原 PNG 图标）
+		const appIcon = nativeImage.createFromPath(getNativeIconPath('app'))
 		appIcon.setTemplateImage(true)
+		appIconPath = getNativeIconPath('app')
 		appTray = new Tray(appIcon.resize({ width: 18, height: 18, quality: 'best' }))
 		appTray.setToolTip('PoTunes')
-		appTray.setTitle('') // 应用图标不显示文字
 		appTray.on('click', () => {
 			if (win) {
 				if (win.isVisible()) {
@@ -107,43 +138,6 @@ const createMenuBarControls = () => {
 				}
 			}
 		})
-
-		// 创建下一首按钮
-		nextTray = new Tray(createTemplateImage('next'))
-		nextTray.setToolTip('下一首')
-		nextTray.on('click', () => {
-			win?.webContents.send('tray-control', 'next-track')
-		})
-
-		// 创建播放/暂停按钮
-		playTray = new Tray(createTemplateImage('play'))
-		playTray.setToolTip('播放/暂停')
-		playTray.on('click', () => {
-			win?.webContents.send('tray-control', 'toggle-play')
-		})
-
-		// 创建上一首按钮
-		previousTray = new Tray(createTemplateImage('previous'))
-		previousTray.setToolTip('上一首')
-		previousTray.on('click', () => {
-			win?.webContents.send('tray-control', 'prev-track')
-		})
-
-		// 创建歌词显示托盘（放在最左侧，最后创建）
-		const emptyIconPath = app.isPackaged
-			? path.join(process.resourcesPath, 'dist/assets/menubar', 'empty.png')
-			: path.join(__dirname, '../src/assets/images/menubar', 'empty.png')
-		const emptyIcon = nativeImage.createFromPath(emptyIconPath)
-		emptyIcon.setTemplateImage(true)
-		lyricsTray = new Tray(emptyIcon.resize({ width: 18, height: 18, quality: 'best' }))
-		lyricsTray.setToolTip('歌词')
-		// 设置初始空白标题
-		lyricsTray.setTitle('')
-
-		// 设置图标位置，使其紧密排列
-		nextTray.setTitle('') // 控制按钮之间不留间距
-		playTray.setTitle('')
-		previousTray.setTitle('')
 
 		return playTray
 	} catch (error) {
@@ -168,7 +162,6 @@ function createWindow() {
 			nodeIntegration: true,
 			contextIsolation: true,
 			preload: path.join(__dirname, 'preload.js'),
-			webSecurity: false,
 		},
 	})
 
@@ -264,6 +257,18 @@ const createMenu = () => {
 }
 
 app.on('ready', () => {
+	// 设置 Content-Security-Policy（宽松策略以支持网易云等外部资源）
+	session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+		callback({
+			responseHeaders: {
+				...details.responseHeaders,
+				'Content-Security-Policy': [
+					"default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src * data: blob:; media-src *; font-src 'self' data:; connect-src * http://localhost:* ws://localhost:*",
+				],
+			},
+		})
+	})
+
 	createWindow()
 	createMenu() // 创建应用菜单
 	// 等待一会儿再创建托盘图标
@@ -330,128 +335,156 @@ app.on('will-quit', () => {
 // 监听播放状态变化
 ipcMain.on('update-play-state', (_, isPlaying: boolean) => {
 	if (!playTray) return
-
-	try {
-		const iconPath = app.isPackaged
-			? path.join(process.resourcesPath, 'dist/assets/menubar', `${isPlaying ? 'pause' : 'play'}-template.png`)
-			: path.join(__dirname, '../src/assets/images/menubar', `${isPlaying ? 'pause' : 'play'}-template.png`)
-
-		const icon = nativeImage.createFromPath(iconPath)
-		icon.setTemplateImage(true)
-		playTray.setImage(
-			icon.resize({
-				width: 18,
-				height: 18,
-				quality: 'best',
-			})
-		)
-	} catch (error) {
-		console.error('更新播放状态图标失败:', error)
-	}
+	playTray.setTitle(isPlaying ? '⏸' : '▶')
 })
 
-// 监听歌词变化
-ipcMain.on('update-lyric', (_, lyric: string) => {
-	if (!lyricsTray) {
-		console.log('lyricsTray 不存在')
-		return
-	}
+// 确保文本不含换行
+const sanitizeTitle = (s: string) => s.replace(/[\r\n]+/g, ' ')
 
-	console.log('收到歌词更新:', lyric)
+// 滚动歌词
+function startMarquee(text: string) {
+	if (!lyricsTray) return
+	text = sanitizeTitle(text)
 
-	// 停止任何正在进行的滚动动画
 	if (animationTimer) {
 		clearTimeout(animationTimer)
 		animationTimer = null
 	}
 
-	// 移除时间标记和首尾空白字符
-	const cleanLyric = lyric
-		.replace(/\[\d{2}:\d{2}\.\d{1,3}\]/g, '') // 支持 1-3 位毫秒 [00:27.46] 或 [00:27.462]
-		.replace(/\[\d{2}:\d{2}\]/g, '') // [00:27]
-		.replace(/\【\d{2}:\d{2}\.\d{1,3}\】/g, '') // 【00:27.462】
-		.trim()
-
-	console.log('清理后的歌词:', cleanLyric)
-
-	// 如果清理后没有内容，显示空白
-	if (!cleanLyric || cleanLyric.length === 0) {
-		console.log('清理后歌词为空，设置空白')
-		lyricsTray.setTitle('')
+	if (text.length <= 50) {
+		lyricsTray.setTitle(text)
 		return
 	}
 
-	// 如果歌词长度小于等于最大长度，直接显示
-	const maxLength = 60
-	if (cleanLyric.length <= maxLength) {
-		console.log('歌词长度合适，直接显示:', cleanLyric)
-		lyricsTray.setTitle(cleanLyric)
-		return
-	}
+	const displayWidth = 48
+	const padding = '     '
+	const scrollText = text + padding
+	const HOLD_START = 1800
+	const HOLD_END = 1200
+	const STEP_MS = 80
+	let position = 0
+	let phase: 'hold-start' | 'scroll' | 'hold-end' = 'hold-start'
+	let holdStart = Date.now()
 
-	// 在歌词后面加上空格，只滚动一次
-	const scrollText = cleanLyric + '     '
+	lyricsTray.setTitle(text.slice(0, displayWidth))
 
-	// 重置当前位置
-	currentPosition = 0
+	function tick() {
+		if (!lyricsTray) return
 
-	// 创建滚动效果
-	let lastTime = Date.now()
-	const scrollSpeed = 0.01 // 降低滚动速度
-
-	const updateScroll = () => {
-		if (!lyricsTray) {
-			if (animationTimer) {
-				clearTimeout(animationTimer)
-				animationTimer = null
+		if (phase === 'hold-start') {
+			if (Date.now() - holdStart >= HOLD_START) {
+				phase = 'scroll'
 			}
+			animationTimer = setTimeout(tick, STEP_MS)
 			return
 		}
 
-		const currentTime = Date.now()
-		const deltaTime = currentTime - lastTime
-		lastTime = currentTime
-
-		currentPosition += scrollSpeed * deltaTime
-
-		// 当滚动到末尾时停止
-		if (currentPosition >= cleanLyric.length) {
-			if (animationTimer) {
-				clearTimeout(animationTimer)
-				animationTimer = null
+		if (phase === 'hold-end') {
+			if (Date.now() - holdStart >= HOLD_END) {
+				position = 0
+				phase = 'hold-start'
+				holdStart = Date.now()
+				lyricsTray.setTitle(text.slice(0, displayWidth))
 			}
+			animationTimer = setTimeout(tick, STEP_MS)
 			return
 		}
 
-		const displayText = scrollText.substring(currentPosition, currentPosition + maxLength)
-		console.log('更新滚动歌词:', displayText)
-		lyricsTray.setTitle(displayText)
+		position += 2
 
-		// 使用 setTimeout 来模拟 requestAnimationFrame
-		animationTimer = setTimeout(updateScroll, 16) // 约60fps
+		if (position + displayWidth >= scrollText.length) {
+			lyricsTray.setTitle(scrollText.slice(position))
+			phase = 'hold-end'
+			holdStart = Date.now()
+		} else {
+			lyricsTray.setTitle(scrollText.slice(position, position + displayWidth))
+		}
+
+		animationTimer = setTimeout(tick, STEP_MS)
 	}
 
-	// 启动动画
-	updateScroll()
-})
+	animationTimer = setTimeout(tick, HOLD_START)
+}
 
-// 监听歌曲信息变化
-ipcMain.on('update-song-info', (_, { title, artist }: { title: string; artist: string }) => {
+// 监听歌词变化
+ipcMain.on('update-lyric', (_, lyric: string) => {
 	if (!lyricsTray) return
 
-	// 如果没有歌曲信息，显示空白
-	if (!title && !artist) {
-		lyricsTray.setTitle('')
+	const cleanLyric = lyric
+		.replace(/\[\d{2}:\d{2}\.\d{1,3}\]/g, '')
+		.replace(/\[\d{2}:\d{2}\]/g, '')
+		.replace(/\【\d{2}:\d{2}\.\d{1,3}\】/g, '')
+		.replace(/[\r\n]+/g, ' ')
+		.replace(/\s+/g, ' ')
+		.trim()
+
+	if (cleanLyric === lastLyricText) return
+
+	if (!cleanLyric) {
+		if (animationTimer) {
+			clearTimeout(animationTimer)
+			animationTimer = null
+		}
+		lastLyricText = ''
+		if (currentSongTitle) {
+			lyricsTray.setTitle(currentSongTitle.length > 50 ? currentSongTitle.slice(0, 50) + '...' : currentSongTitle)
+		} else {
+			lyricsTray.setTitle('')
+		}
 		return
 	}
 
-	// 限制标题长度，防止太长
-	const maxLength = 60
-	const songInfo = `${title} - ${artist}`
-	const displayText = songInfo.length > maxLength ? songInfo.slice(0, maxLength) + '...' : songInfo
+	lastLyricText = cleanLyric
+	startMarquee(cleanLyric)
+})
 
-	// 只有在没有正在显示歌词时才显示歌曲信息
+// 更新专辑封面到状态栏图标
+async function updateAppTrayCover(coverUrl: string) {
+	if (!appTray) return
+	if (coverUrl === lastCoverUrl) return
+	lastCoverUrl = coverUrl
+
+	if (!coverUrl) {
+		const img = nativeImage.createFromPath(appIconPath)
+		img.setTemplateImage(true)
+		appTray.setImage(img.resize({ width: 18, height: 18, quality: 'best' }))
+		return
+	}
+
+	try {
+		const res = await fetch(coverUrl)
+		const buf = Buffer.from(await res.arrayBuffer())
+		const img = nativeImage.createFromBuffer(buf)
+		img.setTemplateImage(true)
+		appTray.setImage(img.resize({ width: 18, height: 18, quality: 'best' }))
+	} catch {
+		const img = nativeImage.createFromPath(appIconPath)
+		img.setTemplateImage(true)
+		appTray.setImage(img.resize({ width: 18, height: 18, quality: 'best' }))
+	}
+}
+
+// 监听歌曲信息变化
+ipcMain.on('update-song-info', (_, { title, artist, cover_url }: { title: string; artist: string; cover_url?: string }) => {
+	if (!lyricsTray) return
+
+	if (!title && !artist) {
+		currentSongTitle = ''
+		lastCoverUrl = ''
+		updateAppTrayCover('')
+		if (lyricsTray.getTitle() === '' || !lyricsTray.getTitle()) {
+			lyricsTray.setTitle('')
+		}
+		return
+	}
+
+	currentSongTitle = sanitizeTitle(`${title} - ${artist}`)
+	lastLyricText = ''
+
+	updateAppTrayCover(cover_url || '')
+
 	if (!lyricsTray.getTitle()) {
+		const displayText = sanitizeTitle(currentSongTitle.length > 50 ? currentSongTitle.slice(0, 50) + '...' : currentSongTitle)
 		lyricsTray.setTitle(displayText)
 	}
 })

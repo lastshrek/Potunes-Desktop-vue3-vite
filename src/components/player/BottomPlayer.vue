@@ -582,8 +582,10 @@ watch(
 		if (newSong && newSong.name) {
 			electron.updateSongInfo({
 				title: newSong.name,
-				artist: newSong.ar.map((a: { name: string }) => a.name).join('/'),
+				artist: newSong.ar?.map((a: { name: string }) => a.name).join('/') || newSong.artist || '',
+				cover_url: newSong.cover_url,
 			})
+			updateMediaSession()
 			// 获取歌词
 			lyricsStore.fetchLyrics(newSong.id, newSong.nId)
 		} else {
@@ -812,6 +814,10 @@ watch(
 	async newValue => {
 		// 更新菜单栏播放状态
 		electron.updatePlayState(newValue)
+		// 同步 Media Session 播放状态
+		if ('mediaSession' in navigator) {
+			navigator.mediaSession.playbackState = newValue ? 'playing' : 'paused'
+		}
 
 		if (!audio.value || currentTrack.url === '') return
 
@@ -896,6 +902,19 @@ const handleTrayControl = (event: Electron.IpcRendererEvent, command: string) =>
 			}
 			break
 	}
+}
+
+// 更新 Media Session 元数据
+function updateMediaSession() {
+	if (!('mediaSession' in navigator)) return
+	navigator.mediaSession.metadata = new MediaMetadata({
+		title: currentTrack.name || '',
+		artist: currentTrack.ar?.map((a: { name: string }) => a.name).join('/') || '',
+		album: currentTrack.album || '',
+		artwork: currentTrack.cover_url
+			? [{ src: currentTrack.cover_url, sizes: '512x512', type: 'image/jpeg' }]
+			: [],
+	})
 }
 
 // 检查当前歌曲是否已收藏
@@ -1028,6 +1047,19 @@ onMounted(() => {
 
 	// 注册 tray 控制监听
 	window.electron?.onTrayControl(handleTrayControl)
+
+	// 注册 Media Session action handlers
+	if ('mediaSession' in navigator) {
+		navigator.mediaSession.setActionHandler('play', () => isPlaying.setIsPlaying(true))
+		navigator.mediaSession.setActionHandler('pause', () => isPlaying.setIsPlaying(false))
+		navigator.mediaSession.setActionHandler('previoustrack', prev)
+		navigator.mediaSession.setActionHandler('nexttrack', next)
+		navigator.mediaSession.setActionHandler('seekto', (details) => {
+			if (audio.value && details.seekTime != null) {
+				audio.value.currentTime = details.seekTime
+			}
+		})
+	}
 
 	// 监听登出事件
 	emitter.on('logout', () => {

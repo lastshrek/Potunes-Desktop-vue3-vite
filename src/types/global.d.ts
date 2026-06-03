@@ -13,7 +13,7 @@ declare global {
 			onTrayControl: (callback: (event: Electron.IpcRendererEvent, command: string) => void) => void
 			updatePlayState: (isPlaying: boolean) => void
 			updateLyric: (lyric: string) => void
-			updateSongInfo: (info: { title: string; artist: string }) => void
+			updateSongInfo: (info: { title: string; artist: string; cover_url?: string }) => void
 			getAssetPath: (path: string) => string
 		}
 	}

@@ -25,7 +25,7 @@ contextBridge.exposeInMainWorld('electron', {
 	updateLyric: (lyric: string) => {
 		ipcRenderer.send('update-lyric', lyric)
 	},
-	updateSongInfo: (info: { title: string; artist: string }) => {
+	updateSongInfo: (info: { title: string; artist: string; cover_url?: string }) => {
 		ipcRenderer.send('update-song-info', info)
 	},
 	openInBrowser: (url: string) => shell.openExternal(url),
