@@ -1,7 +1,7 @@
 <template>
   <div
-    class="overflow-hidden transition-all duration-300 ease-in-out mt-16"
-    :class="visible ? 'max-h-16' : 'max-h-0'"
+    class="overflow-hidden transition-all duration-300 ease-in-out"
+    :class="visible ? 'max-h-16 opacity-100 mt-16' : 'max-h-0 opacity-0'"
   >
     <div
       v-show="visible"
