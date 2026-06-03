@@ -25,6 +25,8 @@ export const useLyricsStore = defineStore('lyrics', {
 			if (id === -1) return
 			this.loading = true
 			this.error = null
+			this.lrc = ''
+			this.lrc_cn = ''
 			try {
 				const [res] = await handlePromise(getLyrics(id, nId))
 				if (!res) return
