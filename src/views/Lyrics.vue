@@ -260,60 +260,78 @@
 						</div>
 					</div>
 
-					<!-- 右侧：歌词区域 -->
-					<div
-						v-if="!lyricsStore.loading && !lyricsStore.error && parsedLyrics.length"
-						class="w-1/2 h-full py-20 relative lyrics-container"
-					>
-						<!-- 歌词内容 -->
-						<div
-							class="h-full overflow-y-auto overflow-x-hidden relative"
-							style="-webkit-app-region: no-drag"
-							ref="lyricsContainer"
-							@mouseenter="pauseAutoScroll"
-							@mouseleave="resumeAutoScroll"
-							@blur="resumeAutoScroll"
+				<!-- 右侧：歌词区域 -->
+				<div
+					v-if="!lyricsStore.loading && !lyricsStore.error && parsedLyrics.length"
+					class="w-1/2 h-full py-12 relative lyrics-container"
+				>
+					<!-- 翻译开关 -->
+					<div class="absolute top-4 right-4 z-10" style="-webkit-app-region: no-drag">
+						<Button
+							variant="link"
+							size="icon"
+							class="text-white/50 hover:text-white transition-colors"
+							:style="{ color: showTranslation ? `rgb(${secondaryColor.join(',')})` : undefined }"
+							@click="showTranslation = !showTranslation"
+							:title="showTranslation ? '隐藏翻译' : '显示翻译'"
 						>
-							<div v-if="lyricsStore.loading" class="text-center py-4">加载中...</div>
-							<div v-else-if="lyricsStore.error" class="text-center text-red-500 py-4">
-								{{ lyricsStore.error }}
-							</div>
-							<ul v-else class="space-y-6 pb-[50vh]">
-								<li class="h-[50vh]"></li>
-								<li
-									v-for="(item, index) in parsedLyrics"
-									:key="index"
-									:class="{
-										'transform transition-all duration-300': true,
-										'active scale-110 opacity-100': isCurrentLyric(item, index),
-										'opacity-50 scale-100': !isCurrentLyric(item, index),
-									}"
-									:ref="el => (lyricRefs[index] = el as HTMLElement)"
-									class="transition-all duration-300 px-4 py-2 cursor-pointer hover:opacity-100 w-full break-words"
-									@click="seekToTime(item.time)"
-								>
-									<p
-										class="mb-1 text-center text-lg text-white break-words whitespace-pre-wrap max-w-full"
-										:class="{
-											'font-bold': isCurrentLyric(item, index),
-										}"
-									>
-										{{ item.lrc }}
-									</p>
-									<p
-										v-if="item.translation && item.translation !== 'unwritten'"
-										class="text-sm text-center text-white break-words whitespace-pre-wrap max-w-full"
-										:class="{
-											'font-bold': isCurrentLyric(item, index),
-										}"
-									>
-										{{ item.translation }}
-									</p>
-								</li>
-								<li class="h-[50vh]"></li>
-							</ul>
-						</div>
+							<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+								<path d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8" />
+								<path d="M10 12h4" />
+								<path d="M12 10v4" />
+							</svg>
+						</Button>
 					</div>
+					<!-- 歌词内容 -->
+					<div
+						class="h-full overflow-y-auto overflow-x-hidden relative lyrics-scroll-area"
+						style="-webkit-app-region: no-drag"
+						ref="lyricsContainer"
+						@mouseenter="pauseAutoScroll"
+						@mouseleave="resumeAutoScroll"
+						@blur="resumeAutoScroll"
+					>
+						<div v-if="lyricsStore.loading" class="text-center py-4">加载中...</div>
+						<div v-else-if="lyricsStore.error" class="text-center text-red-500 py-4">
+							{{ lyricsStore.error }}
+						</div>
+						<ul v-else class="space-y-4 pb-[50vh]">
+							<li class="h-[50vh]"></li>
+							<li
+								v-for="(item, index) in parsedLyrics"
+								:key="index"
+								:class="{
+									'transform transition-all duration-300': true,
+									'active scale-110 opacity-100': currentLyricIndex === index,
+									'opacity-60 scale-100': currentLyricIndex !== index,
+									'lyric-item-clicked': clickedLineIndex === index,
+								}"
+								:ref="el => (lyricRefs[index] = el as HTMLElement)"
+								class="transition-all duration-300 px-6 py-1.5 cursor-pointer hover:opacity-100 w-full break-words lyrics-text"
+								@click="onLyricClick(item.time, index)"
+							>
+								<p
+									class="mb-1 text-center text-lg break-words whitespace-pre-wrap max-w-full"
+									:class="{
+										'font-bold': currentLyricIndex === index,
+									}"
+								>
+									{{ item.lrc }}
+								</p>
+								<p
+									v-if="showTranslation && item.translation && item.translation !== 'unwritten'"
+									class="text-sm text-center break-words whitespace-pre-wrap max-w-full"
+									:class="{
+										'font-bold': currentLyricIndex === index,
+									}"
+								>
+									{{ item.translation }}
+								</p>
+							</li>
+							<li class="h-[50vh]"></li>
+						</ul>
+					</div>
+				</div>
 				</div>
 			</div>
 		</div>
@@ -332,7 +350,7 @@ import { useCurrentProgressStore } from '@/store/modules/currentProgress'
 import { formatTime, formatCurrentTime } from '@/utils'
 import { useLyricsStore } from '@/store/modules/lyrics'
 import { emitter } from '@/utils/mitt'
-import { computed, onMounted, watch, onUnmounted } from 'vue'
+import { computed, onMounted, watch } from 'vue'
 import { useCurrentTrackStore } from '@/store/modules/currenttrack'
 import { PlayMode, usePlayModeStore } from '@/store/modules/playMode'
 import ColorThief from 'colorthief'
@@ -410,33 +428,34 @@ const parsedLyrics = computed<LyricItem[]>(() => {
 		.sort((a, b) => a.time - b.time)
 })
 
-// 添加延迟状态
-const shouldCenter = ref<boolean>(false)
-let timer: NodeJS.Timeout | null = null
+// 封面居中 — 无歌词时立即居左
+const shouldCenter = computed(() => {
+	return !!(lyricsStore.loading || lyricsStore.error || !parsedLyrics.value.length)
+})
 
-// 处理延迟居中
-const handleCenterDelay = () => {
-	if (timer) clearTimeout(timer)
+// 当前歌词索引（只计算一次）
+const currentLyricIndex = computed(() => {
+	const time = currentTime.value
+	return parsedLyrics.value.findIndex(
+		(item: LyricItem, index: number) => time >= item.time && time < (parsedLyrics.value[index + 1]?.time || Infinity)
+	)
+})
 
-	if (!lyricsStore.loading && !lyricsStore.error && parsedLyrics.value.length) {
-		shouldCenter.value = false
-		return
-	}
+// 歌词翻译开关
+const showTranslation = ref(true)
 
-	timer = setTimeout(() => {
-		shouldCenter.value = !!(lyricsStore.loading || lyricsStore.error || !parsedLyrics.value.length)
-	}, 5000)
+// 歌词点击反馈
+const clickedLineIndex = ref<number | null>(null)
+let clickFeedbackTimer: ReturnType<typeof setTimeout> | null = null
+
+const onLyricClick = (time: number, index: number) => {
+	clickedLineIndex.value = index
+	if (clickFeedbackTimer) clearTimeout(clickFeedbackTimer)
+	clickFeedbackTimer = setTimeout(() => {
+		clickedLineIndex.value = null
+	}, 300)
+	seekToTime(time)
 }
-
-// 监听歌词状态变化
-watch([() => lyricsStore.loading, () => lyricsStore.error, () => parsedLyrics.value.length], handleCenterDelay, {
-	immediate: true,
-})
-
-// 组件卸载时清理定时器
-onUnmounted(() => {
-	if (timer) clearTimeout(timer)
-})
 
 const value = ref(0)
 const lyricsContainer = ref<HTMLElement | null>(null)
@@ -464,7 +483,7 @@ const resumeAutoScroll = () => {
 		if (currentTime.value > 0) {
 			scrollToCurrentLyric(currentTime.value, true)
 		}
-	}, 2000)
+	}, 800)
 }
 
 // 修改 debouncedScroll 函数，添加自动滚动控制
@@ -634,12 +653,6 @@ onMounted(() => {
 	audio.value = document.querySelector('audio')
 })
 
-// 判断是否是当前播放的歌词
-const isCurrentLyric = (item: LyricItem, index: number) => {
-	const time = currentTime.value
-	return time >= item.time && time < (parsedLyrics.value[index + 1]?.time || Infinity)
-}
-
 // 添加循环模式切换方法
 const repeatMode = () => {
 	if (playMode.playMode == PlayMode.Sequence) {
@@ -723,26 +736,24 @@ const toggleLike = async () => {
 }
 
 ::-webkit-scrollbar-thumb {
-	background: #4a4a4a;
+	background: rgba(255, 255, 255, 0.25);
 	border-radius: 2px;
 }
 
-/* 添加文字描边效果 */
-.text-stroke {
+/* 渐变遮罩 — 歌词列表顶部/底部淡出 */
+.lyrics-scroll-area {
+	-webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%);
+	mask-image: linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%);
+}
+
+/* 歌词文字描边 */
+.lyrics-text {
 	color: white;
 	text-shadow: -0.5px -0.5px 0 rgba(0, 0, 0, 0.3), 0.5px -0.5px 0 rgba(0, 0, 0, 0.3), -0.5px 0.5px 0 rgba(0, 0, 0, 0.3),
 		0.5px 0.5px 0 rgba(0, 0, 0, 0.3);
 }
 
-/* 应用到所有文字元素 */
-h2,
-p,
-span,
-li {
-	@apply text-stroke text-white;
-}
-
-/* 添加歌词专用样式 */
+/* 歌词容器 */
 .lyrics-container {
 	font-family: 'Inter', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
 }
@@ -755,6 +766,12 @@ li {
 .lyrics-line.active {
 	font-weight: 600;
 	@apply text-[#da5597];
+}
+
+/* 歌词行点击反馈 */
+.lyric-item-clicked {
+	transform: scale(1.02);
+	transition: transform 0.15s ease-out;
 }
 
 /* 中文歌词特殊处理 */
