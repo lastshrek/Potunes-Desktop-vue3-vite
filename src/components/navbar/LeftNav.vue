@@ -40,7 +40,7 @@
 					<Button
 						variant="ghost"
 						class="w-full justify-start pl-4 text-gray-400 hover:text-white hover:bg-gray-800/50"
-						@click="router.push('/favourites')"
+						@click="handleFavouritesClick"
 					>
 						<Heart class="mr-2 h-4 w-4" />
 						Favourites
@@ -231,6 +231,14 @@ const handleNavigation = (item: (typeof navItems)[0]) => {
 	}
 }
 
+const handleFavouritesClick = () => {
+	if (!auth.isLoggedIn) {
+		toast.info('Please login first')
+		return
+	}
+	router.push('/favourites')
+}
+
 const loadPlaylists = async () => {
 	if (!auth.isLoggedIn) return
 	try {
@@ -268,12 +276,14 @@ onMounted(() => {
 	window.addEventListener('user-login', loadPlaylists as any)
 	window.addEventListener('user-updated', loadPlaylists as any)
 	emitter.on('playlist-changed', loadPlaylists)
+	emitter.on('logout', () => { playlists.value = [] })
 })
 
 onUnmounted(() => {
 	window.removeEventListener('user-login', loadPlaylists as any)
 	window.removeEventListener('user-updated', loadPlaylists as any)
 	emitter.off('playlist-changed', loadPlaylists)
+	emitter.off('logout')
 })
 </script>
 
