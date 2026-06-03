@@ -252,24 +252,18 @@ const handleNavbarDrag = (event: MouseEvent) => {
 	}
 }
 
-const handleNeteaseLogin = ((event: CustomEvent) => {
-	const { user } = event.detail
-	isNeteaseLogin.value = true
-	neteaseUser.value = user
-}) as EventListener
-
 // 修改生命周期钩子
 onMounted(() => {
 	if (localStorage.getItem('netease-cookie')) {
 		isNeteaseLogin.value = true
-		try {
-			neteaseUser.value = JSON.parse(localStorage.getItem('netease-user') || '{}')
-		} catch {
-			neteaseUser.value = {}
-		}
+		neteaseUser.value = JSON.parse(localStorage.getItem('netease-user') || '{}')
 	}
 
-	window.addEventListener('netease-login', handleNeteaseLogin)
+	window.addEventListener('netease-login', ((event: CustomEvent) => {
+		const { user } = event.detail
+		isNeteaseLogin.value = true
+		neteaseUser.value = user
+	}) as EventListener)
 
 	window.addEventListener('storage', updateUserData)
 	window.addEventListener('user-updated', updateUserData)
@@ -281,7 +275,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-	window.removeEventListener('netease-login', handleNeteaseLogin)
+	window.removeEventListener('netease-login', (() => {}) as EventListener)
 	window.removeEventListener('storage', updateUserData)
 	window.removeEventListener('user-updated', updateUserData)
 	emitter.off('login-success')
