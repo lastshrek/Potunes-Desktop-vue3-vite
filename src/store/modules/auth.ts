@@ -3,8 +3,9 @@ import { ref, computed } from 'vue'
 import { login as loginApi, register as registerApi, registerWithBind } from '@/api'
 import { sha256 } from '@/utils/crypto'
 import { emitter } from '@/utils/mitt'
+import type { User, LoginResponse } from '@/interfaces/user'
 
-function loadStoredUser(): Record<string, any> | null {
+function loadStoredUser(): User | null {
 	try {
 		const raw = localStorage.getItem('user')
 		return raw ? JSON.parse(raw) : null
@@ -13,7 +14,7 @@ function loadStoredUser(): Record<string, any> | null {
 
 export const useAuthStore = defineStore('auth', () => {
 	const token = ref(localStorage.getItem('token') || '')
-	const user = ref<Record<string, any> | null>(loadStoredUser())
+	const user = ref<User | null>(loadStoredUser())
 
 	const isLoggedIn = computed(() => !!token.value)
 	const userId = computed(() => user.value?.id || 0)
@@ -35,8 +36,8 @@ export const useAuthStore = defineStore('auth', () => {
 
 	async function login(account: string, password: string) {
 		const hashed = await sha256(password)
-		const res: any = await loginApi(account, hashed)
-		const data = res.data || res
+		const res = await loginApi(account, hashed) as LoginResponse
+		const data = res
 		token.value = data.token
 		user.value = data.user
 		persist()
@@ -46,10 +47,10 @@ export const useAuthStore = defineStore('auth', () => {
 
 	async function register(username: string, password: string, oldPhone?: string) {
 		const hashed = await sha256(password)
-		const res: any = oldPhone
-			? await registerWithBind(username, hashed, oldPhone)
-			: await registerApi(username, hashed)
-		const data = res.data || res
+		const res = oldPhone
+			? await registerWithBind(username, hashed, oldPhone) as LoginResponse
+			: await registerApi(username, hashed) as LoginResponse
+		const data = res
 		token.value = data.token
 		user.value = data.user
 		persist()
@@ -64,7 +65,7 @@ export const useAuthStore = defineStore('auth', () => {
 		emitter.emit('logout')
 	}
 
-	function setUser(data: Record<string, any>) {
+	function setUser(data: User) {
 		user.value = data
 		persist()
 	}

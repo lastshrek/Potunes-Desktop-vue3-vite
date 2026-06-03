@@ -208,6 +208,7 @@ import NeteaseIcon from '@/assets/images/netease.png'
 import { emitter } from '@/utils/mitt'
 import { isElectron as checkIsElectron } from '@/utils/platform'
 import { useAuthStore } from '@/store/modules/auth'
+import type { User as UserType } from '@/interfaces/user'
 
 const router = useRouter()
 const route = useRoute()
@@ -373,7 +374,7 @@ const handleNeteaseClick = (event: MouseEvent) => {
 }
 
 // 添加用户数据响应式引用 — 跟随 auth store
-const userData = computed(() => auth.user || {})
+const userData = computed(() => auth.user || {} as UserType)
 const isUserExist = computed(() => auth.isLoggedIn)
 const userPhone = computed(() => auth.user?.phone || '')
 const avatarBroken = ref(false)

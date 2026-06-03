@@ -204,6 +204,7 @@ import 'vue-advanced-cropper/dist/style.css'
 import { handlePromise } from '@/utils'
 import { updateUserAvatar, updateUserInfo } from '@/api'
 import { useAuthStore } from '@/store/modules/auth'
+import type { User } from '@/interfaces/user'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -357,7 +358,7 @@ const handleCropComplete = async () => {
 		if (!res) throw new Error('更新头像失败')
 
 		const userData = { ...auth.user, avatar: base64 }
-		auth.setUser(userData)
+		auth.setUser(userData as User)
 		form.value = { ...form.value, avatar: base64 }
 
 		window.dispatchEvent(new CustomEvent('user-updated', { detail: { avatar: base64 } }))
@@ -389,7 +390,7 @@ function normalizeAvatar(raw: string | undefined | null): string {
 }
 
 onMounted(() => {
-	const user = auth.user || {}
+	const user = auth.user || {} as User
 	form.value = {
 		phone: user.phone || '',
 		nickname: user.nickname || '',
@@ -404,7 +405,7 @@ const handleSubmit = async () => {
 	try {
 		await new Promise(resolve => setTimeout(resolve, 1000))
 
-		const userData = auth.user || {}
+		const userData = auth.user || {} as User
 		const updatedUser = {
 			...userData,
 			nickname: form.value.nickname,
@@ -416,7 +417,7 @@ const handleSubmit = async () => {
 		const [ures] = await handlePromise(updateUserInfo(updatedUser))
 		if (!ures) throw new Error('更新用户信息失败')
 
-		auth.setUser(updatedUser)
+		auth.setUser(updatedUser as User)
 		window.dispatchEvent(new CustomEvent('user-updated', { detail: updatedUser }))
 
 		toast({ title: '保存成功', description: '个人资料已更新' })

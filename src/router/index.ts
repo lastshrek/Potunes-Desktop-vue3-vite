@@ -133,14 +133,14 @@ const router = createRouter({
 	routes,
 })
 
-// 修改导航守卫
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _from, next) => {
 	next()
 })
 
-/** 解决跳转重复路由报错问题 */
-const originalPush = router.push
-router.push = function push(location: any) {
-	return (originalPush.call(this, location) as any).catch((err: any) => err)
-}
+router.onError(err => {
+	if (err.name !== 'NavigationDuplicated') {
+		console.error('Router error:', err)
+	}
+})
+
 export default router
