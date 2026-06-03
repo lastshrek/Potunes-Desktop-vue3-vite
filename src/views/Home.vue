@@ -246,7 +246,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick, Ref, computed, onUnmounted, onActivated, onDeactivated } from 'vue'
+import { ref, onMounted, Ref, computed, onUnmounted, onActivated } from 'vue'
 import { Button } from '@/components/ui/button'
 import {
 	Dialog,
@@ -277,133 +277,56 @@ import radioIcon from '@/assets/images/radio.png'
 
 // 是否在加载中
 const isLoading = ref(true)
-// 初始化时也触发动画
-onMounted(() => {
-	nextTick(async () => {
-		try {
-			isLoading.value = true
-			await getLatestCollection()
-			await getLatestFinal()
-			await getLatestInnerAlbum()
-			await getNeteaseTopCharts()
-			await getNeteaseTopAlbum()
-			// 检查网易云登录状态
-			const neteaseCookie = localStorage.getItem('netease-cookie')
-			if (neteaseCookie) {
-				isNeteaseLogin.value = true
-				await getNeteaseRecommendDaily()
-			}
-		} finally {
-			isLoading.value = false
-		}
-	})
-})
-/**
- * @description: 获取最新的一个月度精选集
- */
+
+// 数据获取
 const lastestCollections: Ref<Playlist[]> = ref([])
-const getLatestCollection = async () => {
-	try {
-		const [res] = await handlePromise(latestCollection())
-		if (!res) return
-		// 确保数据的一致性
-		lastestCollections.value = Array.isArray(res)
-			? res.map(item => ({
-					...item,
-					id: item.id,
-					cover: item.cover,
-					title: item.title,
-			  }))
-			: [res].map(item => ({
-					...item,
-					id: item.id,
-					cover: item.cover,
-					title: item.title,
-			  }))
-	} finally {
-		isLoading.value = false
-	}
-}
-/**
- * @description: 获取最新的年度精选集
- */
 const finalLatest: Ref<Playlist | null> = ref(null)
-const getLatestFinal = async () => {
-	try {
-		const [res] = await handlePromise(latestFinal())
-		if (!res) return
-		finalLatest.value = res
-	} finally {
-		isLoading.value = false
-	}
+const latestInnerAlbums: Ref<Playlist[] | null> = ref([])
+const neteaseTopChartsArr: Ref<Playlist[] | null> = ref([])
+const neteaseTopAlbumArr: Ref<NeteaseAlbum[]> = ref([])
+const isNeteaseLogin = ref(false)
+const neteaseDailyRecommendArr: Ref<Playlist[] | null> = ref([])
+
+const getLatestCollection = async () => {
+	const [res] = await handlePromise(latestCollection())
+	if (!res) return
+	lastestCollections.value = Array.isArray(res)
+		? res.map(item => ({ ...item }))
+		: [{ ...res }]
 }
 
-/**
- * @description: 获取最新的站内专辑
- */
-const latestInnerAlbums: Ref<Playlist[] | null> = ref([])
+const getLatestFinal = async () => {
+	const [res] = await handlePromise(latestFinal())
+	if (!res) return
+	finalLatest.value = res
+}
+
 const getLatestInnerAlbum = async () => {
 	const [res] = await handlePromise(latestInnerAlbum())
 	if (!res) return
 	latestInnerAlbums.value = Array.isArray(res) ? res : [res]
 }
 
-/**
- * @description: 获取网易云热门榜单
- */
-const neteaseTopChartsArr: Ref<Playlist[] | null> = ref([])
 const getNeteaseTopCharts = async () => {
 	const [res] = await handlePromise(neteaseToplist())
 	if (!res) return
 	neteaseTopChartsArr.value = res
 }
 
-/**
- * @description: 获取网易云音乐热门新碟
- */
-const neteaseTopAlbumArr: Ref<NeteaseAlbum[]> = ref([])
 const getNeteaseTopAlbum = async () => {
 	const [res] = await handlePromise(neteaseTopAlbum())
 	if (!res) return
 	neteaseTopAlbumArr.value = res
 }
 
-const currentIndex = ref(0)
-const autoplayInterval = ref<number | null>(null)
-
-// 修改获取下一个要显示的合集的计算属性
-const nextCollections = computed(() => {
-	if (!lastestCollections.value?.length) return []
-
-	const next1 = getNextIndex(currentIndex.value + 1)
-	const next2 = getNextIndex(currentIndex.value + 2)
-	const collections = [lastestCollections.value[next1], lastestCollections.value[next2]]
-	return collections
-})
-
-// 获取下一个索引（循环）
-const getNextIndex = (index: number) => {
-	if (!lastestCollections.value?.length) return 0
-	// 确保索引为正数
-	const length = lastestCollections.value.length
-	return ((index % length) + length) % length
+const getNeteaseRecommendDaily = async () => {
+	const cookie = localStorage.getItem('netease-cookie')
+	if (!cookie) return
+	const [res] = await handlePromise(neteaseRecommendDaily({ cookie }))
+	if (!res) return
+	neteaseDailyRecommendArr.value = res
 }
 
-// 重置自动播放
-const resetAutoplay = () => {
-	if (autoplayInterval.value) {
-		clearInterval(autoplayInterval.value)
-	}
-
-	// 只有在有数据时才启动自动播放
-	if (lastestCollections.value && lastestCollections.value.length > 0) {
-		autoplayInterval.value = window.setInterval(() => {
-			currentIndex.value = getNextIndex(currentIndex.value + 1)
-		}, 5000)
-	}
-}
-
-// 组件挂载时启动自动播放
 onMounted(async () => {
 	isLoading.value = true
 	await Promise.all([
@@ -413,109 +336,90 @@ onMounted(async () => {
 		getNeteaseTopCharts(),
 		getNeteaseTopAlbum(),
 	])
+	// 检查网易云登录状态
+	const neteaseCookie = localStorage.getItem('netease-cookie')
+	if (neteaseCookie) {
+		isNeteaseLogin.value = true
+		await getNeteaseRecommendDaily()
+	}
+	// 检查更新
+	await checkForUpdates()
+	isLoading.value = false
 	resetAutoplay()
 })
 
-// 组件卸载时清理定时器
+const router = useRouter()
+
+const toPlaylist = (id: number, _type: string) => {
+	if (_type === '') {
+		router.push({ name: 'playlist', params: { id: id.toString() } })
+	}
+}
+
+// 轮播
+const currentIndex = ref(0)
+const autoplayInterval = ref<number | null>(null)
+
+const nextCollections = computed(() => {
+	if (!lastestCollections.value?.length) return []
+	const next1 = getNextIndex(currentIndex.value + 1)
+	const next2 = getNextIndex(currentIndex.value + 2)
+	return [lastestCollections.value[next1], lastestCollections.value[next2]]
+})
+
+const getNextIndex = (index: number) => {
+	if (!lastestCollections.value?.length) return 0
+	const length = lastestCollections.value.length
+	return ((index % length) + length) % length
+}
+
+const resetAutoplay = () => {
+	if (autoplayInterval.value) {
+		clearInterval(autoplayInterval.value)
+	}
+	if (lastestCollections.value?.length) {
+		autoplayInterval.value = window.setInterval(() => {
+			currentIndex.value = getNextIndex(currentIndex.value + 1)
+		}, 5000)
+	}
+}
+
+onActivated(() => {
+	resetAutoplay()
+})
+
 onUnmounted(() => {
 	if (autoplayInterval.value) {
 		clearInterval(autoplayInterval.value)
 	}
 })
 
-const router = useRouter()
-
-// 添加跳转方法
-const toPlaylist = (id: number, type: string) => {
-	if (type === '') {
-		router.push({
-			name: 'playlist',
-			params: { id: id.toString() },
-		})
-		return
-	}
-}
-
-// 添加网易云登录状态
-const isNeteaseLogin = ref(false)
-// 添加网易云每日推荐歌单数据
-const neteaseDailyRecommendArr: Ref<Playlist[] | null> = ref([])
-
-// 获取网易云每日推荐歌单
-const getNeteaseRecommendDaily = async () => {
-	const cookie = localStorage.getItem('netease-cookie')
-	if (!cookie) return
-
-	const [res] = await handlePromise(
-		neteaseRecommendDaily({
-			cookie,
-		})
-	)
-	if (!res) return
-	neteaseDailyRecommendArr.value = res
-}
-
-// 添加网易云登录事件监听
-window.addEventListener('netease-login', () => {
+// 网易云登录事件
+const handleNeteaseLogin = () => {
 	isNeteaseLogin.value = true
 	getNeteaseRecommendDaily()
-})
-
-// 添加网易云退出登录事件监听
-window.addEventListener('netease-logout', () => {
-	isNeteaseLogin.value = false
-	neteaseDailyRecommendArr.value = []
-})
-
-onUnmounted(() => {
-	window.removeEventListener('netease-login', () => {})
-	window.removeEventListener('netease-logout', () => {})
-})
-
-// 数据获取逻辑
-const hasCache = ref(false)
-
-// 修改数据加载逻辑
-const loadData = async () => {
-	if (hasCache.value) return
-
-	try {
-		isLoading.value = true
-		await Promise.all([
-			getLatestCollection(),
-			getLatestFinal(),
-			getLatestInnerAlbum(),
-			getNeteaseTopCharts(),
-			getNeteaseTopAlbum(),
-			checkForUpdates(),
-		])
-
-		// 如果登录了网易云，也加载推荐数据
-		if (localStorage.getItem('netease-cookie')) {
-			isNeteaseLogin.value = true
-			await getNeteaseRecommendDaily()
-		}
-
-		hasCache.value = true
-	} finally {
-		isLoading.value = false
-	}
 }
 
-// 当组件被重新激活时，可以选择性地刷新某些数据
-onActivated(() => {
-	// 重置自动播放
-	resetAutoplay()
+const handleNeteaseLogout = () => {
+	isNeteaseLogin.value = false
+	neteaseDailyRecommendArr.value = []
+}
+
+window.addEventListener('netease-login', handleNeteaseLogin)
+window.addEventListener('netease-logout', handleNeteaseLogout)
+
+onUnmounted(() => {
+	window.removeEventListener('netease-login', handleNeteaseLogin)
+	window.removeEventListener('netease-logout', handleNeteaseLogout)
 })
 
-// 版本更新相关
+// 版本更新
 const showUpdateDialog = ref(false)
 const newVersion = ref('')
 const currentVersion = ref(__APP_VERSION__)
 const updateUrl = ref('')
 const updateText = ref('')
 
-// 检查新版本
 const checkForUpdates = async () => {
 	try {
 		const platform = window.electron.platform === 'darwin' ? 'MacOS' : 'Windows'
@@ -532,7 +436,6 @@ const checkForUpdates = async () => {
 	}
 }
 
-// 处理更新
 const handleUpdate = () => {
 	// @ts-ignore
 	window.electron.openInBrowser(updateUrl.value)
