@@ -591,6 +591,17 @@ watch(
 	{ immediate: true }
 )
 
+// 歌词加载完成后立即滚动到当前时间
+watch(
+	() => parsedLyrics.value.length,
+	newLen => {
+		if (newLen > 0) {
+			scrollToCurrentLyric(currentTime.value, true)
+		}
+	},
+	{ flush: 'post' }
+)
+
 const togglePlay = () => {
 	isPlaying.setIsPlaying(!isPlaying.isPlaying)
 }
