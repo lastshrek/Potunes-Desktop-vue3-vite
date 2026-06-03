@@ -73,10 +73,9 @@
 							class="flex items-center justify-end cursor-pointer hover:text-white group px-2 py-1 rounded-md hover:bg-white/5"
 						>
 							<div class="w-8 h-8 rounded-full overflow-hidden mr-2 border border-gray-800">
-								<template v-if="userData.avatar">
+								<template v-if="avatarUrl">
 									<img
-										:src="userData.avatar"
-										:key="Date.now()"
+										:src="avatarUrl"
 										alt="Avatar"
 										class="w-full h-full object-cover"
 										@error="handleAvatarError"
@@ -172,7 +171,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import {
@@ -377,6 +376,14 @@ const handleNeteaseClick = (event: MouseEvent) => {
 const userData = computed(() => auth.user || {})
 const isUserExist = computed(() => auth.isLoggedIn)
 const userPhone = computed(() => auth.user?.phone || '')
+const avatarBroken = ref(false)
+const avatarUrl = computed(() => {
+	if (avatarBroken.value) return ''
+	const raw = auth.user?.avatar
+	if (!raw) return ''
+	if (raw.startsWith('data:') || raw.startsWith('http://') || raw.startsWith('https://')) return raw
+	return `data:image/png;base64,${raw}`
+})
 
 // 修改更新用户数据的函数
 const updateUserData = () => {
@@ -395,10 +402,12 @@ const updateUserData = () => {
 
 // 添加头像加载错误处理
 const handleAvatarError = (e: any) => {
-	console.error('Avatar load error:', e)
-	const target = e.target as HTMLImageElement
-	target.src = '' // 清空源，显示默认头像
+	console.warn('Avatar load failed, falling back to default')
+	avatarBroken.value = true
 }
+
+// 当用户信息更新时重试头像
+watch(() => auth.user, () => { avatarBroken.value = false })
 
 // 搜索回车跳转
 const handleSearch = () => {
