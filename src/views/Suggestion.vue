@@ -16,7 +16,7 @@
 				<h1 class="text-white text-2xl font-bold album-title">Advices - 建议反馈</h1>
 			</div>
 		</div>
-		<div class="container mx-auto px-6 pt-20 flex flex-col items-center">
+		<div class="container mx-auto px-6 pt-16 flex flex-col items-center">
 			<form @submit.prevent="handleSubmit" class="w-full max-w-2xl">
 				<div class="space-y-4">
 					<div>

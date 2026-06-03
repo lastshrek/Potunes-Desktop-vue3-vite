@@ -16,7 +16,7 @@
 				<h1 class="text-white text-2xl font-bold">Trends - 一周歌曲收听排行『{{ weekago }} - {{ todayFull }}』</h1>
 			</div>
 		</div>
-		<div class="container mx-auto h-full overflow-y-scroll flex flex-col text-white pt-20">
+		<div class="container mx-auto h-full overflow-y-scroll flex flex-col text-white pt-16">
 			<!-- tracklist -->
 			<div class="w-full">
 				<template v-if="!isLoading">
