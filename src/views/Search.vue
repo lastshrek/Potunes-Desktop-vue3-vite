@@ -51,7 +51,10 @@
 						<div class="col-span-5 flex items-center space-x-3">
 							<img v-lazy="item.cover_url" class="w-10 h-10 rounded" />
 							<div>
-								<p class="text-sm font-medium album-title">{{ item.name }}</p>
+								<p class="text-sm font-medium album-title">
+									{{ item.name }}
+									<span v-if="item.type === 'netease'" class="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-[#da5597]/20 text-[#da5597]">网易</span>
+								</p>
 								<div class="flex text-xs mt-1" :class="{ 'text-gray-400': !isCurrentTrack(item) }">
 									<div
 										v-for="(artist, idx) in item.ar"
