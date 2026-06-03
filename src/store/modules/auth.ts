@@ -4,14 +4,16 @@ import { login as loginApi, register as registerApi, registerWithBind } from '@/
 import { sha256 } from '@/utils/crypto'
 import { emitter } from '@/utils/mitt'
 
+function loadStoredUser(): Record<string, any> | null {
+	try {
+		const raw = localStorage.getItem('user')
+		return raw ? JSON.parse(raw) : null
+	} catch { return null }
+}
+
 export const useAuthStore = defineStore('auth', () => {
 	const token = ref(localStorage.getItem('token') || '')
-	const user = ref<Record<string, any> | null>(() => {
-		try {
-			const raw = localStorage.getItem('user')
-			return raw ? JSON.parse(raw) : null
-		} catch { return null }
-	})
+	const user = ref<Record<string, any> | null>(loadStoredUser())
 
 	const isLoggedIn = computed(() => !!token.value)
 	const userId = computed(() => user.value?.id || 0)
