@@ -265,23 +265,6 @@
 					v-if="!lyricsStore.loading && !lyricsStore.error && parsedLyrics.length"
 					class="w-1/2 h-full py-12 relative lyrics-container"
 				>
-					<!-- 翻译开关 -->
-					<div class="absolute top-4 right-4 z-10" style="-webkit-app-region: no-drag">
-						<Button
-							variant="link"
-							size="icon"
-							class="text-white/50 hover:text-white transition-colors"
-							:style="{ color: showTranslation ? `rgb(${secondaryColor.join(',')})` : undefined }"
-							@click="showTranslation = !showTranslation"
-							:title="showTranslation ? '隐藏翻译' : '显示翻译'"
-						>
-							<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-								<path d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8" />
-								<path d="M10 12h4" />
-								<path d="M12 10v4" />
-							</svg>
-						</Button>
-					</div>
 					<!-- 歌词内容 -->
 					<div
 						class="h-full overflow-y-auto overflow-x-hidden relative lyrics-scroll-area"
@@ -313,7 +296,7 @@
 									{{ item.lrc }}
 								</p>
 								<p
-									v-if="showTranslation && item.translation && item.translation !== 'unwritten'"
+									v-if="item.translation && item.translation !== 'unwritten'"
 									class="text-center leading-snug select-none text-xs"
 									:class="{ 'font-semibold': currentLyricIndex === index }"
 									:style="getTranslationStyle(index)"
@@ -433,9 +416,6 @@ const currentLyricIndex = computed(() => {
 		(item: LyricItem, index: number) => time >= item.time && time < (parsedLyrics.value[index + 1]?.time || Infinity)
 	)
 })
-
-// 歌词翻译开关
-const showTranslation = ref(true)
 
 // 歌词点击反馈
 const clickedLineIndex = ref<number | null>(null)
