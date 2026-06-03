@@ -37,7 +37,7 @@
 					</button>
 				</div>
 			</div>
-			<div class="h-full overflow-y-scroll flex flex-col text-white px-6">
+			<div class="h-full overflow-y-scroll flex flex-col text-white px-6 pt-16">
 				<!-- 歌曲列表 -->
 				<div class="w-full">
 					<div v-if="playHistory.length > 0">

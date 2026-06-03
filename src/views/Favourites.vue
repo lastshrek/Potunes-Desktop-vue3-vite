@@ -38,7 +38,7 @@
 					</button>
 				</div>
 			</div>
-			<div class="h-full overflow-y-scroll flex flex-col text-white px-6">
+			<div class="h-full overflow-y-scroll flex flex-col text-white px-6 pt-16">
 				<template v-if="!isLoading">
 					<!-- tracklist -->
 					<div
