@@ -9,135 +9,55 @@
  * 2023-09-02 17:08:49
  */
 import axios from 'axios'
-// axios.defaults.baseURL = 'https://api.poche.pink'
+
 axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL
 
-// 添加请求拦截器
 axios.interceptors.request.use(
 	config => {
-		// 从 localStorage 获取 token
 		const token = localStorage.getItem('token')
-
-		// 如果有 token，添加到请求头
 		if (token) {
 			config.headers['Authorization'] = `Bearer ${token}`
 		}
-
-		// 如果有网易云 cookie，也添加到请求头
 		const neteaseCookie = localStorage.getItem('netease-cookie')
 		if (neteaseCookie) {
 			config.headers['Netease-Cookie'] = neteaseCookie
 		}
-
 		return config
 	},
-	error => {
-		return Promise.reject(error)
-	}
+	error => Promise.reject(error)
 )
 
-// 添加响应拦截器
 axios.interceptors.response.use(
-	response => {
-		return response
-	},
+	response => response,
 	error => {
-		// 处理 401 未授权错误
 		if (error.response?.status === 401) {
-			// 清除本地存储
 			localStorage.removeItem('user')
 			localStorage.removeItem('userId')
 			localStorage.removeItem('token')
 			localStorage.removeItem('netease-cookie')
 			localStorage.removeItem('netease-user')
-
-			// 重定向到登录页
 			window.location.href = '/login'
 		}
 		return Promise.reject(error)
 	}
 )
 
-export const get = (url: string, params: any = {}) => {
-	return new Promise((resolve, reject) => {
-		axios
-			.get(url, { params: params })
-			.then(res => {
-				resolve(res.data.data)
-			})
-			.catch(err => {
-				reject(err.data)
-			})
-	})
-}
+export const get = <T = any>(url: string, params?: Record<string, any>) =>
+	axios.get<{ data: T }>(url, { params }).then(res => res.data.data)
 
-export const post = (url: string, params: any = {}) => {
-	return new Promise((resolve, reject) => {
-		axios
-			.post(url, params)
-			.then(res => {
-				if (res.data.statusCode === 200) {
-					resolve(res.data.data)
-				} else {
-					reject(new Error(res.data.message || '请求失败'))
-				}
-			})
-			.catch(err => {
-				reject(new Error(err.response?.data?.message || '网络请求失败'))
-			})
+export const post = <T = any>(url: string, params?: Record<string, any>) =>
+	axios.post<{ statusCode: number; data: T; message?: string }>(url, params).then(res => {
+		if (res.data.statusCode === 200) return res.data.data
+		throw new Error(res.data.message || '请求失败')
 	})
-}
 
-export const put = (url: string, params: any = {}) => {
-	return new Promise((resolve, reject) => {
-		axios
-			.put(url, params)
-			.then(res => {
-				resolve(res.data.data)
-			})
-			.catch(err => {
-				reject(err.data)
-			})
-	})
-}
+export const put = <T = any>(url: string, params?: Record<string, any>) =>
+	axios.put<{ data: T }>(url, params).then(res => res.data.data)
 
-export const del = (url: string, config: { params?: any; data?: any } = {}) => {
-	return new Promise((resolve, reject) => {
-		axios
-			.delete(url, config)
-			.then(res => {
-				resolve(res.data.data)
-			})
-			.catch(err => {
-				reject(err.data)
-			})
-	})
-}
+export const del = <T = any>(url: string, config?: { params?: any; data?: any }) =>
+	axios.delete<{ data: T }>(url, config).then(res => res.data.data)
 
-export const patch = (url: string, params: any = {}) => {
-	return new Promise((resolve, reject) => {
-		axios
-			.patch(url, params)
-			.then(res => {
-				resolve(res.data.data)
-			})
-			.catch(err => {
-				reject(err.data)
-			})
-	})
-}
+export const patch = <T = any>(url: string, params?: Record<string, any>) =>
+	axios.patch<{ data: T }>(url, params).then(res => res.data.data)
 
-export const all = (requestArray: any) => {
-	return new Promise((resolve, reject) => {
-		axios
-			.all(requestArray)
-			.then(
-				axios.spread((...res) => {
-					resolve(res)
-				})
-			)
-			.catch(err => {
-				reject(err.data)
-			})
-	})
-}
+export const all = <T = any>(requestArray: Promise<T>[]) => Promise.all(requestArray)
