@@ -171,10 +171,6 @@
 /* 其他 CSS 保持不变 */
 
 /* 添加歌词专用样式 */
-.lyrics-container {
-	font-family: 'Inter', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-}
-
 .lyrics-line {
 	@apply transition-all duration-300;
 	font-weight: 400;

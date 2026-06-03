@@ -295,40 +295,33 @@
 						<div v-else-if="lyricsStore.error" class="text-center text-red-500 py-4">
 							{{ lyricsStore.error }}
 						</div>
-						<ul v-else class="space-y-4 pb-[50vh]">
-							<li class="h-[50vh]"></li>
+						<ul v-else class="pb-[45vh]">
+							<li class="h-[45vh]"></li>
 							<li
 								v-for="(item, index) in parsedLyrics"
 								:key="index"
-								:class="{
-									'transform transition-all duration-300': true,
-									'active scale-110 opacity-100': currentLyricIndex === index,
-									'opacity-60 scale-100': currentLyricIndex !== index,
-									'lyric-item-clicked': clickedLineIndex === index,
-								}"
+								class="px-4 py-3 cursor-pointer w-full break-words lyrics-text"
+								:class="{ 'lyric-item-clicked': clickedLineIndex === index }"
 								:ref="el => (lyricRefs[index] = el as HTMLElement)"
-								class="transition-all duration-300 px-6 py-1.5 cursor-pointer hover:opacity-100 w-full break-words lyrics-text"
 								@click="onLyricClick(item.time, index)"
 							>
 								<p
-									class="mb-1 text-center text-lg break-words whitespace-pre-wrap max-w-full"
-									:class="{
-										'font-bold': currentLyricIndex === index,
-									}"
+									class="text-center leading-relaxed select-none text-base"
+									:class="{ 'font-bold': currentLyricIndex === index }"
+									:style="getLyricStyle(index)"
 								>
 									{{ item.lrc }}
 								</p>
 								<p
 									v-if="showTranslation && item.translation && item.translation !== 'unwritten'"
-									class="text-sm text-center break-words whitespace-pre-wrap max-w-full"
-									:class="{
-										'font-bold': currentLyricIndex === index,
-									}"
+									class="text-center leading-snug select-none text-xs"
+									:class="{ 'font-semibold': currentLyricIndex === index }"
+									:style="getTranslationStyle(index)"
 								>
 									{{ item.translation }}
 								</p>
 							</li>
-							<li class="h-[50vh]"></li>
+							<li class="h-[45vh]"></li>
 						</ul>
 					</div>
 				</div>
@@ -457,6 +450,22 @@ const onLyricClick = (time: number, index: number) => {
 	seekToTime(time)
 }
 
+// Apple Music 风格 — transform:scale + opacity，全 GPU 合成属性，零重排。字体/字重由 CSS 控制，不通过 inline style 改变
+const getLyricStyle = (index: number): Record<string, string | number> => {
+	const dist = Math.abs(index - currentLyricIndex.value)
+	if (dist === 0) return { opacity: 1, transform: 'scale(1.3)' }
+	if (dist === 1) return { opacity: 0.6, transform: 'scale(1.12)' }
+	if (dist === 2) return { opacity: 0.3, transform: 'scale(1)' }
+	return { opacity: 0.12, transform: 'scale(0.88)' }
+}
+
+const getTranslationStyle = (index: number): Record<string, string | number> => {
+	const dist = Math.abs(index - currentLyricIndex.value)
+	if (dist === 0) return { opacity: 0.65, transform: 'scale(1.08)' }
+	if (dist === 1) return { opacity: 0.35, transform: 'scale(1)' }
+	return { opacity: 0.18, transform: 'scale(0.92)' }
+}
+
 const value = ref(0)
 const lyricsContainer = ref<HTMLElement | null>(null)
 const lyricRefs = ref<HTMLElement[]>([])
@@ -557,7 +566,7 @@ const scrollToCurrentLyric = (time: number, immediate = false) => {
 	if (lyricRefs.value[currentIndex] && lyricsContainer.value) {
 		const lyricEl = lyricRefs.value[currentIndex]
 		const containerHeight = lyricsContainer.value.clientHeight
-		const scrollTop = lyricEl.offsetTop - containerHeight / 2 + lyricEl.clientHeight / 2
+		const scrollTop = lyricEl.offsetTop - containerHeight * 0.38 + lyricEl.clientHeight / 2
 
 		lyricsContainer.value.scrollTo({
 			top: scrollTop,
@@ -746,41 +755,27 @@ const toggleLike = async () => {
 	mask-image: linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%);
 }
 
-/* 歌词文字描边 */
-.lyrics-text {
-	color: white;
-	text-shadow: -0.5px -0.5px 0 rgba(0, 0, 0, 0.3), 0.5px -0.5px 0 rgba(0, 0, 0, 0.3), -0.5px 0.5px 0 rgba(0, 0, 0, 0.3),
-		0.5px 0.5px 0 rgba(0, 0, 0, 0.3);
-}
-
-/* 歌词容器 */
+/* 歌词行 */
 .lyrics-container {
 	font-family: 'Inter', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
 }
-
-.lyrics-line {
-	@apply transition-all duration-300;
-	font-weight: 400;
+.lyrics-text {
+	color: white;
 }
-
-.lyrics-line.active {
-	font-weight: 600;
-	@apply text-[#da5597];
+.lyrics-text p {
+	transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+				transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	will-change: opacity, transform;
+	transform-origin: center center;
+}
+.lyrics-text:hover p {
+	opacity: 1 !important;
+	transform: scale(1.3) !important;
 }
 
 /* 歌词行点击反馈 */
 .lyric-item-clicked {
 	transform: scale(1.02);
-	transition: transform 0.15s ease-out;
-}
-
-/* 中文歌词特殊处理 */
-.lyrics-line-cn {
-	font-weight: 400;
-	letter-spacing: 0.02em;
-}
-
-.lyrics-line-cn.active {
-	font-weight: 500;
+	transition: transform 0.15s ease-out !important;
 }
 </style>
