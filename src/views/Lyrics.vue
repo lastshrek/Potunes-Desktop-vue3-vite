@@ -16,7 +16,7 @@
 		<!-- 全屏背景底色 -->
 		<div class="absolute inset-0" :style="{ backgroundColor: `rgb(${dominantColor.join(',')})`, transition: 'background-color 0.8s ease-in-out' }"></div>
 		<!-- Apple Music 液态背景：6 个有机运动色块 -->
-		<div class="absolute inset-0 overflow-hidden" style="mix-blend-mode: screen;">
+		<div class="absolute inset-0 overflow-hidden">
 			<div
 				v-for="(blob, i) in blobs"
 				:key="i"
@@ -33,7 +33,7 @@
 			></div>
 		</div>
 		<!-- 灰色蒙版，保证歌词可读 -->
-		<div class="absolute inset-0 bg-black/25" style="pointer-events: none;"></div>
+		<div class="absolute inset-0 bg-black/15" style="pointer-events: none;"></div>
 		<!-- 内容层 -->
 		<div class="relative z-10">
 			<!-- 添加关闭按钮 -->
@@ -455,8 +455,8 @@ let animationFrame: number | null = null
 // 添加主色调状态
 const dominantColor = ref<number[]>([0, 0, 0])
 const secondaryColor = ref<number[]>([0, 0, 0])
-// 漂移色块用的鲜艳原色
-const blobPalette = ref<number[][]>([[200, 60, 60], [60, 120, 200], [160, 80, 180], [80, 180, 100], [180, 60, 120], [60, 160, 180]])
+// 漂移色块用的暗色系色值
+const blobPalette = ref<number[][]>([[80, 25, 25], [25, 50, 80], [65, 35, 70], [30, 70, 40], [70, 25, 50], [25, 60, 70]])
 
 // Apple Music 液态背景：6 个色块
 const blobs = computed(() => {
@@ -527,21 +527,21 @@ const getImageColor = async (imageUrl: string) => {
 		const palette = colorThief.getPalette(img, 3)
 		secondaryColor.value = palette[1].map(c => Math.min(255, Math.floor(c * 1.5)))
 
-		// 色块用原始鲜艳色，只微调亮度
+		// 色块取暗色系变体
 		blobPalette.value = [
-			color.map(c => Math.min(255, Math.floor(c * 1.1))),
-			palette[1].map(c => Math.min(255, c)),
-			palette[2] ? palette[2].map(c => Math.min(255, Math.floor(c * 0.95))) : color.map(c => Math.floor(c * 0.8)),
-			[palette[0][1], Math.min(255, palette[0][2] * 1.2), palette[0][0]].map(c => Math.min(255, c)),
-			[Math.min(255, palette[1][0] * 0.8), palette[1][2], Math.min(255, palette[1][1] * 1.3)].map(c => Math.min(255, c)),
-			[palette[2] ? Math.min(255, palette[2][1] * 1.4) : 100, palette[2] ? palette[2][0] : 80, palette[2] ? Math.min(255, palette[2][2] * 1.1) : 160].map(c => Math.min(255, c)),
+			color.map(c => Math.floor(c * 0.45)),
+			palette[1].map(c => Math.floor(c * 0.4)),
+			palette[2] ? palette[2].map(c => Math.floor(c * 0.38)) : color.map(c => Math.floor(c * 0.35)),
+			[Math.floor(palette[0][1] * 0.5), Math.floor(palette[0][2] * 0.45), Math.floor(palette[0][0] * 0.5)],
+			[Math.floor(palette[1][0] * 0.4), Math.floor(palette[1][2] * 0.35), Math.floor(palette[1][1] * 0.45)],
+			[palette[2] ? Math.floor(palette[2][1] * 0.5) : 45, palette[2] ? Math.floor(palette[2][0] * 0.35) : 35, palette[2] ? Math.floor(palette[2][2] * 0.45) : 65],
 		]
 	} catch (error) {
 		console.error('获取图片颜色失败:', error)
 		// 设置默认颜色
 		dominantColor.value = [18, 18, 18]
 		secondaryColor.value = [255, 23, 68]
-		blobPalette.value = [[200, 60, 60], [60, 120, 200], [160, 80, 180], [80, 180, 100], [180, 60, 120], [60, 160, 180]]
+		blobPalette.value = [[80, 25, 25], [25, 50, 80], [65, 35, 70], [30, 70, 40], [70, 25, 50], [25, 60, 70]]
 	}
 }
 
@@ -831,8 +831,8 @@ const toggleLike = async () => {
 .lyric-blob {
 	position: absolute;
 	border-radius: 43% 57% 50% 50% / 50% 45% 55% 50%;
-	filter: blur(70px) saturate(1.6) brightness(1.1);
-	opacity: 0.85;
+	filter: blur(70px) saturate(1.6);
+	opacity: 0.9;
 	animation-timing-function: ease-in-out;
 	animation-iteration-count: infinite;
 	animation-direction: alternate;
