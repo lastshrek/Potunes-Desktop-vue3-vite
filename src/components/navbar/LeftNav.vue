@@ -39,7 +39,12 @@
 				<div class="space-y-1">
 					<Button
 						variant="ghost"
-						class="w-full justify-start pl-4 text-gray-400 hover:text-white hover:bg-gray-800/50"
+						:class="[
+							'w-full justify-start pl-4',
+							isActive('/favourites')
+								? 'text-[#da5597] hover:text-[#da5597] hover:bg-transparent'
+								: 'text-gray-400 hover:text-white hover:bg-gray-800/50',
+						]"
 						@click="handleFavouritesClick"
 					>
 						<Heart class="mr-2 h-4 w-4" />
@@ -47,7 +52,12 @@
 					</Button>
 					<Button
 						variant="ghost"
-						class="w-full justify-start pl-4 text-gray-400 hover:text-white hover:bg-gray-800/50"
+						:class="[
+							'w-full justify-start pl-4',
+							isActive('/history')
+								? 'text-[#da5597] hover:text-[#da5597] hover:bg-transparent'
+								: 'text-gray-400 hover:text-white hover:bg-gray-800/50',
+						]"
 						@click="router.push('/history')"
 					>
 						<History class="mr-2 h-4 w-4" />
@@ -75,7 +85,12 @@
 							v-for="playlist in playlists"
 							:key="playlist.id"
 							variant="ghost"
-							class="w-full justify-start pl-4 text-gray-400 hover:text-white hover:bg-gray-800/50"
+							:class="[
+								'w-full justify-start pl-4',
+								isPlaylistActive(playlist.id)
+									? 'text-[#da5597] hover:text-[#da5597] hover:bg-transparent'
+									: 'text-gray-400 hover:text-white hover:bg-gray-800/50',
+							]"
 							@click="router.push(`/user-playlist/${playlist.id}`)"
 						>
 							<Music class="w-3.5 h-3.5 mr-2 shrink-0" />
@@ -162,6 +177,10 @@ const isActive = (path: string) => {
 		return route.path === '/'
 	}
 	return route.path === path || route.path.startsWith(path)
+}
+
+const isPlaylistActive = (id: string | number) => {
+	return route.path.startsWith('/user-playlist/') && String(route.params.id) === String(id)
 }
 
 const navItems = [
