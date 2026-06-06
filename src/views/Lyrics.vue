@@ -10,18 +10,31 @@
 -->
 <template>
 	<div
-		class="fixed inset-0 h-screen w-screen z-50 transform"
-		:style="{
-			backgroundColor: `rgb(${dominantColor.join(',')})`,
-			backdropFilter: 'blur(30px)',
-			WebkitBackdropFilter: 'blur(30px)',
-			transition: 'all 0.3s ease-in-out',
-		}"
+		class="fixed inset-0 h-screen w-screen z-50 transform overflow-hidden"
 		:class="[isOpen ? 'translate-y-0' : 'translate-y-full', 'transition-transform duration-500 ease-in-out']"
 	>
-		<!-- 添加一个半透明遮罩层 -->
-		<div class="absolute inset-0 bg-black/20"></div>
-		<!-- 原有内容，添加相对定位确保在遮罩层上层 -->
+		<!-- 全屏背景底色 -->
+		<div class="absolute inset-0" :style="{ backgroundColor: `rgb(${dominantColor.join(',')})`, transition: 'background-color 0.8s ease-in-out' }"></div>
+		<!-- Apple Music 液态背景：6 个有机运动色块 -->
+		<div class="absolute inset-0 overflow-hidden" style="mix-blend-mode: screen;">
+			<div
+				v-for="(blob, i) in blobs"
+				:key="i"
+				:class="'lyric-blob blob-path-' + i"
+				:style="{
+					width: blob.size + 'vw',
+					height: blob.size + 'vw',
+					left: blob.x + 'vw',
+					top: blob.y + 'vh',
+					background: blob.color,
+					animationDuration: blob.dur + 's',
+					animationDelay: '-' + (blob.dur * 0.15 * i) + 's',
+				}"
+			></div>
+		</div>
+		<!-- 灰色蒙版，保证歌词可读 -->
+		<div class="absolute inset-0 bg-black/25" style="pointer-events: none;"></div>
+		<!-- 内容层 -->
 		<div class="relative z-10">
 			<!-- 添加关闭按钮 -->
 			<Button
@@ -35,13 +48,7 @@
 			</Button>
 			<div class="fixed inset-x-0 bottom-0 h-screen">
 				<!-- 主要内容区域 -->
-				<div
-					class="flex h-full"
-					:style="{
-						backgroundColor: `rgb(${dominantColor.join(',')})`,
-						transition: 'background-color 0.5s ease-in-out',
-					}"
-				>
+				<div class="flex h-full">
 					<!-- 左侧：封面和控制区域 -->
 					<div
 						:class="[
@@ -283,7 +290,7 @@
 							<li
 								v-for="(item, index) in parsedLyrics"
 								:key="index"
-								class="px-4 py-3 cursor-pointer w-full break-words lyrics-text"
+								class="px-6 py-3 cursor-pointer w-full break-words lyrics-text"
 								:class="{ 'lyric-item-clicked': clickedLineIndex === index }"
 								:ref="el => (lyricRefs[index] = el as HTMLElement)"
 								@click="onLyricClick(item.time, index)"
@@ -421,20 +428,21 @@ const onLyricClick = (time: number, index: number) => {
 	seekToTime(time)
 }
 
-// Apple Music 风格 — transform:scale + opacity，全 GPU 合成属性，零重排。字体/字重由 CSS 控制，不通过 inline style 改变
+// Apple Music 风格 — opacity + fontSize + fontWeight 渐变
 const getLyricStyle = (index: number): Record<string, string | number> => {
 	const dist = Math.abs(index - currentLyricIndex.value)
-	if (dist === 0) return { opacity: 1, transform: 'scale(1.3)' }
-	if (dist === 1) return { opacity: 0.6, transform: 'scale(1.12)' }
-	if (dist === 2) return { opacity: 0.3, transform: 'scale(1)' }
-	return { opacity: 0.12, transform: 'scale(0.88)' }
+	if (dist === 0) return { opacity: 1, fontSize: '1.375rem', fontWeight: 700 }
+	if (dist === 1) return { opacity: 0.55, fontSize: '1.125rem', fontWeight: 600 }
+	const opacity = Math.max(0.15, 0.45 * Math.pow(0.6, dist - 2))
+	return { opacity, fontSize: '1rem', fontWeight: 400 }
 }
 
 const getTranslationStyle = (index: number): Record<string, string | number> => {
 	const dist = Math.abs(index - currentLyricIndex.value)
-	if (dist === 0) return { opacity: 0.65, transform: 'scale(1.08)' }
-	if (dist === 1) return { opacity: 0.35, transform: 'scale(1)' }
-	return { opacity: 0.18, transform: 'scale(0.92)' }
+	if (dist === 0) return { opacity: 0.65, fontSize: '0.95rem' }
+	if (dist === 1) return { opacity: 0.35, fontSize: '0.85rem' }
+	const opacity = Math.max(0.12, 0.3 * Math.pow(0.6, dist - 2))
+	return { opacity, fontSize: '0.75rem' }
 }
 
 const value = ref(0)
@@ -442,10 +450,27 @@ const lyricsContainer = ref<HTMLElement | null>(null)
 const lyricRefs = ref<HTMLElement[]>([])
 const audio = ref<HTMLAudioElement | null>(null)
 let scrollTimeout: ReturnType<typeof setTimeout> | null = null
+let animationFrame: number | null = null
 
 // 添加主色调状态
 const dominantColor = ref<number[]>([0, 0, 0])
 const secondaryColor = ref<number[]>([0, 0, 0])
+// 漂移色块用的鲜艳原色
+const blobPalette = ref<number[][]>([[200, 60, 60], [60, 120, 200], [160, 80, 180], [80, 180, 100], [180, 60, 120], [60, 160, 180]])
+
+// Apple Music 液态背景：6 个色块
+const blobs = computed(() => {
+	const bright = (c: number[]) => `rgb(${c[0]},${c[1]},${c[2]})`
+	const p = blobPalette.value
+	return [
+		{ size: 70, x: 5, y: -15,  color: bright(p[0]), dur: 18 },
+		{ size: 60, x: 50, y: 10,   color: bright(p[1]), dur: 22 },
+		{ size: 65, x: -10, y: 35,  color: bright(p[2]), dur: 20 },
+		{ size: 55, x: 35, y: -20,  color: bright(p[3]), dur: 25 },
+		{ size: 75, x: 60, y: 40,   color: bright(p[4]), dur: 19 },
+		{ size: 50, x: 20, y: 25,   color: bright(p[5]), dur: 24 },
+	]
+})
 
 // 添加自动滚动控制
 const isAutoScrollPaused = ref(false)
@@ -497,18 +522,26 @@ const getImageColor = async (imageUrl: string) => {
 
 		const colorThief = new ColorThief()
 		const color = colorThief.getColor(img)
-		// 将主色调变深，将每个RGB分量减少30%
-		dominantColor.value = color.map(c => Math.max(0, Math.floor(c * 0.7)))
+		dominantColor.value = color.map(c => Math.max(0, Math.floor(c * 0.85)))
 
-		// 获取调色板并设置第二主色
 		const palette = colorThief.getPalette(img, 3)
-		// 使用第二个最显著的颜色，并提高亮度和饱和度
-		secondaryColor.value = palette[1].map(c => Math.min(255, Math.floor(c * 1.5))) // 提高亮度50%
+		secondaryColor.value = palette[1].map(c => Math.min(255, Math.floor(c * 1.5)))
+
+		// 色块用原始鲜艳色，只微调亮度
+		blobPalette.value = [
+			color.map(c => Math.min(255, Math.floor(c * 1.1))),
+			palette[1].map(c => Math.min(255, c)),
+			palette[2] ? palette[2].map(c => Math.min(255, Math.floor(c * 0.95))) : color.map(c => Math.floor(c * 0.8)),
+			[palette[0][1], Math.min(255, palette[0][2] * 1.2), palette[0][0]].map(c => Math.min(255, c)),
+			[Math.min(255, palette[1][0] * 0.8), palette[1][2], Math.min(255, palette[1][1] * 1.3)].map(c => Math.min(255, c)),
+			[palette[2] ? Math.min(255, palette[2][1] * 1.4) : 100, palette[2] ? palette[2][0] : 80, palette[2] ? Math.min(255, palette[2][2] * 1.1) : 160].map(c => Math.min(255, c)),
+		]
 	} catch (error) {
 		console.error('获取图片颜色失败:', error)
 		// 设置默认颜色
 		dominantColor.value = [18, 18, 18]
-		secondaryColor.value = [255, 23, 68] // 使用更鲜艳的红色作为默认进度条颜色
+		secondaryColor.value = [255, 23, 68]
+		blobPalette.value = [[200, 60, 60], [60, 120, 200], [160, 80, 180], [80, 180, 100], [180, 60, 120], [60, 160, 180]]
 	}
 }
 
@@ -526,6 +559,38 @@ watch(
 	{ immediate: true }
 )
 
+// 弹簧缓动滚动 — 模拟 Apple Music 歌词滑动的惯性减速感
+const springScrollTo = (targetTop: number) => {
+	if (!lyricsContainer.value) return
+	if (animationFrame) {
+		cancelAnimationFrame(animationFrame)
+		animationFrame = null
+	}
+	const startTop = lyricsContainer.value.scrollTop
+	const delta = targetTop - startTop
+	if (Math.abs(delta) < 1) {
+		lyricsContainer.value.scrollTop = targetTop
+		return
+	}
+	const duration = 520
+	const startTime = performance.now()
+	const easeOutExpo = (t: number) => (t === 1 ? 1 : 1 - Math.pow(2, -10 * t))
+	const animate = (now: number) => {
+		const elapsed = now - startTime
+		const progress = Math.min(elapsed / duration, 1)
+		const easedProgress = easeOutExpo(progress)
+		if (lyricsContainer.value) {
+			lyricsContainer.value.scrollTop = startTop + delta * easedProgress
+		}
+		if (progress < 1) {
+			animationFrame = requestAnimationFrame(animate)
+		} else {
+			animationFrame = null
+		}
+	}
+	animationFrame = requestAnimationFrame(animate)
+}
+
 // 滚动到当前歌词
 const scrollToCurrentLyric = (time: number, immediate = false) => {
 	const currentIndex = parsedLyrics.value.findIndex(
@@ -539,10 +604,11 @@ const scrollToCurrentLyric = (time: number, immediate = false) => {
 		const containerHeight = lyricsContainer.value.clientHeight
 		const scrollTop = lyricEl.offsetTop - containerHeight * 0.38 + lyricEl.clientHeight / 2
 
-		lyricsContainer.value.scrollTo({
-			top: scrollTop,
-			behavior: immediate ? 'auto' : 'smooth',
-		})
+		if (immediate) {
+			lyricsContainer.value.scrollTop = scrollTop
+		} else {
+			springScrollTo(scrollTop)
+		}
 	}
 }
 
@@ -734,19 +800,93 @@ const toggleLike = async () => {
 	color: white;
 }
 .lyrics-text p {
-	transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-				transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-	will-change: opacity, transform;
-	transform-origin: center center;
+	transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+				font-weight 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+				font-size 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+	will-change: opacity, font-weight, font-size;
 }
-.lyrics-text:hover p {
-	opacity: 1 !important;
-	transform: scale(1.3) !important;
+.lyrics-text:hover {
+	background: rgba(255, 255, 255, 0.06);
+	border-radius: 6px;
 }
 
-/* 歌词行点击反馈 */
+/* 歌词行点击反馈 — 白色闪光 */
 .lyric-item-clicked {
-	transform: scale(1.02);
-	transition: transform 0.15s ease-out !important;
+	position: relative;
+}
+.lyric-item-clicked::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	border-radius: 6px;
+	background: rgba(255, 255, 255, 0.15);
+	animation: lyric-flash 0.4s ease-out forwards;
+}
+@keyframes lyric-flash {
+	0% { opacity: 1; }
+	100% { opacity: 0; }
+}
+
+/* Apple Music 液态背景色块 */
+.lyric-blob {
+	position: absolute;
+	border-radius: 43% 57% 50% 50% / 50% 45% 55% 50%;
+	filter: blur(70px) saturate(1.6) brightness(1.1);
+	opacity: 0.85;
+	animation-timing-function: ease-in-out;
+	animation-iteration-count: infinite;
+	animation-direction: alternate;
+	transition: background 1.5s ease;
+	will-change: transform, border-radius;
+	mix-blend-mode: screen;
+}
+.blob-path-0 { animation-name: blob-a; }
+.blob-path-1 { animation-name: blob-b; }
+.blob-path-2 { animation-name: blob-c; }
+.blob-path-3 { animation-name: blob-d; }
+.blob-path-4 { animation-name: blob-e; }
+.blob-path-5 { animation-name: blob-f; }
+
+@keyframes blob-a {
+	0%   { transform: translate(0, 0) scale(1);    border-radius: 43% 57% 50% 50% / 50% 45% 55% 50%; }
+	25%  { transform: translate(10vw, -8vh) scale(1.12); border-radius: 55% 45% 48% 52% / 43% 57% 43% 57%; }
+	50%  { transform: translate(-3vw, 14vh) scale(0.92); border-radius: 48% 52% 57% 43% / 55% 45% 50% 50%; }
+	75%  { transform: translate(8vw, 6vh) scale(1.08);  border-radius: 52% 48% 45% 55% / 48% 52% 55% 45%; }
+	100% { transform: translate(-6vw, -4vh) scale(1.04); border-radius: 45% 55% 52% 48% / 52% 48% 48% 52%; }
+}
+@keyframes blob-b {
+	0%   { transform: translate(0, 0) scale(1);    border-radius: 55% 45% 48% 52% / 52% 48% 50% 50%; }
+	25%  { transform: translate(-9vw, 10vh) scale(1.1);  border-radius: 48% 52% 55% 45% / 45% 55% 48% 52%; }
+	50%  { transform: translate(7vw, -6vh) scale(0.94);   border-radius: 52% 48% 43% 57% / 55% 45% 52% 48%; }
+	75%  { transform: translate(-4vw, -12vh) scale(1.06); border-radius: 43% 57% 52% 48% / 48% 52% 55% 45%; }
+	100% { transform: translate(5vw, 8vh) scale(1.02);   border-radius: 50% 50% 45% 55% / 52% 48% 50% 50%; }
+}
+@keyframes blob-c {
+	0%   { transform: translate(0, 0) scale(1);    border-radius: 50% 50% 55% 45% / 45% 55% 48% 52%; }
+	25%  { transform: translate(6vw, 12vh) scale(1.15);  border-radius: 45% 55% 50% 50% / 52% 48% 55% 45%; }
+	50%  { transform: translate(-10vw, -4vh) scale(0.96); border-radius: 55% 45% 43% 57% / 48% 52% 50% 50%; }
+	75%  { transform: translate(3vw, -8vh) scale(1.05);   border-radius: 43% 57% 52% 48% / 55% 45% 43% 57%; }
+	100% { transform: translate(-7vw, 10vh) scale(0.98);  border-radius: 52% 48% 55% 45% / 50% 50% 52% 48%; }
+}
+@keyframes blob-d {
+	0%   { transform: translate(0, 0) scale(1);    border-radius: 48% 52% 43% 57% / 55% 45% 52% 48%; }
+	25%  { transform: translate(-7vw, -10vh) scale(1.08); border-radius: 52% 48% 57% 43% / 43% 57% 48% 52%; }
+	50%  { transform: translate(12vw, 5vh) scale(0.93);   border-radius: 43% 57% 48% 52% / 50% 50% 55% 45%; }
+	75%  { transform: translate(-3vw, 9vh) scale(1.13);   border-radius: 57% 43% 55% 45% / 48% 52% 43% 57%; }
+	100% { transform: translate(5vw, -7vh) scale(1.01);   border-radius: 50% 50% 50% 50% / 52% 48% 48% 52%; }
+}
+@keyframes blob-e {
+	0%   { transform: translate(0, 0) scale(1);    border-radius: 52% 48% 50% 50% / 43% 57% 52% 48%; }
+	25%  { transform: translate(8vw, 6vh) scale(1.06);   border-radius: 45% 55% 43% 57% / 55% 45% 48% 52%; }
+	50%  { transform: translate(-11vw, -9vh) scale(1.14); border-radius: 48% 52% 57% 43% / 52% 48% 55% 45%; }
+	75%  { transform: translate(4vw, -11vh) scale(0.95);  border-radius: 55% 45% 48% 52% / 43% 57% 50% 50%; }
+	100% { transform: translate(-5vw, 4vh) scale(1.08);   border-radius: 43% 57% 52% 48% / 48% 52% 43% 57%; }
+}
+@keyframes blob-f {
+	0%   { transform: translate(0, 0) scale(1);    border-radius: 45% 55% 52% 48% / 50% 50% 45% 55%; }
+	25%  { transform: translate(-6vw, 11vh) scale(1.11); border-radius: 50% 50% 45% 55% / 55% 45% 52% 48%; }
+	50%  { transform: translate(9vw, -7vh) scale(0.97);  border-radius: 55% 45% 50% 50% / 43% 57% 48% 52%; }
+	75%  { transform: translate(-8vw, -3vh) scale(1.09); border-radius: 43% 57% 55% 45% / 50% 50% 55% 45%; }
+	100% { transform: translate(3vw, 6vh) scale(1.03);   border-radius: 52% 48% 48% 52% / 55% 45% 50% 50%; }
 }
 </style>
