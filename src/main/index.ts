@@ -8,7 +8,7 @@ const QUIT_INTERVAL = 500 // 双击间隔时间（毫秒）
 let isAppActive = false
 const isDev = process.env.NODE_ENV === 'development'
 
-const version = '2.1.0'
+const version = '2.2.0'
 Object.defineProperty(globalThis, '__APP_VERSION__', {
 	value: version,
 	writable: false,

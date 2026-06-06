@@ -6,7 +6,10 @@
  * @Description:
  * @FilePath: /potunes-desktop-vue3-vite/electron/main.ts
  */
-import { app, BrowserWindow, ipcMain, Tray, nativeImage, globalShortcut, Menu, session } from 'electron'
+import { app, BrowserWindow, ipcMain, Tray, nativeImage, globalShortcut, Menu, session, dialog } from 'electron'
+import https from 'node:https'
+import { createWriteStream, mkdirSync, writeFileSync, chmodSync } from 'node:fs'
+import { spawn } from 'node:child_process'
 import path from 'node:path'
 import type {} from '../types/global'
 
@@ -34,7 +37,7 @@ let lastQuitTime = 0
 let quitHintTimer: NodeJS.Timeout | null = null
 const isDev = process.env.NODE_ENV === 'development'
 
-const version = '2.1.0'
+const version = '2.2.0'
 Object.defineProperty(globalThis, '__APP_VERSION__', {
 	value: version,
 	writable: false,
@@ -174,6 +177,13 @@ function createWindow() {
 		win.webContents.openDevTools()
 	}
 
+	// Cmd+Shift+I 打开控制台（开发/正式版均可）
+	win.webContents.on('before-input-event', (_, input) => {
+		if (input.key === 'I' && input.meta && input.shift) {
+			win?.webContents.toggleDevTools()
+		}
+	})
+
 	// 监听窗口关闭事件
 	win.on('close', event => {
 		// 如果是通过 Command+Q 触发的关闭，让它直接关闭
@@ -273,7 +283,7 @@ const createMenu = () => {
 	Menu.setApplicationMenu(Menu.buildFromTemplate(template as any))
 }
 
-app.on('ready', () => {
+app.whenReady().then(() => {
 	// 设置 Content-Security-Policy（宽松策略以支持网易云等外部资源）
 	session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
 		callback({
@@ -296,6 +306,11 @@ app.on('ready', () => {
 		}
 	}, 1000)
 
+	// 自动更新（仅打包后启用）
+	if (app.isPackaged) {
+		setupAutoUpdater()
+	}
+
 	// Command+Q 已由菜单加速器处理（双击退出）
 	// Command+W 在窗口聚焦时注册
 })
@@ -309,10 +324,12 @@ app.on('window-all-closed', () => {
 
 // 处理 dock 图标点击
 app.on('activate', () => {
-	if (win) {
-		win.show()
-	} else {
-		createWindow()
+	if (app.isReady()) {
+		if (win) {
+			win.show()
+		} else {
+			createWindow()
+		}
 	}
 })
 
@@ -539,4 +556,148 @@ function registerShortcuts() {
 function unregisterShortcuts() {
 	globalShortcut.unregister('CommandOrControl+Q')
 	globalShortcut.unregister('CommandOrControl+W')
+}
+
+// 自动更新（绕过 Squirrel.Mac 签名验证）
+function setupAutoUpdater() {
+	const UPDATE_URL = 'https://lastshrek.leoxv.com/updater'
+	let downloadedZipPath: string | null = null
+
+	function httpsGet(url: string): Promise<string> {
+		return new Promise((resolve, reject) => {
+			const doRequest = (target: string) => {
+				https
+					.get(target, (res) => {
+						if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+							doRequest(res.headers.location).then(resolve).catch(reject)
+							return
+						}
+						let data = ''
+						res.on('data', (chunk: string) => (data += chunk))
+						res.on('end', () => resolve(data))
+						res.on('error', reject)
+					})
+					.on('error', reject)
+			}
+			doRequest(url)
+		})
+	}
+
+	async function checkForUpdate() {
+		try {
+			const yml = await httpsGet(`${UPDATE_URL}/latest-mac.yml`)
+			const versionMatch = yml.match(/version:\s*(.+)/)
+			if (!versionMatch) return
+			const remoteVersion = versionMatch[1].trim()
+			const currentVersion = app.getVersion()
+
+			if (remoteVersion === currentVersion) return
+
+			const arch = process.arch === 'arm64' ? 'arm64' : 'x64'
+			const zipFilename = `PoTunes-${remoteVersion}-${arch}.zip`
+
+			if (!win) return
+			const { response } = await dialog.showMessageBox(win, {
+				type: 'info',
+				title: '发现新版本',
+				message: `新版本 ${remoteVersion} 可用，是否下载更新？`,
+				buttons: ['下载', '稍后'],
+			})
+
+			if (response === 0) {
+				downloadUpdate(remoteVersion, `${UPDATE_URL}/${zipFilename}`)
+			}
+		} catch (err) {
+			console.error('检查更新失败:', err)
+		}
+	}
+
+	function downloadUpdate(version: string, url: string) {
+		const updateDir = path.join(app.getPath('userData'), 'update')
+		mkdirSync(updateDir, { recursive: true })
+		const zipPath = path.join(updateDir, `PoTunes-${version}.zip`)
+		downloadedZipPath = zipPath
+
+		const doDownload = (target: string) => {
+			https.get(target, (res) => {
+				if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+					doDownload(res.headers.location)
+					return
+				}
+
+				const totalBytes = parseInt(res.headers['content-length'] || '0', 10)
+				let receivedBytes = 0
+
+				res.on('data', (chunk: Buffer) => {
+					receivedBytes += chunk.length
+					if (totalBytes > 0) {
+						win?.webContents.send('update-progress', Math.round((receivedBytes / totalBytes) * 100))
+					}
+				})
+
+				const file = createWriteStream(zipPath)
+				res.pipe(file)
+
+				file.on('finish', () => {
+					file.close()
+					win?.webContents.send('update-progress', 100)
+					showUpdateReadyDialog(zipPath)
+				})
+
+				file.on('error', (err) => {
+					console.error('写入更新文件失败:', err)
+					win?.webContents.send('update-error', '下载失败，请检查网络连接')
+				})
+			}).on('error', (err) => {
+				console.error('下载更新失败:', err)
+				win?.webContents.send('update-error', '下载失败，请检查网络连接')
+			})
+		}
+
+		doDownload(url)
+	}
+
+	async function showUpdateReadyDialog(zipPath: string) {
+		if (!win) return
+		const { response } = await dialog.showMessageBox(win, {
+			title: '更新就绪',
+			message: '更新已下载完成，重启后自动安装。是否立即重启？',
+			buttons: ['立即重启', '稍后'],
+		})
+
+		if (response === 0) {
+			performUpdate(zipPath)
+		}
+	}
+
+	function performUpdate(zipPath: string) {
+		const appPath = path.dirname(path.dirname(path.dirname(process.execPath)))
+		const appDir = path.dirname(appPath)
+		const pid = process.pid
+
+		const scriptPath = path.join(app.getPath('temp'), 'potunes-update.sh')
+		const scriptContent = `#!/bin/bash
+while kill -0 ${pid} 2>/dev/null; do sleep 0.5; done
+sleep 1
+rm -rf "${appPath}"
+ditto -x -k "${zipPath}" "${appDir}"
+open "${appPath}"
+rm -f "${zipPath}"
+rm -f "${scriptPath}"
+`
+
+		try {
+			writeFileSync(scriptPath, scriptContent)
+			chmodSync(scriptPath, 0o755)
+			spawn('bash', [scriptPath], { detached: true, stdio: 'ignore' }).unref()
+			extendedApp.isQuitting = true
+			cleanupTrayIcons()
+			app.quit()
+		} catch (err) {
+			console.error('更新失败:', err)
+			win?.webContents.send('update-error', '更新失败，请手动下载最新版本')
+		}
+	}
+
+	setTimeout(checkForUpdate, 5000)
 }

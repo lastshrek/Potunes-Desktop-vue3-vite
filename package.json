@@ -1,7 +1,7 @@
 {
 	"name": "potunes-desktop-vue3-vite",
 	"private": true,
-	"version": "2.1.0",
+	"version": "2.2.0",
 	"scripts": {
 		"dev": "vite --mode electron",
 		"dev:web": "vite --mode development",
@@ -20,6 +20,7 @@
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
 		"colorthief": "^2.6.0",
+		"electron-updater": "^6.8.3",
 		"lucide-vue-next": "^0.469.0",
 		"mitt": "^3.0.1",
 		"pinia": "^2.1.6",
@@ -79,23 +80,36 @@
 			"output": "release"
 		},
 		"mac": {
+			"identity": "-",
 			"icon": "build/icons/icon.icns",
-			"artifactName": "${productName}-${version}-${arch}.${ext}",
+			"artifactName": "PoTunes-${version}-${arch}.${ext}",
 			"electronLanguages": [
 				"zh_CN"
 			],
-			"target": [
-				{
-					"target": "dmg",
-					"arch": [
-						"arm64",
-						"x64"
-					]
-				}
-			]
+		"target": [
+			{
+				"target": "dmg",
+				"arch": [
+					"arm64",
+					"x64"
+				]
+			},
+			{
+				"target": "zip",
+				"arch": [
+					"arm64",
+					"x64"
+				]
+			}
+		]
 		},
 		"electronDownload": {
 			"mirror": "https://npmmirror.com/mirrors/electron/"
+		},
+		"publish": {
+			"provider": "generic",
+			"url": "https://lastshrek.leoxv.com/updater",
+			"channel": "latest"
 		}
 	}
 }
